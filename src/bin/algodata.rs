@@ -20,7 +20,7 @@ fn print_usage(opts: &Options) {
         "Supported CMDs",
         "  SHOW",
         "  CREATE",
-        "  UPLOAD FILE..."
+        "  UPLOAD [-c CONCURRENCY] FILE..."
     ];
     println!("{}", opts.usage(&*brief.connect("\n")));
     env::set_exit_status(1);
