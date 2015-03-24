@@ -27,7 +27,8 @@ Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.or
     aura -A algorithmia-bin
 
 **OSX**
-'Simply download and extract the OSX tarball - recommend putting it within your `PATH`
+
+Simply download and extract the OSX tarball - recommend putting it within your `PATH`
 
     curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algo-osx.tar | tar -x
 
