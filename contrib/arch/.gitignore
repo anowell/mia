@@ -1,6 +1,0 @@
-*.tar.gz
-*.tgz
-*.tar.xz
-src
-pkg
-algorithmia_cli
