@@ -10,12 +10,12 @@ Cross-platform CLI for Algorithmia algorithms and data API.
 
 Latest release tarballs are available [here](https://github.com/algorithmiaio/algorithmia-cli/releases) - and simply contain 2 binaries: `algo` and `algodata`.
 
-### Debian/Ubuntu package:
-`.deb` package is available for installation with `dpkg`
+*Debian/Ubuntu*
+A `.deb` package is available for installation with `dpkg`
 
     curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algorithmia_0.4.0_amd64.deb | sudo dpkg -i
 
-### Arch
+*Arch*
 Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur.archlinux.org/packages/algorithmia-git/). (Examples use AUR helper `aura`)
 
     # Install from source (requires rust)
@@ -24,12 +24,12 @@ Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.or
     # Install precompiled binary
     aura -A algorithmia-bin
 
-### OSX
+*OSX*
 Simply download and extract the OSX tarball - recommend putting it within your `PATH`
 
     curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algo-osx.tar | tar -x
 
-### Windows
+*Windows*
 Coming soon - need to setup a Windows build environment...
 
 
