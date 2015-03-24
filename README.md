@@ -18,7 +18,7 @@ A `.deb` package is available for installation with `dpkg`
 
 **Arch**
 
-Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur.archlinux.org/packages/algorithmia-git/). (Examples use AUR helper `aura`)
+Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur.archlinux.org/packages/algorithmia-git/), e.g., using `aura` helper.
 
     # Install from source (requires rust)
     aura -A algorithmia-git
