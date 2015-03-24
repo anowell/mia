@@ -3,7 +3,7 @@ Algorithmia CLI Tools
 
 Cross-platform CLI for Algorithmia algorithms and data API.
 
-[![Build Status](https://travis-ci.org/algorithmiaio/algorithmia_cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia_cli)
+[![Build Status](https://travis-ci.org/algorithmiaio/algorithmia-cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia-cli)
 
 
 ## Install
@@ -12,8 +12,8 @@ Installation currently just involves dropping 2 binaries (`algo` and `algodata`)
 
 Simply `cd` to the directory where you want them and run:
 
-- Linux:  `curl -L https://github.com/algorithmiaio/algorithmia_cli/releases/download/v0.4.0/algo-linux.tgz | tar -x`
-- Mac OS: `curl -L https://github.com/algorithmiaio/algorithmia_cli/releases/download/v0.4.0/algo-osx.tgz | tar -x`
+- Linux:  `curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algo-linux.tgz | tar -x`
+- Mac OS: `curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algo-osx.tgz | tar -x`
 - Windows: ...coming soon - need to setup a Windows build environment...
 
 Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur.archlinux.org/packages/algorithmia-git/)
