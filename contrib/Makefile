@@ -35,4 +35,4 @@ aur-bin: $(OUTDIR) $(TARBALL)
 
 deb: $(OUTDIR) $(TARBALL)
 	bundle install
-	bundle exec fpm -s tar -t deb -v $(PACKAGE_VERSION) -n $(PACKAGE_NAME) -p "$(OUTDIR)/$(PACKAGE_NAME)_$(PACKAGE_VERSION)_$(ARCH).deb" --prefix $(PREFIX) $(TARBALL)
+	bundle exec fpm -f -s tar -t deb -v $(PACKAGE_VERSION) -n $(PACKAGE_NAME) -p "$(OUTDIR)/$(PACKAGE_NAME)_$(PACKAGE_VERSION)_$(ARCH).deb" --prefix $(PREFIX) $(TARBALL)
