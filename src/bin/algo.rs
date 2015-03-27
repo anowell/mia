@@ -1,3 +1,4 @@
+#![feature(exit_status)]
 extern crate algorithmia;
 extern crate getopts;
 

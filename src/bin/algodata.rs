@@ -1,5 +1,5 @@
-#![feature(core)]
 #![feature(std_misc)]
+#![feature(exit_status)]
 
 extern crate algorithmia;
 extern crate getopts;
@@ -20,6 +20,7 @@ fn print_usage(opts: &Options) {
         "Supported CMDs",
         "  SHOW",
         "  CREATE",
+        "  DELETE",
         "  UPLOAD [-c CONCURRENCY] FILE..."
     ];
     println!("{}", opts.usage(&*brief.connect("\n")));
@@ -38,16 +39,37 @@ impl AlgoData {
     fn show_collection(self, username: &str, collection_name: &str) {
         let my_bucket = self.service.collection(username, collection_name);
         match my_bucket.show() {
-            Ok(output) => println!("{:?}", output),
-            Err(why) => println!("ERROR: {:?}", why),
+            Ok(output) => {
+                println!("{}/{} - {} file(s)", output.username, output.collection_name, output.files.len());
+                for f in output.files { println!("/{}", f); }
+            },
+            Err(why) => {
+                println!("ERROR: {:?}", why);
+                env::set_exit_status(1);
+            },
         };
     }
+
+    fn delete_collection(self, username: &str, collection_name: &str) {
+        let my_bucket = self.service.collection(username, collection_name);
+        match my_bucket.delete() {
+            Ok(_) => println!("Deleted collection: {}/{}", username, collection_name),
+            Err(why) => {
+                println!("ERROR: {:?}", why);
+                env::set_exit_status(1);
+            },
+        };
+    }
+
 
     fn create_collection(self, username: &str, collection_name: &str) {
         let my_bucket = self.service.collection(username, collection_name);
         match my_bucket.create() {
-            Ok(output) => println!("{:?}", output),
-            Err(why) => println!("ERROR: {:?}", why),
+            Ok(output) => println!("Created collection: {}/{}", output.username, output.collection_name),
+            Err(why) => {
+                println!("ERROR: {:?}", why);
+                env::set_exit_status(1);
+            },
         };
     }
 
@@ -69,11 +91,15 @@ impl AlgoData {
                         let ref bucket = my_bucket;
                         match bucket.upload_file(&mut file) {
                             Ok(file_added) => println!("Uploaded {}", file_added.result),
-                            Err(e) => println!("ERROR uploading {}: {:?}", file_path, e),
+                            Err(e) => {
+                                println!("ERROR uploading {}: {:?}", file_path, e);
+                                env::set_exit_status(1);
+                            }
                         };
                     },
                     Err(e) => {
                         println!("Failed to open {}: {}", file_path, e);
+                        env::set_exit_status(1);
                     }
                 };
 
@@ -150,14 +176,15 @@ fn main() {
         None => "show".to_string(),
     };
 
-    match user_collection.as_slice() {
+    match &*user_collection {
         [user, collection] => {
-            match cmd.as_slice() {
+            match &*cmd {
                 "show" => data.show_collection(user, collection),
                 "create" => data.create_collection(user, collection),
+                "delete" => data.delete_collection(user, collection),
                 "upload" => {
                     let files: Vec<String> = args_iter.collect();
-                    data.upload_files(user, collection, files.as_slice(), concurrency);
+                    data.upload_files(user, collection, &*files, concurrency);
                 },
                 invalid => {
                     println!("Not a valid command: {}", invalid);
