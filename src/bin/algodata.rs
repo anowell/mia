@@ -1,10 +1,11 @@
 #![feature(std_misc)]
 #![feature(exit_status)]
-
+#![feature(slice_patterns)]
 extern crate algorithmia;
 extern crate getopts;
 
-use algorithmia::{Service};
+use algorithmia::Service;
+use algorithmia::collection::Collection;
 use getopts::Options;
 use std::ascii::AsciiExt;
 use std::env;
@@ -16,12 +17,12 @@ static DEFAULT_UPLOAD_CONCURRENCY: u32 = 8;
 
 fn print_usage(opts: &Options) {
     let brief = vec![
-        "Usage: algodata USER/COLLECTION [CMD [CMD_ARGS...]]",
+        "Usage: algodata CMD [CMD_ARGS...]",
         "Supported CMDs",
-        "  SHOW",
-        "  CREATE",
-        "  DELETE",
-        "  UPLOAD [-c CONCURRENCY] FILE..."
+        "  SHOW COLLECTIONREF",
+        "  CREATE COLLECTIONREF",
+        "  DELETE COLLECTIONREF",
+        "  UPLOAD COLLECTIONREF [-c CONCURRENCY] FILE ..."
     ];
     println!("{}", opts.usage(&*brief.connect("\n")));
     env::set_exit_status(1);
@@ -36,8 +37,8 @@ impl AlgoData {
         AlgoData { service: Service::new(api_key) }
     }
 
-    fn show_collection(self, username: &str, collection_name: &str) {
-        let my_bucket = self.service.collection(username, collection_name);
+    fn show_collection(self, collection: Collection) {
+        let my_bucket = self.service.collection(&collection);
         match my_bucket.show() {
             Ok(output) => {
                 println!("{}/{} - {} file(s)", output.username, output.collection_name, output.files.len());
@@ -50,10 +51,10 @@ impl AlgoData {
         };
     }
 
-    fn delete_collection(self, username: &str, collection_name: &str) {
-        let my_bucket = self.service.collection(username, collection_name);
+    fn delete_collection(self, collection: Collection) {
+        let my_bucket = self.service.collection(&collection);
         match my_bucket.delete() {
-            Ok(_) => println!("Deleted collection: {}/{}", username, collection_name),
+            Ok(_) => println!("Deleted collection"),
             Err(why) => {
                 println!("ERROR: {:?}", why);
                 env::set_exit_status(1);
@@ -62,8 +63,8 @@ impl AlgoData {
     }
 
 
-    fn create_collection(self, username: &str, collection_name: &str) {
-        let my_bucket = self.service.collection(username, collection_name);
+    fn create_collection(self, collection: Collection) {
+        let my_bucket = self.service.collection(&collection);
         match my_bucket.create() {
             Ok(output) => println!("Created collection: {}/{}", output.username, output.collection_name),
             Err(why) => {
@@ -73,10 +74,10 @@ impl AlgoData {
         };
     }
 
-    fn upload_files(self, username: &str, collection_name: &str, file_paths: &[String], concurrency: u32) {
+    fn upload_files(self, collection: Collection, file_paths: &[String], concurrency: u32) {
         println!("Uploading {} file(s)...", file_paths.len());
+        let arc_collection = Arc::new(collection);
         let arc_sem = Arc::new(Semaphore::new(concurrency as isize));
-
         let _: Vec<_> = file_paths.iter().map(|file_path| {
             // Acquire semaphore before we start the thread
             let child_sem = arc_sem.clone();
@@ -84,8 +85,9 @@ impl AlgoData {
             // println!("Uploading {}", file_path);
 
             let service = self.service.clone();
+            let ts_collection = arc_collection.clone();
             thread::scoped( move || {
-                let my_bucket = service.collection(username, collection_name);
+                let my_bucket = service.collection(&ts_collection);
                 match File::open(file_path) {
                     Ok(mut file) => {
                         let ref bucket = my_bucket;
@@ -159,42 +161,35 @@ fn main() {
 
     let data = AlgoData::new(&*api_key);
 
-    // Get the USERNAME/COLLECTION arg
-    let first_arg = args_iter.next();
-    let user_collection: Vec<&str> = match first_arg {
-        Some(ref arg) => arg.split('/').collect(),
-        None => {
-            println!("Did not specify USERNAME/COLLECTION");
-            print_usage(&opts);
-            return;
-        }
-    };
-
     // Get the CMD arg
     let cmd = match args_iter.next() {
         Some(ref arg) => arg.to_ascii_lowercase(),
         None => "show".to_string(),
     };
 
-    match &*user_collection {
-        [user, collection] => {
-            match &*cmd {
-                "show" => data.show_collection(user, collection),
-                "create" => data.create_collection(user, collection),
-                "delete" => data.delete_collection(user, collection),
-                "upload" => {
-                    let files: Vec<String> = args_iter.collect();
-                    data.upload_files(user, collection, &*files, concurrency);
-                },
-                invalid => {
-                    println!("Not a valid command: {}", invalid);
-                    print_usage(&opts);
-                    return;
-                }
-            }
+    // Get the COLLECTIONREF arg
+    let col_arg = args_iter.next();
+    let collection = match col_arg.as_ref()
+            .and_then(|col| { Collection::from_str(&*col).ok() }) {
+        Some(col) => col,
+        None => {
+            println!("Did not specify valid collection");
+            print_usage(&opts);
+            return;
+        }
+    };
+
+
+    match &*cmd {
+        "show" => data.show_collection(collection),
+        "create" => data.create_collection(collection),
+        "delete" => data.delete_collection(collection),
+        "upload" => {
+            let files: Vec<String> = args_iter.collect();
+            data.upload_files(collection, &*files, concurrency);
         },
         invalid => {
-            println!("Invalid data repository: {:?}", invalid );
+            println!("Not a valid command: {}", invalid);
             print_usage(&opts);
             return;
         }

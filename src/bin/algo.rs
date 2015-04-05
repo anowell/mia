@@ -1,9 +1,10 @@
 #![feature(exit_status)]
+#![feature(slice_patterns)]
 extern crate algorithmia;
 extern crate getopts;
 
 use algorithmia::Service;
-use algorithmia::algorithm::Version;
+use algorithmia::algorithm::Algorithm;
 use getopts::Options;
 use std::env;
 use std::io::Read;
@@ -62,11 +63,13 @@ fn main() {
     }
 
     // Get the USERNAME/ALGORITHM[/VERSION] arg
-    let first_arg = args_iter.next();
-    let repo: Vec<&str> = match first_arg {
-        Some(ref arg) => arg.split('/').collect(),
+    let algo_arg = args_iter.next();
+    let algorithm = match algo_arg.as_ref().and_then(|algo| {
+        Algorithm::from_str(&*algo).ok()
+    }){
+        Some(algo) => algo,
         None => {
-            println!("Did not specify USERNAME/ALGORITHM");
+            println!("Did not correctly specify USERNAME/ALGORITHM[/VERSION]");
             print_usage(&opts);
             return;
         }
@@ -85,18 +88,10 @@ fn main() {
 
     // Instantiate the algorithm service
     let service = Service::new(&*api_key);
-    let algorithm = match &*repo {
-        [user, algo, version] => service.algorithm(user, algo, Version::from_str(version)),
-        [user, algo] => service.algorithm(user, algo, Version::Latest),
-        _ => {
-            println!("Invalid algorithm name: {}", repo.connect("/"));
-            print_usage(&opts);
-            return;
-        }
-    };
+    let algorithm_service = service.algorithm(&algorithm);
 
     // Execute the algorithm
-    let output = match algorithm.exec_raw(&*data) {
+    let output = match algorithm_service.exec_raw(&*data) {
         Ok(result) => result,
         Err(e) => format!("HTTP ERROR: {:?}", e),
     };
