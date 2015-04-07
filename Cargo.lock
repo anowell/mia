@@ -1,5 +1,5 @@
 [root]
-name = "algorithmia-cli"
+name = "algo"
 version = "0.5.0"
 dependencies = [
  "algorithmia 0.5.0 (git+https://github.com/anowell/algorithmia_rust.git)",

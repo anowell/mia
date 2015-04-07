@@ -1,6 +1,6 @@
 [package]
 
-name = "algorithmia-cli"
+name = "algo"
 version = "0.5.0"
 authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 
