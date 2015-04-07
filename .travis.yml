@@ -3,7 +3,7 @@ language: rust
 script:
   - cargo build --release --verbose
   - cargo test --verbose
-  - tar -czvf algo-linux.tar.gz -C target/release algo algodata
+  - tar -czvf algo-linux.tar.gz -C target/release algo
 
 deploy:
   provider: releases
