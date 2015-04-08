@@ -51,6 +51,7 @@ fn main() {
     opts.optflag("h", "help", "print this help");
     opts.optopt("d", "data", "string to use as input data", "DATA");
     opts.optopt("f", "file", "file containing input data", "FILE");
+    opts.optopt("c", "concurrency", "concurrent threads to use for uploading files", "COUNT");
 
     let matches = match opts.parse(env::args()) {
         Ok(m) => m,
