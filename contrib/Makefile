@@ -1,5 +1,5 @@
 PACKAGE_NAME=algorithmia
-PACKAGE_VERSION=0.4.0
+PACKAGE_VERSION=`grep version ../Cargo.toml | head -1 | cut -d'"' -f2`
 
 ARCH=amd64
 TARBALL=algo-linux.tar.gz
