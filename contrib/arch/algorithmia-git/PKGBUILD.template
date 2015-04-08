@@ -27,5 +27,4 @@ package() {
   cd "${srcdir}/${_gitname}/target/release"
   mkdir -p "$pkgdir/usr/bin/"
   install -m 755 algo "$pkgdir/usr/bin/"
-  install -m 755 algodata "$pkgdir/usr/bin/"
 }

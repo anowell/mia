@@ -15,5 +15,4 @@ md5sums=('{{MD5SUM}}')
 package() {
   mkdir -p "$pkgdir/usr/bin/"
   install -m 755 algo "$pkgdir/usr/bin/"
-  install -m 755 algodata "$pkgdir/usr/bin/"
 }
