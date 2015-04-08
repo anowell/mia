@@ -14,7 +14,7 @@ Latest release tarballs are available [here](https://github.com/algorithmiaio/al
 
 A `.deb` package is available for installation with `dpkg`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algorithmia_0.4.0_amd64.deb | sudo dpkg -i
+    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.6.0/algorithmia_0.6.0_amd64.deb | sudo dpkg -i
 
 **Arch**
 
@@ -30,7 +30,7 @@ Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.or
 
 Simply download and extract the OSX tarball - recommend putting it within your `PATH`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.4.0/algo-osx.tar | tar -x
+    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.6.0/algo-osx.tar | tar -x
 
 **Windows**
 
