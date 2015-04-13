@@ -1,6 +1,6 @@
 [root]
 name = "algo"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "algorithmia 0.5.0 (git+https://github.com/anowell/algorithmia_rust.git)",
  "docopt 0.6.60 (registry+https://github.com/rust-lang/crates.io-index)",
