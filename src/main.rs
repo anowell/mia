@@ -72,7 +72,7 @@ fn main() {
                 "mkdir" => data::mkdir::print_usage(),
                 "rmdir" => data::rmdir::print_usage(),
                 "upload" => data::upload::print_usage(),
-                "run" => algo::run::cmd_main(),
+                "run" => algo::run::print_usage(),
                 _ => print_usage(),
             },
             _ => (),
