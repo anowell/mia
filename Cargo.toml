@@ -5,7 +5,8 @@ version = "0.6.0"
 authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 
 [dependencies]
-getopts = "*"
+docopt = "*"
+rustc-serialize = "*"
 
 [dependencies.algorithmia]
 version = "*"
