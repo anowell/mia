@@ -7,7 +7,7 @@ use std::path::Path;
 
 static USAGE: &'static str = "
 Usage:
-  algo run [-a] [-f <file> | -d <data>] <algorithm> [-]
+  algo [run] [-a] [-f <file> | -d <data>] <algorithm> [-]
 
   Options:
     -a --async                  Return immediately from calling the algorithm
@@ -52,7 +52,7 @@ fn run_algorithm(algo: &str, input_data: &str) {
     };
 
     // Execute the algorithm
-    match algorithm.exec_raw(input_data) {
+    match algorithm.pipe_raw(input_data) {
         Ok(result) => println!("{}", result),
         Err(e) => die(&*format!("HTTP ERROR: {:?}", e)),
     };

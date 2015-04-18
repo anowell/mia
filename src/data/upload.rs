@@ -1,7 +1,6 @@
 use super::super::{die, init_service};
 use docopt::Docopt;
 
-use std::fs::File;
 use std::thread;
 use std::sync::{Arc, Semaphore};
 
@@ -48,15 +47,10 @@ fn upload_files(path: &str, file_paths: Vec<String>, concurrency: u32) {
         let path_clone = path.clone();
         thread::scoped( move || {
             let my_bucket = service_clone.collection(&*path_clone);
-            match File::open(file_path) {
-                Ok(mut file) => {
-                    let ref bucket = my_bucket;
-                    match bucket.upload_file(&mut file) {
-                        Ok(file_added) => println!("Uploaded {}", file_added.result),
-                        Err(e) => die(&*format!("ERROR uploading {}: {:?}", file_path, e)),
-                    };
-                },
-                Err(e) => die(&*format!("Failed to open {}: {}", file_path, e)),
+            let ref bucket = my_bucket;
+            match bucket.upload_file(&*file_path) {
+                Ok(file_added) => println!("Uploaded {}", file_added.result),
+                Err(e) => die(&*format!("ERROR uploading {}: {:?}", file_path, e)),
             };
 
             // Release the semaphore

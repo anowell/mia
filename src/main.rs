@@ -1,4 +1,4 @@
-#![feature(slice_patterns)]
+#![feature(scoped)]
 #![feature(std_misc)]
 extern crate algorithmia;
 extern crate docopt;
@@ -12,7 +12,7 @@ mod algo;
 
 static USAGE: &'static str = "
 Usage:
-  algo <cmd> [<args>...]
+  algo [cmd] [<args>...]
   algo [cmd] [--help]
 
 Commands include:
@@ -88,7 +88,7 @@ fn main() {
         "mkdir" => data::mkdir::cmd_main(),
         "upload" => data::upload::cmd_main(),
         "run" => algo::run::cmd_main(),
-        _ => print_usage(),
+        _ => algo::run::cmd_main(),
     }
 
 }
