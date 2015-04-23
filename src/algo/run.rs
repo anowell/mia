@@ -58,7 +58,7 @@ fn run_algorithm(algo: &str, input_data: &str) {
     };
 
     // Execute the algorithm
-    match algorithm.pipe_raw(input_data) {
+    match algorithm.pipe_raw(input_data, "application/json".parse().unwrap()) {
         Ok(result) => println!("{}", result),
         Err(e) => die(&*format!("HTTP ERROR: {:?}", e)),
     };
