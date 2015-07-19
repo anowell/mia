@@ -1,1 +1,3 @@
-pub mod run;
+pub use self::run::Run;
+
+mod run;
