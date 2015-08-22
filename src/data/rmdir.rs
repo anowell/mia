@@ -3,12 +3,19 @@ use docopt::Docopt;
 
 static USAGE: &'static str = "
 Usage:
-  algo rmdir <collection>
+  algo rmdir [options] <remote>
+
+  Removes a directory from the Agorithmia Data API
+
+  Options:
+    -f, --force                 Force deletion even directory has contents
+
 ";
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_collection: Option<String>,
+    arg_remote: String,
+    flag_force: bool,
 }
 
 pub struct RmDir;
@@ -20,18 +27,16 @@ impl CmdRunner for RmDir {
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        match args.arg_collection {
-            Some(dir) => Self::delete_dir(&*dir),
-            None => Self::print_usage(),
-        };
+        Self::delete_dir(&*args.arg_remote, args.flag_force);
     }
 }
 
 impl RmDir {
-    fn delete_dir(path: &str) {
+    fn delete_dir(path: &str, force: bool) {
         let my_dir = Self::init_client().dir(path);
-        match my_dir.delete() {
+        match my_dir.delete(force) {
             Ok(_) => println!("Deleted directory {}", my_dir.to_data_uri()),
+            // TODO: Improve error message when delete failed for lack of --force
             Err(why) => die!("ERROR: {:?}", why),
         };
     }

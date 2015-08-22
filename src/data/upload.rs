@@ -6,15 +6,18 @@ use std::sync::{Arc, Semaphore};
 
 
 static USAGE: &'static str = "
-Usage: algo upload [-c CONCURRENCY] <collection> <file>...
+Usage: algo upload [-c CONCURRENCY] <remote> <local>...
 
-    -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
+  Uploads file(s) to the Algorithmia Data API
+
+  Options:
+   -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
 ";
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_collection: Option<String>,
-    arg_file: Vec<String>,
+    arg_remote: String,
+    arg_local: Vec<String>,
     flag_c: u32,
 }
 
@@ -27,10 +30,7 @@ impl CmdRunner for Upload {
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        match args.arg_collection {
-            Some(dir) => Self::upload_files(&*dir, args.arg_file, args.flag_c),
-            None => Self::print_usage(),
-        }
+        Self::upload_files(&*args.arg_remote, args.arg_local, args.flag_c);
     }
 }
 

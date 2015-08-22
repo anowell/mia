@@ -24,14 +24,12 @@ static USAGE: &'static str = "
 CLI for interacting with Algorithmia
 
 Usage:
-  algo [cmd] [<args>...]
+  algo [cmd] [options] [<args>...]
   algo [cmd] [--help]
 
 
 Algorithm commands include:
   run       Runs an algorithm
-  clone     Clone an algorithm
-  fork      Fork an algorithm
 
 Data commands include
   ls        List contents of a collection
@@ -51,6 +49,7 @@ Note: Add Option [--profile <profile>]
 Algorithm commands include:
   view      View algorithm details (e.g. cost)
   clone     Clone an algorithm (wrapper around git clone)
+  fork      Fork an algorithm
 
 Data commands include:
   download  Download file(s) from a collection
@@ -70,43 +69,51 @@ struct MainArgs {
 }
 
 fn main() {
-    let mut args = env::args();
+    let mut args = env::args().peekable();
     args.next(); // drop program arg
 
-    // Get the <cmd> arg
-    let cmd = match args.next() {
-        Some(c) => c,
-        None => print_usage(),
-    };
+    let cmd = args.peek().unwrap_or_else(|| { print_usage() }).clone();
 
-    // Check for cmd-specific help
+    // Search for --help flag
     while let Some(arg) = args.next() {
-        match &*arg {
-            "--help" | "-h" => match &*cmd {
-                "ls" => data::Ls::print_usage(),
-                "mkdir" => data::MkDir::print_usage(),
-                "rmdir" => data::RmDir::print_usage(),
-                "upload" => data::Upload::print_usage(),
-                "run" => algo::Run::print_usage(),
-                _ => print_usage(),
-            },
-            _ => (),
+        if &*arg == "--help" {
+            print_cmd_usage(&*cmd)
         }
     };
 
-    // Hand-off to cmd-specific   cmd_main()
-    match &*cmd {
-        "-h" | "--help" => print_usage(),
+    run_cmd(&*cmd)
+}
+
+
+//https://www.reddit.com/r/rust/comments/3gtpy9/wrapping_around_generic_io/
+
+fn run_cmd(cmd: &str) {
+    match cmd {
         "ls" => data::Ls::cmd_main(),
         "mkdir" => data::MkDir::cmd_main(),
         "rmdir" => data::RmDir::cmd_main(),
+        "rm" => data::Rm::cmd_main(),
         "upload" => data::Upload::cmd_main(),
+        "download" => data::Download::cmd_main(),
         "run" => algo::Run::cmd_main(),
         _ => algo::Run::cmd_main(),
-    }
+    };
 }
 
-// TODO: figure out how to return a CmdRunner trait object to replace half the code above.
+fn print_cmd_usage(cmd: &str) -> ! {
+    match cmd {
+        "ls" => data::Ls::print_usage(),
+        "mkdir" => data::MkDir::print_usage(),
+        "rmdir" => data::RmDir::print_usage(),
+        "rm" => data::Rm::print_usage(),
+        "upload" => data::Upload::print_usage(),
+        "download" => data::Download::print_usage(),
+        "run" => algo::Run::print_usage(),
+        _ => print_usage(),
+    };
+}
+
+
 trait CmdRunner {
     fn cmd_main();
     fn get_usage() -> &'static str;

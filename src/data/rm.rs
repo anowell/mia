@@ -3,9 +3,9 @@ use docopt::Docopt;
 
 static USAGE: &'static str = "
 Usage:
-  algo mkdir <remote>
+  algo rm <remote>
 
-  Create an Agorithmia data directory
+  Removes a file from the Agorithmia Data API
 
   <remote>      Specifies the Algorithmia Data URI
                 The 'data://' prefix is optional
@@ -16,8 +16,8 @@ struct Args {
     arg_remote: String,
 }
 
-pub struct MkDir;
-impl CmdRunner for MkDir {
+pub struct Rm;
+impl CmdRunner for Rm {
     fn get_usage() -> &'static str { USAGE }
 
     fn cmd_main() {
@@ -25,16 +25,16 @@ impl CmdRunner for MkDir {
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        Self::create_dir(&*args.arg_remote);
-    }
 
+        Self::delete_file(&*args.arg_remote);
+    }
 }
 
-impl MkDir {
-    fn create_dir(path: &str) {
-        let my_dir = Self::init_client().dir(path);
-        match my_dir.create() {
-            Ok(_) => println!("Created directory: {}", my_dir.to_data_uri()),
+impl Rm {
+    fn delete_file(path: &str) {
+        let my_file = Self::init_client().file(path);
+        match my_file.delete() {
+            Ok(_) => println!("Deleted file {}", my_file.to_data_uri()),
             Err(why) => die!("ERROR: {:?}", why),
         };
     }
