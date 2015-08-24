@@ -65,7 +65,7 @@ impl CmdRunner for Run {
             (None, Some(s), None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), Self::read_to_string(&*s)),
             (None, None, Some(s), None) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), s),
             (None, None, None, Some(s)) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), Self::read_to_string(&*s)),
-            _ => return die!("must specify exactly one input data option"),
+            _ => return die!("Must specify exactly one input data option\n{}", USAGE),
         };
 
         let response = Self::run_algorithm(&*algo, &*data, content_type);
