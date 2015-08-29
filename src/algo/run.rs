@@ -6,6 +6,7 @@ use std::io::{self, Read};
 use std::fs::File;
 use std::path::Path;
 use algorithmia::mime::*;
+use algorithmia::error::Error::ApiError;
 
 static USAGE: &'static str = "
 Usage:
@@ -78,10 +79,7 @@ impl CmdRunner for Run {
                         Some(text) => println!("{}", text),
                         None => println!("{}", result.pretty()),
                     },
-                    None => match json.find("error") {
-                        Some(err) => die!("API Error: {}", err),
-                        None => die!("Error parsing response: {}", response),
-                    },
+                    None => die!("Error parsing response: {}", response),
                 },
                 Err(err) => die!("Error parsing response as JSON: {}", err),
             }
@@ -96,6 +94,10 @@ impl Run {
         // Execute the algorithm
         match algorithm.pipe_raw(input_data, content_type) {
             Ok(result) => result,
+            Err(ApiError(err)) => match err.stacktrace {
+                Some(ref stacktrace) => die!("API Error: {}\n{}", err, stacktrace),
+                None => die!("API Error: {}", err),
+            },
             Err(err) => die!("Error calling algorithm: {}", err),
         }
     }
