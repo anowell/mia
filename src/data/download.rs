@@ -49,7 +49,7 @@ impl Download {
         match data_object.get_type() {
             Ok(DataType::Dir) => die!("Downloading directories not yet implemented"), //download_dir(data_object.into(), local_path),
             Ok(DataType::File) => download_file(data_object.into(), local_path),
-            Err(err) => die!("Error: {:?}", err),
+            Err(err) => die!("Error: {}", err),
         };
     }
 }
@@ -80,7 +80,7 @@ fn download_file(data_file: DataFile, local_path: &str) {
                 Err(err) => die!("Error copying data: {}", err),
             }
         },
-        Err(e) => die!("Error downloading {}: {:?}", data_file.to_data_uri(), e),
+        Err(e) => die!("Error downloading {}: {}", data_file.to_data_uri(), e),
     };
 }
 

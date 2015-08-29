@@ -36,7 +36,7 @@ impl MkDir {
         let my_dir = Self::init_client().dir(path);
         match my_dir.create() {
             Ok(_) => println!("Created directory: {}", my_dir.to_data_uri()),
-            Err(why) => die!("ERROR: {:?}", why),
+            Err(err) => die!("Error creating directory: {}", err),
         };
     }
 }

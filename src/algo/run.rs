@@ -83,7 +83,7 @@ impl CmdRunner for Run {
                         None => die!("Error parsing response: {}", response),
                     },
                 },
-                Err(err) => die!("Error parsing response as JSON: {:?}", err),
+                Err(err) => die!("Error parsing response as JSON: {}", err),
             }
         }
     }
@@ -96,7 +96,7 @@ impl Run {
         // Execute the algorithm
         match algorithm.pipe_raw(input_data, content_type) {
             Ok(result) => result,
-            Err(e) => die!("Error calling algorithm: {:?}", e),
+            Err(err) => die!("Error calling algorithm: {}", err),
         }
     }
 
@@ -112,20 +112,20 @@ impl Run {
         match io::stdin().read_to_string(&mut buf) {
             Ok(0) => die!("Error: reading STDIN: Read 0 bytes"),
             Ok(_) => buf,
-            Err(e) => die!("Error reading STDIN: {:?}", e),
+            Err(err) => die!("Error reading STDIN: {}", err),
         }
     }
 
     fn read_file_to_string(path: &Path) -> String {
         let display = path.display();
         let mut file = match File::open(&path) {
-            Err(why) => die!("Error opening {}: {:?}", display, why),
+            Err(err) => die!("Error opening {}: {}", display, err),
             Ok(file) => file,
         };
 
         let mut data = String::new();
         match file.read_to_string(&mut data) {
-            Err(why) => die!("Error reading {}: {:?}", display, why),
+            Err(err) => die!("Error reading {}: {}", display, err),
             Ok(s) => s,
         };
         data

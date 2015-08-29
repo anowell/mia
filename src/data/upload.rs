@@ -57,7 +57,7 @@ impl Upload {
                 let ref dir = my_dir;
                 match dir.put_file(&*file_path_clone) {
                     Ok(file_added) => println!("Uploaded {}", file_added.result),
-                    Err(e) => die!("Error uploading {}: {:?}", file_path_clone, e),
+                    Err(e) => die!("Error uploading {}: {}", file_path_clone, e),
                 };
 
                 // Release the semaphore

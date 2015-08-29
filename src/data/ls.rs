@@ -46,7 +46,7 @@ impl Ls {
                     match entry_result {
                         Ok(DirEntry::Dir(d)) => println!("{:19} {:>5} {}", "--         --", "[dir]", d.basename().unwrap()),
                         Ok(DirEntry::File(f)) => println!("{:19} {:>5} {}", f.last_modified.format("%Y-%m-%d %H:%M:%S"), data::size_with_suffix(f.size), f.basename().unwrap()),
-                        Err(err) => die!("ERROR: {:?}", err),
+                        Err(err) => die!("Error listing directory: {}", err),
                     }
             }
         } else {
@@ -54,7 +54,7 @@ impl Ls {
                 match entry_result {
                     Ok(DirEntry::Dir(d)) => d.basename().unwrap(),
                     Ok(DirEntry::File(f)) => f.basename().unwrap(),
-                    Err(err) => die!("ERROR: {:?}", err),
+                    Err(err) => die!("Error listing directory: {}", err),
                 }
             }).collect();
 

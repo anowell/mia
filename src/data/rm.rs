@@ -36,7 +36,7 @@ impl Rm {
         let my_file = Self::init_client().file(path);
         match my_file.delete() {
             Ok(_) => println!("Deleted file {}", my_file.to_data_uri()),
-            Err(why) => die!("ERROR: {:?}", why),
+            Err(err) => die!("Error deleting file: {}", err),
         };
     }
 }

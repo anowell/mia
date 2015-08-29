@@ -38,7 +38,7 @@ impl RmDir {
         match my_dir.delete(force) {
             Ok(_) => println!("Deleted directory {}", my_dir.to_data_uri()),
             // TODO: Improve error message when delete failed for lack of --force
-            Err(why) => die!("ERROR: {:?}", why),
+            Err(err) => die!("Error deleting directory: {}", err),
         };
     }
 }
