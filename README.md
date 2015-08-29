@@ -6,7 +6,7 @@ Cross-platform CLI for Algorithmia algorithms and data API.
 [![Build Status](https://travis-ci.org/algorithmiaio/algorithmia-cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia-cli)
 
 UPDATE: The installers below are a deprecated as they rely on deprecated APIs (and deprecated auth).
-The APIs have been updated and much new functionality has been added. The [new release should drop soon](milestones/v1.0.0).
+The APIs have been updated and much new functionality has been added. The [new release should drop soon](../../milestones/v1.0.0).
 Until then, you are welcome to experiment by building master with a nightly build of rust (and cargo).
 
 ## Install
