@@ -1,4 +1,4 @@
-#![feature(scoped, semaphore)]
+#![feature(semaphore)]
 extern crate algorithmia;
 extern crate docopt;
 extern crate rustc_serialize;

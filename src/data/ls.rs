@@ -1,6 +1,7 @@
 use super::super::{data, CmdRunner};
 use docopt::Docopt;
 use std::cmp;
+use algorithmia::data::{DirEntry, HasDataPath};
 
 static USAGE: &'static str = "
 Usage:
@@ -39,39 +40,39 @@ impl CmdRunner for Ls {
 impl Ls {
     fn list_dir(path: &str, long: bool) {
         let my_dir = Self::init_client().dir(path);
-        match my_dir.show() {
-            Ok(output) => {
-                let files = output.files.unwrap_or(vec![]);
-                let folders = output.folders.unwrap_or(vec![]);
 
-                // TODO: colorize dirs if tty
-                if long {
-                    for f in folders { println!("{:19} {:>5} {}", "--         --", "[dir]", f.name); }
-                    for f in files { println!("{:19} {:>5} {}", f.last_modified.format("%Y-%m-%d %H:%M:%S"), data::size_with_suffix(f.size), f.filename); }
-                } else {
-                    let width = 80; // TODO: get_winsize()
-
-                    let col_width = 2 + cmp::max(
-                        files.iter().fold(0, |max, f| cmp::max(max, f.filename.len())),
-                        folders.iter().fold(0, |max, f| cmp::max(max, f.name.len())),
-                    );
-
-                    let mut offset = 0;
-                    let mut print_col = |msg: &str| {
-                        if offset + col_width > width {
-                            println!("");
-                            offset = 0;
-                        }
-                        print!("{:1$}", msg, col_width);
-                        offset = offset + col_width;
-                    };
-
-                    for f in folders { print_col(&*f.name); }
-                    for f in files { print_col(&*f.filename); }
-                    println!("");
+        if long {
+            for entry_result in my_dir.list() {
+                    match entry_result {
+                        Ok(DirEntry::Dir(d)) => println!("{:19} {:>5} {}", "--         --", "[dir]", d.basename().unwrap()),
+                        Ok(DirEntry::File(f)) => println!("{:19} {:>5} {}", f.last_modified.format("%Y-%m-%d %H:%M:%S"), data::size_with_suffix(f.size), f.basename().unwrap()),
+                        Err(err) => die!("ERROR: {:?}", err),
+                    }
+            }
+        } else {
+            let names: Vec<String> = my_dir.list().map(|entry_result| {
+                match entry_result {
+                    Ok(DirEntry::Dir(d)) => d.basename().unwrap(),
+                    Ok(DirEntry::File(f)) => f.basename().unwrap(),
+                    Err(err) => die!("ERROR: {:?}", err),
                 }
-            },
-            Err(why) => die!("ERROR: {:?}", why),
-        };
+            }).collect();
+
+            let width = 80; // TODO: get_winsize()
+
+            let col_width = 2 + names.iter().fold(0, |max, name| cmp::max(max, name.len()));
+
+            let mut offset = 0;
+            for name in names {
+                if offset + col_width > width {
+                    println!("");
+                    offset = 0;
+                }
+                print!("{:1$}", name, col_width);
+                offset = offset + col_width;
+            }
+
+            println!("");
+        }
     }
 }

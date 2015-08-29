@@ -1,5 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
+use algorithmia::data::HasDataPath;
 
 static USAGE: &'static str = "
 Usage:

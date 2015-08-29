@@ -1,7 +1,7 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
 
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::sync::{Arc, Semaphore};
 
 
@@ -35,31 +35,37 @@ impl CmdRunner for Upload {
 }
 
 impl Upload {
-    fn upload_files(path: &str, file_paths: Vec<String>, concurrency: u32) {
+    fn upload_files(data_path: &str, file_paths: Vec<String>, concurrency: u32) {
         println!("Uploading {} file(s)...", file_paths.len());
         let client = Self::init_client();
-        let path = Arc::new(path);
+        let arc_data_path = Arc::new(data_path);
         let arc_sem = Arc::new(Semaphore::new(concurrency as isize));
-        let _: Vec<_> = file_paths.iter().map(|file_path| {
+
+        let children: Vec<JoinHandle<_>> = file_paths.iter().map( |file_path| {
+            // Thread data
+            let client_clone = client.clone();
+            let data_path_clone = arc_data_path.to_string().clone();
+            let file_path_clone = file_path.clone();
+            println!("Uploading {}", file_path_clone);
+
             // Acquire semaphore before we start the thread
             let child_sem = arc_sem.clone();
             child_sem.acquire();
-            // println!("Uploading {}", file_path);
 
-            let client_clone = client.clone();
-            let path_clone = path.to_string().clone();
-            thread::scoped( move || {
-                let my_dir = client_clone.dir(&*path_clone);
+            thread::spawn( move || {
+                let my_dir = client_clone.dir(&*data_path_clone);
                 let ref dir = my_dir;
-                match dir.put_file(&*file_path) {
+                match dir.put_file(&*file_path_clone) {
                     Ok(file_added) => println!("Uploaded {}", file_added.result),
-                    Err(e) => die!("Error uploading {}: {:?}", file_path, e),
+                    Err(e) => die!("Error uploading {}: {:?}", file_path_clone, e),
                 };
 
                 // Release the semaphore
                 child_sem.release();
             })
         }).collect();
+
+        let _ = children.into_iter().map(|child_thread| { child_thread.join() }).collect::<Vec<_>>();
         println!("Finished uploading {} file(s)", file_paths.len())
     }
 }
