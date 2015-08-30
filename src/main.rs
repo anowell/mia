@@ -1,5 +1,5 @@
-#![feature(semaphore)]
 extern crate algorithmia;
+extern crate chan;
 extern crate docopt;
 extern crate rustc_serialize;
 

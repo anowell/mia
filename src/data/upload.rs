@@ -1,8 +1,9 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
-
-use std::thread::{self, JoinHandle};
-use std::sync::{Arc, Semaphore};
+use chan;
+use std::thread;
+use std::sync::{Arc, Mutex};
+use std::cmp;
 
 
 static USAGE: &'static str = "
@@ -35,37 +36,58 @@ impl CmdRunner for Upload {
 }
 
 impl Upload {
-    fn upload_files(data_path: &str, file_paths: Vec<String>, concurrency: u32) {
+    fn upload_files(data_path: &str, file_paths: Vec<String>, max_concurrency: u32) {
         println!("Uploading {} file(s)...", file_paths.len());
         let client = Self::init_client();
-        let arc_data_path = Arc::new(data_path);
-        let arc_sem = Arc::new(Semaphore::new(concurrency as isize));
+        let arc_data_path = Arc::new(data_path.to_string());
+        let upload_count = Arc::new(Mutex::new(0));
 
-        let children: Vec<JoinHandle<_>> = file_paths.iter().map( |file_path| {
+        let concurrency = cmp::min(file_paths.len(), max_concurrency as usize);
+
+        let rx = {
+            let (tx, rx) = chan::sync(concurrency);
+
+            // One Producer thread
+            thread::spawn(move || {
+                for path in file_paths {
+                    tx.send(path);
+                }
+            });
+            // Nested scope causes tx channel to close when the thread spawns complete
+            rx
+        };
+
+
+        // Consumers
+        let wg = chan::WaitGroup::new();
+        for _ in 0..concurrency {
+            wg.add(1);
             // Thread data
-            let client_clone = client.clone();
-            let data_path_clone = arc_data_path.to_string().clone();
-            let file_path_clone = file_path.clone();
-            println!("Uploading {}", file_path_clone);
+            let thread_client = client.clone();
+            let thread_data_path = arc_data_path.clone();
+            let thread_wg = wg.clone();
+            let thread_rx = rx.clone();
+            let thread_upload_count = upload_count.clone();
 
-            // Acquire semaphore before we start the thread
-            let child_sem = arc_sem.clone();
-            child_sem.acquire();
+            thread::spawn(move || {
+                // let c = thread_client.clone();
+                for rx_path in thread_rx {
+                    let my_dir = thread_client.clone().dir(&*thread_data_path);
+                    let ref dir = my_dir;
+                    match dir.put_file(&*rx_path) {
+                        Ok(file_added) => {
+                            println!("Uploaded {}", file_added.result);
+                            let mut count = thread_upload_count.lock().unwrap();
+                            *count += 1;
+                        },
+                        Err(e) => die!("Error uploading {}: {}", rx_path, e),
+                    };
+                }
+                thread_wg.done();
+            });
+        }
 
-            thread::spawn( move || {
-                let my_dir = client_clone.dir(&*data_path_clone);
-                let ref dir = my_dir;
-                match dir.put_file(&*file_path_clone) {
-                    Ok(file_added) => println!("Uploaded {}", file_added.result),
-                    Err(e) => die!("Error uploading {}: {}", file_path_clone, e),
-                };
-
-                // Release the semaphore
-                child_sem.release();
-            })
-        }).collect();
-
-        let _ = children.into_iter().map(|child_thread| { child_thread.join() }).collect::<Vec<_>>();
-        println!("Finished uploading {} file(s)", file_paths.len())
+        wg.wait();
+        println!("Finished uploading {} file(s)", *upload_count.lock().unwrap());
     }
 }
