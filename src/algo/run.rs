@@ -64,9 +64,9 @@ impl CmdRunner for Run {
 
         let (content_type, data) = match (args.flag_data, args.flag_data_file, args.flag_json, args.flag_json_file) {
             (Some(s), None, None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), s),
-            (None, Some(s), None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), read_to_string(&*s)),
+            (None, Some(s), None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), read_to_string(&s)),
             (None, None, Some(s), None) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), s),
-            (None, None, None, Some(s)) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), read_to_string(&*s)),
+            (None, None, None, Some(s)) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), read_to_string(&s)),
             _ => return die!("Must specify exactly one input data option\n{}", USAGE),
         };
 
@@ -108,7 +108,7 @@ impl Run {
 fn read_to_string(source: &str) -> String {
     match source {
         "-" => read_stdin_to_string(),
-        s => read_file_to_string(Path::new(&s[1..])),
+        s => read_file_to_string(Path::new(&s)),
     }
 }
 

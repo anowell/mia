@@ -20,5 +20,5 @@ function test_algo {
 test_algo run "kenny/Factor" -d 72
 
 echo '[{"a": {"b":1}}, "a", "b"]' > $DIR/graph.json
-test_algo run "anowell/dijkstra" -f $DIR/graph.json
+test_algo run "anowell/dijkstra" -J $DIR/graph.json
 rm $DIR/graph.json
