@@ -1,5 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
+use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 
 static USAGE: &'static str = "
@@ -17,23 +18,25 @@ struct Args {
     arg_remote: String,
 }
 
-pub struct Rm;
+pub struct Rm { client: Algorithmia }
 impl CmdRunner for Rm {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
 
-        Self::delete_file(&*args.arg_remote);
+        self.delete_file(&*args.arg_remote);
     }
 }
 
 impl Rm {
-    fn delete_file(path: &str) {
-        let my_file = Self::init_client().file(path);
+    pub fn new(client: Algorithmia) -> Self { Rm{ client:client } }
+
+    fn delete_file(&self, path: &str) {
+        let my_file = self.client.file(path);
         match my_file.delete() {
             Ok(_) => println!("Deleted file {}", my_file.to_data_uri()),
             Err(err) => die!("Error deleting file: {}", err),

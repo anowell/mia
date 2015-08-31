@@ -84,20 +84,26 @@ fn main() {
     run_cmd(&*cmd)
 }
 
-
-//https://www.reddit.com/r/rust/comments/3gtpy9/wrapping_around_generic_io/
-
 fn run_cmd(cmd: &str) {
-    match cmd {
-        "ls" => data::Ls::cmd_main(),
-        "mkdir" => data::MkDir::cmd_main(),
-        "rmdir" => data::RmDir::cmd_main(),
-        "rm" => data::Rm::cmd_main(),
-        "upload" => data::Upload::cmd_main(),
-        "download" => data::Download::cmd_main(),
-        "run" => algo::Run::cmd_main(),
-        _ => algo::Run::cmd_main(),
+    let client = match env::var("ALGORITHMIA_API_KEY") {
+        Ok(ref val) => Algorithmia::client(&**val),
+        Err(_) => die!("Must set ALGORITHMIA_API_KEY"),
     };
+
+    match cmd {
+        "ls" => run(data::Ls::new(client)),
+        "mkdir" => run(data::MkDir::new(client)),
+        "rmdir" => run(data::RmDir::new(client)),
+        "rm" => run(data::Rm::new(client)),
+        "upload" => run(data::Upload::new(client)),
+        "download" => run(data::Download::new(client)),
+        "run" => run(algo::Run::new(client)),
+        _ => run(algo::Run::new(client)),
+    };
+}
+
+fn run<T: CmdRunner>(runner: T) {
+  runner.cmd_main();
 }
 
 fn print_cmd_usage(cmd: &str) -> ! {
@@ -115,16 +121,8 @@ fn print_cmd_usage(cmd: &str) -> ! {
 
 
 trait CmdRunner {
-    fn cmd_main();
+    fn cmd_main(&self);
     fn get_usage() -> &'static str;
 
     fn print_usage() -> ! { die!("{}", Self::get_usage()) }
-
-    fn init_client() -> Algorithmia {
-        match env::var("ALGORITHMIA_API_KEY") {
-            Ok(ref val) => Algorithmia::client(&**val),
-            Err(_) => die!("Must set ALGORITHMIA_API_KEY"),
-        }
-    }
-
 }

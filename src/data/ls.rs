@@ -1,6 +1,7 @@
 use super::super::{data, CmdRunner};
 use docopt::Docopt;
 use std::cmp;
+use algorithmia::Algorithmia;
 use algorithmia::data::{DirEntry, HasDataPath};
 
 static USAGE: &'static str = "
@@ -24,22 +25,26 @@ struct Args {
     flag_l: bool,
 }
 
-pub struct Ls;
+pub struct Ls { client: Algorithmia }
+
 impl CmdRunner for Ls {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        Self::list_dir(&*args.arg_remote.unwrap_or("data://".into()), args.flag_l);
+        self.list_dir(&*args.arg_remote.unwrap_or("data://".into()), args.flag_l);
     }
 }
 
 impl Ls {
-    fn list_dir(path: &str, long: bool) {
-        let my_dir = Self::init_client().dir(path);
+    pub fn new(client: Algorithmia) -> Self { Ls{ client:client } }
+
+    fn list_dir(&self, path: &str, long: bool) {
+        let ref c = self.client;
+        let my_dir = c.dir(path);
 
         if long {
             for entry_result in my_dir.list() {

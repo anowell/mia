@@ -1,4 +1,5 @@
 use super::super::CmdRunner;
+use algorithmia::Algorithmia;
 use docopt::Docopt;
 use chan;
 use std::thread;
@@ -22,48 +23,50 @@ struct Args {
     flag_c: u32,
 }
 
-pub struct Upload;
+pub struct Upload { client: Algorithmia }
 impl CmdRunner for Upload {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        Self::upload_files(&*args.arg_remote, args.arg_local, args.flag_c);
+        self.upload_files(&*args.arg_remote, args.arg_local, args.flag_c);
     }
 }
 
 impl Upload {
-    fn upload_files(data_path: &str, file_paths: Vec<String>, max_concurrency: u32) {
+    pub fn new(client: Algorithmia) -> Self { Upload{ client:client } }
+
+    fn upload_files(&self, data_path: &str, file_paths: Vec<String>, max_concurrency: u32) {
         println!("Uploading {} file(s)...", file_paths.len());
-        let client = Self::init_client();
         let arc_data_path = Arc::new(data_path.to_string());
         let upload_count = Arc::new(Mutex::new(0));
 
+        // We can do this for now, but
         let concurrency = cmp::min(file_paths.len(), max_concurrency as usize);
 
+        // Nested scope causes tx channel to close when the thread spawns complete
         let rx = {
             let (tx, rx) = chan::sync(concurrency);
 
-            // One Producer thread
+            // One Producer thread queuing up file paths to upload
             thread::spawn(move || {
                 for path in file_paths {
                     tx.send(path);
                 }
             });
-            // Nested scope causes tx channel to close when the thread spawns complete
             rx
         };
 
 
-        // Consumers
+        // Consumers that
         let wg = chan::WaitGroup::new();
         for _ in 0..concurrency {
             wg.add(1);
             // Thread data
-            let thread_client = client.clone();
+            let thread_client = self.client.clone();
             let thread_data_path = arc_data_path.clone();
             let thread_wg = wg.clone();
             let thread_rx = rx.clone();

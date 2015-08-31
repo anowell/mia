@@ -1,5 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
+use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 
 static USAGE: &'static str = "
@@ -17,23 +18,25 @@ struct Args {
     arg_remote: String,
 }
 
-pub struct MkDir;
+pub struct MkDir { client: Algorithmia }
 impl CmdRunner for MkDir {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        Self::create_dir(&*args.arg_remote);
+        self.create_dir(&*args.arg_remote);
     }
 
 }
 
 impl MkDir {
-    fn create_dir(path: &str) {
-        let my_dir = Self::init_client().dir(path);
+    pub fn new(client: Algorithmia) -> Self { MkDir{ client:client } }
+
+    fn create_dir(&self, path: &str) {
+        let my_dir = self.client.dir(path);
         match my_dir.create() {
             Ok(_) => println!("Created directory: {}", my_dir.to_data_uri()),
             Err(err) => die!("Error creating directory: {}", err),

@@ -1,5 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
+use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 
 static USAGE: &'static str = "
@@ -19,22 +20,24 @@ struct Args {
     flag_force: bool,
 }
 
-pub struct RmDir;
+pub struct RmDir { client: Algorithmia }
 impl CmdRunner for RmDir {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
-        Self::delete_dir(&*args.arg_remote, args.flag_force);
+        self.delete_dir(&*args.arg_remote, args.flag_force);
     }
 }
 
 impl RmDir {
-    fn delete_dir(path: &str, force: bool) {
-        let my_dir = Self::init_client().dir(path);
+    pub fn new(client: Algorithmia) -> Self { RmDir{ client:client } }
+
+    fn delete_dir(&self, path: &str, force: bool) {
+        let my_dir = self.client.dir(path);
         match my_dir.delete(force) {
             Ok(_) => println!("Deleted directory {}", my_dir.to_data_uri()),
             // TODO: Improve error message when delete failed for lack of --force

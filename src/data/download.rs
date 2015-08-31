@@ -1,4 +1,5 @@
 use super::super::{data, CmdRunner};
+use algorithmia::Algorithmia;
 use algorithmia::data::{DataFile, DataType, HasDataPath};
 use docopt::Docopt;
 
@@ -25,26 +26,27 @@ struct Args {
     arg_local: Option<String>,
 }
 
-pub struct Download;
+pub struct Download { client: Algorithmia }
 impl CmdRunner for Download {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
 
         match args.arg_local {
-            Some(l) => Self::download(&*args.arg_remote, &*l),
-            None => Self::download(&*args.arg_remote, ".")
+            Some(l) => self.download(&*args.arg_remote, &*l),
+            None => self.download(&*args.arg_remote, ".")
         };
     }
 }
 
 impl Download {
-    fn download(remote_path: &str, local_path: &str) {
-        let client = Self::init_client();
-        let data_object = &client.clone().data(remote_path);
+    pub fn new(client: Algorithmia) -> Self { Download{ client:client } }
+
+    fn download(&self, remote_path: &str, local_path: &str) {
+        let data_object = &self.client.data(remote_path);
 
         match data_object.get_type() {
             Ok(DataType::Dir) => die!("Downloading directories not yet implemented"), //download_dir(data_object.into(), local_path),

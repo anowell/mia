@@ -5,6 +5,7 @@ use rustc_serialize::json::Json;
 use std::io::{self, Read};
 use std::fs::File;
 use std::path::Path;
+use algorithmia::Algorithmia;
 use algorithmia::mime::*;
 use algorithmia::error::Error::ApiError;
 
@@ -47,11 +48,11 @@ struct Args {
     flag_raw: bool,
 }
 
-pub struct Run;
+pub struct Run { client: Algorithmia }
 impl CmdRunner for Run {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main() {
+    fn cmd_main(&self) {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.decode())
             .unwrap_or_else(|e| e.exit());
@@ -63,13 +64,13 @@ impl CmdRunner for Run {
 
         let (content_type, data) = match (args.flag_data, args.flag_data_file, args.flag_json, args.flag_json_file) {
             (Some(s), None, None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), s),
-            (None, Some(s), None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), Self::read_to_string(&*s)),
+            (None, Some(s), None, None) => (Mime(TopLevel::Text, SubLevel::Plain, vec![]), read_to_string(&*s)),
             (None, None, Some(s), None) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), s),
-            (None, None, None, Some(s)) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), Self::read_to_string(&*s)),
+            (None, None, None, Some(s)) => (Mime(TopLevel::Application, SubLevel::Json, vec![]), read_to_string(&*s)),
             _ => return die!("Must specify exactly one input data option\n{}", USAGE),
         };
 
-        let response = Self::run_algorithm(&*algo, &*data, content_type);
+        let response = self.run_algorithm(&*algo, &*data, content_type);
 
         match args.flag_raw {
             true => println!("{}", response),
@@ -88,8 +89,9 @@ impl CmdRunner for Run {
 }
 
 impl Run {
-    fn run_algorithm(algo: &str, input_data: &str, content_type: Mime) -> String{
-        let algorithm = Self::init_client().algo_from_str(algo);
+    pub fn new(client: Algorithmia) -> Self { Run{ client:client } }
+    fn run_algorithm(&self, algo: &str, input_data: &str, content_type: Mime) -> String{
+        let algorithm = self.client.algo_from_str(algo);
 
         // Execute the algorithm
         match algorithm.pipe_raw(input_data, content_type) {
@@ -101,35 +103,35 @@ impl Run {
             Err(err) => die!("Error calling algorithm: {}", err),
         }
     }
+}
 
-    fn read_to_string(source: &str) -> String {
-        match source {
-            "-" => Self::read_stdin_to_string(),
-            s => Self::read_file_to_string(Path::new(&s[1..])),
-        }
+fn read_to_string(source: &str) -> String {
+    match source {
+        "-" => read_stdin_to_string(),
+        s => read_file_to_string(Path::new(&s[1..])),
     }
+}
 
-    fn read_stdin_to_string() -> String {
-        let mut buf = String::new();
-        match io::stdin().read_to_string(&mut buf) {
-            Ok(0) => die!("Error: reading STDIN: Read 0 bytes"),
-            Ok(_) => buf,
-            Err(err) => die!("Error reading STDIN: {}", err),
-        }
+fn read_stdin_to_string() -> String {
+    let mut buf = String::new();
+    match io::stdin().read_to_string(&mut buf) {
+        Ok(0) => die!("Error: reading STDIN: Read 0 bytes"),
+        Ok(_) => buf,
+        Err(err) => die!("Error reading STDIN: {}", err),
     }
+}
 
-    fn read_file_to_string(path: &Path) -> String {
-        let display = path.display();
-        let mut file = match File::open(&path) {
-            Err(err) => die!("Error opening {}: {}", display, err),
-            Ok(file) => file,
-        };
+fn read_file_to_string(path: &Path) -> String {
+    let display = path.display();
+    let mut file = match File::open(&path) {
+        Err(err) => die!("Error opening {}: {}", display, err),
+        Ok(file) => file,
+    };
 
-        let mut data = String::new();
-        match file.read_to_string(&mut data) {
-            Err(err) => die!("Error reading {}: {}", display, err),
-            Ok(s) => s,
-        };
-        data
-    }
+    let mut data = String::new();
+    match file.read_to_string(&mut data) {
+        Err(err) => die!("Error reading {}: {}", display, err),
+        Ok(s) => s,
+    };
+    data
 }
