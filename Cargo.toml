@@ -8,6 +8,7 @@ authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 docopt = "*"
 rustc-serialize = "*"
 chan = "*"
+toml = "*"
 
 [dependencies.algorithmia]
 version = "*"

@@ -2,9 +2,11 @@ extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
 extern crate rustc_serialize;
+extern crate toml;
 
 use algorithmia::Algorithmia;
 use std::env;
+use toml::Value;
 
 macro_rules! die {
     ($fmt:expr) => ({
@@ -19,14 +21,17 @@ macro_rules! die {
 
 mod data;
 mod algo;
+mod auth;
 
 static USAGE: &'static str = "
 CLI for interacting with Algorithmia
 
 Usage:
-  algo [cmd] [options] [<args>...]
-  algo [cmd] [--help]
+  algo [<cmd>] [options] [<args>...]
+  algo [<cmd>] [--help]
 
+General commands include:
+  auth      Configure authentication
 
 Algorithm commands include:
   run       Runs an algorithm
@@ -42,8 +47,6 @@ Data commands include
 
 /* TODO: Add support for:
 
-General commands include:
-  auth    Configure authentication
 Note: Add Option [--profile <profile>]
 
 Algorithm commands include:
@@ -84,13 +87,38 @@ fn main() {
     run_cmd(&*cmd)
 }
 
-fn run_cmd(cmd: &str) {
-    let client = match env::var("ALGORITHMIA_API_KEY") {
-        Ok(ref val) => Algorithmia::client(&**val),
-        Err(_) => die!("Must set ALGORITHMIA_API_KEY"),
-    };
+pub fn get_config_path() -> String {
+    if cfg!(windows) {
+        format!("{}/algorithmia", env::var("LOCALAPPDATA").unwrap())
+    } else {
+        format!("{}/.algorithmia", env::var("HOME").unwrap())
+    }
+}
 
+fn init_client(profile: &str) -> Algorithmia {
+    match auth::Auth::read_profile(profile.into()) {
+
+        // Use the simple_key profile attribute
+        Some(p) => match p.get("simple_key") {
+            Some(&Value::String(ref key)) => Algorithmia::client(&key),
+            _ => die!("{} profile has missing or invalid 'simple_key'", profile),
+        },
+
+        // Fall-back to env var in case of default profile
+        None => match profile {
+            "default" => match env::var("ALGORITHMIA_API_KEY") {
+                Ok(ref val) => Algorithmia::client(&**val),
+                Err(_) => die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"),
+            },
+            _ => die!("{} profile not found. Run 'algo auth {0}'", profile),
+        }
+    }
+}
+
+fn run_cmd(cmd: &str) {
+    let client = init_client("default");
     match cmd {
+        "auth" => run(auth::Auth::new()),
         "ls" => run(data::Ls::new(client)),
         "mkdir" => run(data::MkDir::new(client)),
         "rmdir" => run(data::RmDir::new(client)),
@@ -103,11 +131,12 @@ fn run_cmd(cmd: &str) {
 }
 
 fn run<T: CmdRunner>(runner: T) {
-  runner.cmd_main();
+    runner.cmd_main();
 }
 
 fn print_cmd_usage(cmd: &str) -> ! {
     match cmd {
+        "auth" => auth::Auth::print_usage(),
         "ls" => data::Ls::print_usage(),
         "mkdir" => data::MkDir::print_usage(),
         "rmdir" => data::RmDir::print_usage(),
