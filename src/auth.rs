@@ -61,7 +61,7 @@ impl Auth {
 
             match profile_name {
                 "default" => println!("Profile is ready to use. Test with 'auth ls'"),
-                p => println!("Profile is ready to use. Test with 'auth ls --profile {}", p),
+                p => println!("Profile is ready to use. Test with 'algo ls --profile {}", p),
             };
         } else {
             println!("That API Key doesn't look quite right. No changes made to '{}' profile.", profile_name);

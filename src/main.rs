@@ -116,17 +116,21 @@ fn init_client(profile: &str) -> Algorithmia {
 }
 
 fn run_cmd(cmd: &str) {
-    let client = init_client("default");
     match cmd {
         "auth" => run(auth::Auth::new()),
-        "ls" => run(data::Ls::new(client)),
-        "mkdir" => run(data::MkDir::new(client)),
-        "rmdir" => run(data::RmDir::new(client)),
-        "rm" => run(data::Rm::new(client)),
-        "upload" => run(data::Upload::new(client)),
-        "download" => run(data::Download::new(client)),
-        "run" => run(algo::Run::new(client)),
-        _ => run(algo::Run::new(client)),
+        _ => {
+            let client = init_client("default");
+            match cmd {
+                "ls" => run(data::Ls::new(client)),
+                "mkdir" => run(data::MkDir::new(client)),
+                "rmdir" => run(data::RmDir::new(client)),
+                "rm" => run(data::Rm::new(client)),
+                "upload" => run(data::Upload::new(client)),
+                "download" => run(data::Download::new(client)),
+                "run" => run(algo::Run::new(client)),
+                _ => run(algo::Run::new(client)),
+            }
+        },
     };
 }
 
