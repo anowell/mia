@@ -1,3 +1,5 @@
+extern crate rpassword;
+
 use super::{CmdRunner, get_config_path};
 use docopt::Docopt;
 use std::fs::File;
@@ -48,10 +50,7 @@ impl Auth {
         print!("Enter API Key (prefixed with 'sim'): ");
         let _ = io::stdout().flush();
 
-        let mut input = String::new();
-        let _ = io::stdin().read_line(&mut input);
-
-        let api_key = input.trim();
+        let api_key = rpassword::read_password().unwrap();
         if api_key.len() == 28 && api_key.starts_with("sim") {
             let mut config = Self::read_config().unwrap_or(Table::new());
             let profile = Self::make_profile(api_key.into());

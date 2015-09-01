@@ -9,6 +9,7 @@ docopt = "*"
 rustc-serialize = "*"
 chan = "*"
 toml = "*"
+rpassword = "*"
 
 [dependencies.algorithmia]
 version = "*"
