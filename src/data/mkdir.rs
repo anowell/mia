@@ -2,6 +2,7 @@ use super::super::CmdRunner;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
+use std::vec::IntoIter;
 
 static USAGE: &'static str = "
 Usage:
@@ -22,9 +23,9 @@ pub struct MkDir { client: Algorithmia }
 impl CmdRunner for MkDir {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main(&self) {
+    fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
-            .and_then(|d| d.decode())
+            .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
         self.create_dir(&*args.arg_remote);

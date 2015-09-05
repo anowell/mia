@@ -5,6 +5,7 @@ use chan;
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::cmp;
+use std::vec::IntoIter;
 
 
 static USAGE: &'static str = "
@@ -27,9 +28,9 @@ pub struct Upload { client: Algorithmia }
 impl CmdRunner for Upload {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main(&self) {
+    fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
-            .and_then(|d| d.decode())
+            .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
         self.upload_files(&*args.arg_remote, args.arg_local, args.flag_c);

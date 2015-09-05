@@ -4,8 +4,9 @@ extern crate docopt;
 extern crate rustc_serialize;
 extern crate toml;
 
-use algorithmia::Algorithmia;
+use algorithmia::{Algorithmia, Url};
 use std::env;
+use std::vec::IntoIter;
 use toml::Value;
 
 macro_rules! die {
@@ -73,18 +74,29 @@ struct MainArgs {
 
 fn main() {
     let mut args = env::args().peekable();
-    args.next(); // drop program arg
+    let mut cmd_args: Vec<String> = Vec::new();
+    let mut profile = "default".to_string();
 
-    let cmd = args.peek().unwrap_or_else(|| { print_usage() }).clone();
-
-    // Search for --help flag
+    // Search for global options, push everything else onto cmd_args
     while let Some(arg) = args.next() {
-        if &*arg == "--help" {
-            print_cmd_usage(&*cmd)
+        match &*arg {
+            "--help" => {
+                // grab one more arg in-case --help preceded <cmd>
+                cmd_args.push(args.next().unwrap_or_default());
+                print_cmd_usage(cmd_args.get(1));
+            },
+            "--profile" => {
+                profile = args.next().unwrap_or(profile.to_string())
+            },
+            _ => cmd_args.push(arg),
         }
     };
 
-    run_cmd(&*cmd)
+    if cmd_args.len() < 2 {
+        print_cmd_usage(None);
+    } else {
+        run(cmd_args, &*profile);
+    }
 }
 
 pub fn get_config_path() -> String {
@@ -98,16 +110,24 @@ pub fn get_config_path() -> String {
 fn init_client(profile: &str) -> Algorithmia {
     match auth::Auth::read_profile(profile.into()) {
 
-        // Use the simple_key profile attribute
-        Some(p) => match p.get("simple_key") {
-            Some(&Value::String(ref key)) => Algorithmia::client(&key),
-            _ => die!("{} profile has missing or invalid 'simple_key'", profile),
+        // Use the profile attribute(s)
+        Some(p) => match p.get("api_key") {
+            Some(&Value::String(ref key)) => match p.get("api_server") {
+                Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), &key),
+                None => Algorithmia::client(&key),
+                _ => die!("{} profile has invalid 'api_server'", profile),
+            },
+            _ => die!("{} profile has missing or invalid 'api_key'", profile),
         },
 
-        // Fall-back to env var in case of default profile
+        // Fall-back to env var (but only if profile was not specified)
         None => match profile {
             "default" => match env::var("ALGORITHMIA_API_KEY") {
-                Ok(ref val) => Algorithmia::client(&**val),
+                Ok(ref key) => match env::var("ALGORITHMIA_API") {
+                    Ok(ref api) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), &**key),
+                    Err(_) => Algorithmia::client(&**key),
+                    _ => die!("Invalid ALGORITHMIA_API environment variable"),
+                },
                 Err(_) => die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"),
             },
             _ => die!("{} profile not found. Run 'algo auth {0}'", profile),
@@ -115,31 +135,33 @@ fn init_client(profile: &str) -> Algorithmia {
     }
 }
 
-fn run_cmd(cmd: &str) {
-    match cmd {
-        "auth" => run(auth::Auth::new()),
+fn run(args: Vec<String>, profile: &str) {
+    let cmd = match args.get(1) {
+        Some(c) => c.clone(),
+        _ => "run".into(),
+    };
+
+    let args_iter = args.into_iter();
+    match &*cmd {
+        "auth" => auth::Auth::new().cmd_main(args_iter),
         _ => {
-            let client = init_client("default");
-            match cmd {
-                "ls" => run(data::Ls::new(client)),
-                "mkdir" => run(data::MkDir::new(client)),
-                "rmdir" => run(data::RmDir::new(client)),
-                "rm" => run(data::Rm::new(client)),
-                "upload" => run(data::Upload::new(client)),
-                "download" => run(data::Download::new(client)),
-                "run" => run(algo::Run::new(client)),
-                _ => run(algo::Run::new(client)),
+            let client = init_client(profile);
+            match &*cmd {
+                "ls" => data::Ls::new(client).cmd_main(args_iter),
+                "mkdir" => data::MkDir::new(client).cmd_main(args_iter),
+                "rmdir" => data::RmDir::new(client).cmd_main(args_iter),
+                "rm" => data::Rm::new(client).cmd_main(args_iter),
+                "upload" => data::Upload::new(client).cmd_main(args_iter),
+                "download" => data::Download::new(client).cmd_main(args_iter),
+                "run" => algo::Run::new(client).cmd_main(args_iter),
+                _ => algo::Run::new(client).cmd_main(args_iter),
             }
         },
     };
 }
 
-fn run<T: CmdRunner>(runner: T) {
-    runner.cmd_main();
-}
-
-fn print_cmd_usage(cmd: &str) -> ! {
-    match cmd {
+fn print_cmd_usage(cmd: Option<&String>) -> ! {
+    match &**cmd.unwrap_or(&Default::default()) {
         "auth" => auth::Auth::print_usage(),
         "ls" => data::Ls::print_usage(),
         "mkdir" => data::MkDir::print_usage(),
@@ -154,7 +176,7 @@ fn print_cmd_usage(cmd: &str) -> ! {
 
 
 trait CmdRunner {
-    fn cmd_main(&self);
+    fn cmd_main(&self, argv: IntoIter<String>);
     fn get_usage() -> &'static str;
 
     fn print_usage() -> ! { die!("{}", Self::get_usage()) }

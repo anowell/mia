@@ -4,6 +4,7 @@ use super::{CmdRunner, get_config_path};
 use docopt::Docopt;
 use std::fs::File;
 use std::io::{self, Read, Write};
+use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
 
 static USAGE: &'static str = r#"
@@ -32,9 +33,9 @@ pub struct Auth { _priv: () }
 impl CmdRunner for Auth {
     fn get_usage() -> &'static str { USAGE }
 
-    fn cmd_main(&self) {
+    fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
-            .and_then(|d| d.decode())
+            .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
         Auth::prompt_for_auth(&args.arg_profile.unwrap_or("default".into()));
@@ -70,7 +71,7 @@ impl Auth {
 
     fn make_profile(api_key: String) -> Table {
         let mut profile = Table::new();
-        profile.insert("simple_key".into(), Value::String(api_key));
+        profile.insert("api_key".into(), Value::String(api_key));
         profile
     }
 
