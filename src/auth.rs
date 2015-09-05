@@ -1,11 +1,13 @@
+
 extern crate rpassword;
 
 use super::{CmdRunner, get_config_path};
 use docopt::Docopt;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
+use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r#"
 Usage:
@@ -107,12 +109,16 @@ impl Auth {
 
         let output = toml::encode_str(&Value::Table(config));
 
-        let _ = match File::create(&conf_path) {
+        let file = if cfg!(windows) {
+            File::create(&conf_path)
+        } else {
+            OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
+        };
+
+        let _ = match file {
             Ok(mut f) => f.write_all(output.as_bytes()),
             Err(e) => die!("Unable to write config file: {}", e),
         };
-
-        // TODO: ACL 0600 on Linux/Unix
     }
 
     fn update_profile(config: &mut Table, name: String, value: Table) {
