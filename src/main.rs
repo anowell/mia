@@ -38,12 +38,16 @@ Algorithm commands include:
   run       Runs an algorithm
 
 Data commands include
-  ls        List contents of a collection
-  mkdir     Create a collection
-  rmdir     Delete a collection
-  rm        Remove a file from a collection
-  upload    Upload file(s) to a collection
-  download  Download file(s) from a collection
+  ls        List contents of a data directory
+  mkdir     Create a data directory
+  rmdir     Delete a data directory
+  rm        Remove a file from a data directory
+  cp        Copy file(s) to or from a data directory
+  cat       Concatenate and print file(s) in a data directory
+
+Global options:
+  --help                Prints the help for a particular command
+  --profile <name>      Run a particular command for the specified profile
 ";
 
 /* TODO: Add support for:
@@ -151,8 +155,8 @@ fn run(args: Vec<String>, profile: &str) {
                 "mkdir" => data::MkDir::new(client).cmd_main(args_iter),
                 "rmdir" => data::RmDir::new(client).cmd_main(args_iter),
                 "rm" => data::Rm::new(client).cmd_main(args_iter),
-                "upload" => data::Upload::new(client).cmd_main(args_iter),
-                "download" => data::Download::new(client).cmd_main(args_iter),
+                "cp" => data::Cp::new(client).cmd_main(args_iter),
+                "cat" => data::Cat::new(client).cmd_main(args_iter),
                 "run" => algo::Run::new(client).cmd_main(args_iter),
                 _ => algo::Run::new(client).cmd_main(args_iter),
             }
@@ -167,8 +171,8 @@ fn print_cmd_usage(cmd: Option<&String>) -> ! {
         "mkdir" => data::MkDir::print_usage(),
         "rmdir" => data::RmDir::print_usage(),
         "rm" => data::Rm::print_usage(),
-        "upload" => data::Upload::print_usage(),
-        "download" => data::Download::print_usage(),
+        "cp" => data::Cp::print_usage(),
+        "cat" => data::Cat::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };

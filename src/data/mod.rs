@@ -2,13 +2,15 @@ pub use self::ls::Ls;
 pub use self::mkdir::MkDir;
 pub use self::rmdir::RmDir;
 pub use self::rm::Rm;
+pub use self::cp::Cp;
 pub use self::upload::Upload;
-pub use self::download::Download;
+pub use self::cat::Cat;
 
 mod ls;
 mod mkdir;
+mod cp;
 mod upload;
-mod download;
+mod cat;
 mod rm;
 mod rmdir;
 
