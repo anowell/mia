@@ -151,11 +151,11 @@ fn run(args: Vec<String>, profile: &str) {
         _ => {
             let client = init_client(profile);
             match &*cmd {
-                "ls" => data::Ls::new(client).cmd_main(args_iter),
+                "ls" | "dir" => data::Ls::new(client).cmd_main(args_iter),
                 "mkdir" => data::MkDir::new(client).cmd_main(args_iter),
                 "rmdir" => data::RmDir::new(client).cmd_main(args_iter),
                 "rm" => data::Rm::new(client).cmd_main(args_iter),
-                "cp" => data::Cp::new(client).cmd_main(args_iter),
+                "cp" | "copy" => data::Cp::new(client).cmd_main(args_iter),
                 "cat" => data::Cat::new(client).cmd_main(args_iter),
                 "run" => algo::Run::new(client).cmd_main(args_iter),
                 _ => algo::Run::new(client).cmd_main(args_iter),
@@ -167,11 +167,11 @@ fn run(args: Vec<String>, profile: &str) {
 fn print_cmd_usage(cmd: Option<&String>) -> ! {
     match &**cmd.unwrap_or(&Default::default()) {
         "auth" => auth::Auth::print_usage(),
-        "ls" => data::Ls::print_usage(),
+        "ls" | "dir" => data::Ls::print_usage(),
         "mkdir" => data::MkDir::print_usage(),
         "rmdir" => data::RmDir::print_usage(),
         "rm" => data::Rm::print_usage(),
-        "cp" => data::Cp::print_usage(),
+        "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),

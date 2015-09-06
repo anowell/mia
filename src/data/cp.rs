@@ -11,7 +11,9 @@ use std::vec::IntoIter;
 use super::size_with_suffix;
 
 static USAGE: &'static str = "
-Usage: algo cp [options] <source>... <dest>
+Usage:
+  algo cp [options] <source>... <dest>
+  algo copy [options] <source>... <dest>
 
   Copy files to or from the Algorithmia Data API
 
@@ -21,6 +23,7 @@ Usage: algo cp [options] <source>... <dest>
    -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
 ";
 
+// TODO:
 // -r                   Recursive copy if the source is a directory
 
 #[derive(RustcDecodable, Debug)]
@@ -128,6 +131,8 @@ impl CpClient {
         wg.wait();
         println!("Finished uploading {} file(s)", *completed.lock().unwrap());
     }
+
+
 
     fn download(&self, sources: Vec<String>)  {
         // As long as we aren't recursing, we can be more aggressive in limiting threads we spin up

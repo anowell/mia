@@ -8,6 +8,7 @@ use std::vec::IntoIter;
 static USAGE: &'static str = "
 Usage:
   algo ls [options] [<remote>]
+  algo dir [options] [<remote>]
 
   List contents of a directory via the Agorithmia Data API
 
