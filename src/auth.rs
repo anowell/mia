@@ -7,6 +7,8 @@ use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
+
+#[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r#"
@@ -105,17 +107,9 @@ impl Auth {
     }
 
     fn write_config(config: Table) {
-        let conf_path = get_config_path();
-
         let output = toml::encode_str(&Value::Table(config));
 
-        let file = if cfg!(windows) {
-            File::create(&conf_path)
-        } else {
-            OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
-        };
-
-        let _ = match file {
+        let _ = match open_config_for_writing() {
             Ok(mut f) => f.write_all(output.as_bytes()),
             Err(e) => die!("Unable to write config file: {}", e),
         };
@@ -137,4 +131,16 @@ impl Auth {
         }
     }
 
+}
+
+#[cfg(windows)]
+fn open_writable_config() -> Result<File, io::Error> {
+    let conf_path = get_config_path();
+    File::create(&conf_path)
+}
+
+#[cfg(unix)]
+fn open_config_for_writing() -> Result<File, io::Error> {
+    let conf_path = get_config_path();
+    OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
 }
