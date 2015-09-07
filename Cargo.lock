@@ -1,6 +1,6 @@
 [root]
 name = "algo"
-version = "0.9.0"
+version = "1.0.0-beta.1"
 dependencies = [
  "algorithmia 0.6.0 (git+https://github.com/anowell/algorithmia_rust.git)",
  "chan 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
