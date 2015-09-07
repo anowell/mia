@@ -8,7 +8,7 @@ use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
 
-#[cfg(unix)] use std::os::OpenOptions;
+#[cfg(unix)] use std::fs::OpenOptions;
 #[cfg(unix)] use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r#"
