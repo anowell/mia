@@ -3,13 +3,13 @@ extern crate rpassword;
 
 use super::{CmdRunner, get_config_path};
 use docopt::Docopt;
-use std::fs::{File, OpenOptions};
+use std::fs::File;
 use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
 
-#[cfg(unix)]
-use std::os::unix::fs::OpenOptionsExt;
+#[cfg(unix)] use std::os::OpenOptions;
+#[cfg(unix)] use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r#"
 Usage:
@@ -55,7 +55,10 @@ impl Auth {
         print!("Enter API Key (prefixed with 'sim'): ");
         let _ = io::stdout().flush();
 
-        let api_key = rpassword::read_password().unwrap();
+        let api_key = match rpassword::read_password() {
+            Ok(key) => key,
+            Err(err) => die!("Cannot read password: {}", err),
+        };
         if api_key.len() == 28 && api_key.starts_with("sim") {
             let mut config = Self::read_config().unwrap_or(Table::new());
             let profile = Self::make_profile(api_key.into());
@@ -109,7 +112,7 @@ impl Auth {
     fn write_config(config: Table) {
         let output = toml::encode_str(&Value::Table(config));
 
-        let _ = match open_config_for_writing() {
+        let _ = match open_writable_config() {
             Ok(mut f) => f.write_all(output.as_bytes()),
             Err(e) => die!("Unable to write config file: {}", e),
         };
@@ -133,14 +136,14 @@ impl Auth {
 
 }
 
-#[cfg(windows)]
+#[cfg(not(unix))]
 fn open_writable_config() -> Result<File, io::Error> {
     let conf_path = get_config_path();
     File::create(&conf_path)
 }
 
 #[cfg(unix)]
-fn open_config_for_writing() -> Result<File, io::Error> {
+fn open_writable_config() -> Result<File, io::Error> {
     let conf_path = get_config_path();
     OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
 }
