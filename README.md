@@ -5,65 +5,66 @@ Cross-platform CLI for Algorithmia algorithms and data API.
 
 [![Build Status](https://travis-ci.org/algorithmiaio/algorithmia-cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia-cli)
 
-UPDATE: The installers below are a deprecated as they rely on deprecated APIs (and deprecated auth).
-The APIs have been updated and much new functionality has been added. The [new release should drop soon](../../milestones/v1.0.0).
-Until then, you are welcome to experiment by building master with a nightly build of rust (and cargo).
 
 ## Install
 
-Latest release tarballs are available [here](https://github.com/algorithmiaio/algorithmia-cli/releases) - and simply contain the binary `algo`.
+Latest release can be found [here](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
 
 **Debian/Ubuntu**
 
 A `.deb` package is available for installation with `dpkg`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.7.0/algorithmia_0.7.0_amd64.deb | sudo dpkg -i
+    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_1.0.0-beta.1_amd64.deb | sudo dpkg -i
 
 **Arch**
 
-Arch packages available on the AUR as [algorithmia-bin](https://aur.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur.archlinux.org/packages/algorithmia-git/), e.g., using `aura` helper.
+Arch packages available on the AUR as [algorithmia-bin](https://aur4.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur4.archlinux.org/packages/algorithmia-git/), e.g., using `aura` helper:
 
-    # Install from source (requires rust)
-    aura -A algorithmia-git
-
-    # Install precompiled binary
     aura -A algorithmia-bin
 
 **OSX**
 
 Simply download and extract the OSX tarball - recommend putting it within your `PATH`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v0.7.0/algo-osx.tar | tar -x
+    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_osx.tar.gz | tar -xz
+    sudo mv algo /usr/local/bin/
 
-**Windows**
+**Windows (64-bit)**
 
-Coming soon - need to setup a Windows build environment...
+Install OpenSSL for Windows from [https://slproweb.com/products/Win32OpenSSL.html]
+
+Download and extract the Windows zip file - recommend putting it within your `PATH`
+
+    https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_win64.zip
 
 
 ## Usage
 
+Configure auth:
+
+    $ algo auth
+    Configuring authentication for 'default' profile
+    Enter API Key (prefixed with 'sim'):
+    Profile is ready to use. Test with 'auth ls'
+
 Execute Algorithmia algorithms:
 
-    $ export ALGORITHMIA_API_KEY=111112222233333444445555566
-    $ algo run kenny/Factor -d 19635
-    {"duration":0.47086329,"result":[3,5,7,11,17]}
+    $ algo run kenny/factor -d 19635 --raw
+    {"result":[3,5,7,11,17],"metadata":{"content_type":"json","duration":0.001427314}}
 
 Interact with the Algorithmia Data API:
 
-    $ algo create anowell/foo create
-    Created collection anowell/foo
+    $ algo create .my/foo create
+    Created directory data://.my/foo
 
-    $ algo upload anowell/foo *.png
-    Uploaded /home/anowell/Pictures/collections.png
-    Uploaded /home/anowell/Pictures/notif-basic.png
-    Uploaded /home/anowell/Pictures/publish_menu.png
+    $ algo cp *.png data://.my/foo
+    Uploaded data://.my/foo/collections.png
+    Uploaded data://.my/foo/notif-basic.png
+    Uploaded data://.my/foo/publish_menu.png
     Finished uploading 3 file(s)
 
-    $ algo ls anowell/foo
-    anowell/foo - 3 files
-    collections.png
-    notif-basic.png
-    publish_menu.png
+    $ algo ls .my/foo
+    collections.png  notif-basic.png  publish_menu.png
 
 Run `algo --help` for additional usage help.
 
