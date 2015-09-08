@@ -67,7 +67,7 @@ impl Auth {
             Self::write_config(config);
 
             match profile_name {
-                "default" => println!("Profile is ready to use. Test with 'auth ls'"),
+                "default" => println!("Profile is ready to use. Test with 'algo ls'"),
                 p => println!("Profile is ready to use. Test with 'algo ls --profile {}", p),
             };
         } else {
