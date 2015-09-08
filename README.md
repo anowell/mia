@@ -58,7 +58,7 @@ Execute Algorithmia algorithms:
 
 Interact with the Algorithmia Data API:
 
-    $ algo create .my/foo create
+    $ algo mkdir .my/foo
     Created directory data://.my/foo
 
     $ algo cp *.png data://.my/foo
