@@ -6,17 +6,17 @@ use std::vec::IntoIter;
 
 static USAGE: &'static str = "
 Usage:
-  algo rm <remote>
+  algo rm <data-file>
 
   Removes a file from the Agorithmia Data API
 
-  <remote>      Specifies the Algorithmia Data URI
-                The 'data://' prefix is optional
+  <data-file>       Specifies the Algorithmia Data URI
+                    The 'data://' prefix is optional
 ";
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_remote: String,
+    arg_data_file: String,
 }
 
 pub struct Rm { client: Algorithmia }
@@ -29,7 +29,7 @@ impl CmdRunner for Rm {
             .unwrap_or_else(|e| e.exit());
 
 
-        self.delete_file(&*args.arg_remote);
+        self.delete_file(&*args.arg_data_file);
     }
 }
 

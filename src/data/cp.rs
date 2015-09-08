@@ -17,10 +17,14 @@ Usage:
 
   Copy files to or from the Algorithmia Data API
 
-  An Algorithmia Data URL must be prefixed with  data:// in order to avoid potential path ambiguity
+  An Algorithmia Data URL must be prefixed with data:// in order to avoid potential path ambiguity
 
   Options:
-   -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
+    -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
+
+  Examples:
+    algo cp file1.jpg file2.jpg data://.my/foo          Upload 2 files to your 'foo' data directory
+    algo cp data://.my/foo/file1.jpg .                  Download file1.jpg to the workig directory
 ";
 
 // TODO:

@@ -7,12 +7,12 @@ use std::vec::IntoIter;
 
 static USAGE: &'static str = "
 Usage:
-  algo ls [options] [<remote>]
-  algo dir [options] [<remote>]
+  algo ls [options] [<data-dir>]
+  algo dir [options] [<data-dir>]
 
   List contents of a directory via the Agorithmia Data API
 
-  <remote>      Specifies the Algorithmia Data URI
+  <data-dir>    Specifies the Algorithmia Data URI
                 The 'data://' prefix is optional
                 Defaults to 'data://' root path
 
@@ -23,7 +23,7 @@ Usage:
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_remote: Option<String>,
+    arg_data_dir: Option<String>,
     flag_l: bool,
 }
 
@@ -37,7 +37,7 @@ impl CmdRunner for Ls {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        self.list_dir(&*args.arg_remote.unwrap_or("data://".into()), args.flag_l);
+        self.list_dir(&*args.arg_data_dir.unwrap_or("data://".into()), args.flag_l);
     }
 }
 

@@ -6,18 +6,21 @@ use std::vec::IntoIter;
 
 static USAGE: &'static str = "
 Usage:
-  algo rmdir [options] <remote>
+  algo rmdir [options] <data-dir>
 
   Removes a directory from the Agorithmia Data API
 
+  <data-dir>        Specifies the Algorithmia Data URI
+                    The 'data://' prefix is optional
+
   Options:
-    -f, --force                 Force deletion even directory has contents
+    -f, --force     Force deletion even directory has contents
 
 ";
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_remote: String,
+    arg_data_dir: String,
     flag_force: bool,
 }
 
@@ -30,7 +33,7 @@ impl CmdRunner for RmDir {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        self.delete_dir(&*args.arg_remote, args.flag_force);
+        self.delete_dir(&*args.arg_data_dir, args.flag_force);
     }
 }
 

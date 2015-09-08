@@ -6,17 +6,17 @@ use std::vec::IntoIter;
 
 static USAGE: &'static str = "
 Usage:
-  algo mkdir <remote>
+  algo mkdir <data-dir>
 
   Create an Agorithmia data directory
 
-  <remote>      Specifies the Algorithmia Data URI
+  <data-dir>    Specifies the Algorithmia Data URI
                 The 'data://' prefix is optional
 ";
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_remote: String,
+    arg_data_dir: String,
 }
 
 pub struct MkDir { client: Algorithmia }
@@ -28,7 +28,7 @@ impl CmdRunner for MkDir {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        self.create_dir(&*args.arg_remote);
+        self.create_dir(&*args.arg_data_dir);
     }
 
 }
