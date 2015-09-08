@@ -24,8 +24,7 @@ mod data;
 mod algo;
 mod auth;
 
-static USAGE: &'static str = "
-CLI for interacting with Algorithmia
+static USAGE: &'static str = "CLI for interacting with Algorithmia
 
 Usage:
   algo [<cmd>] [options] [<args>...]

@@ -10,8 +10,7 @@ use algorithmia::Algorithmia;
 use algorithmia::mime::*;
 use algorithmia::error::Error::ApiError;
 
-static USAGE: &'static str = "
-Usage:
+static USAGE: &'static str = "Usage:
   algo [run] [options] <algorithm>
 
   <algorithm> syntax: USERNAME/ALGONAME[/VERSION]

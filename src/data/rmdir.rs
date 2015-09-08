@@ -4,8 +4,7 @@ use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "
-Usage:
+static USAGE: &'static str = "Usage:
   algo rmdir [options] <data-dir>
 
   Removes a directory from the Agorithmia Data API

@@ -4,8 +4,7 @@ use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "
-Usage:
+static USAGE: &'static str = "Usage:
   algo rm <data-file>
 
   Removes a file from the Agorithmia Data API

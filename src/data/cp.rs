@@ -10,8 +10,7 @@ use std::path::Path;
 use std::vec::IntoIter;
 use super::size_with_suffix;
 
-static USAGE: &'static str = "
-Usage:
+static USAGE: &'static str = "Usage:
   algo cp [options] <source>... <dest>
   algo copy [options] <source>... <dest>
 

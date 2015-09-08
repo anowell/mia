@@ -5,8 +5,7 @@ use algorithmia::Algorithmia;
 use algorithmia::data::{DirEntry, HasDataPath};
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "
-Usage:
+static USAGE: &'static str = "Usage:
   algo ls [options] [<data-dir>]
   algo dir [options] [<data-dir>]
 
