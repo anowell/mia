@@ -9,7 +9,7 @@ url="https://algorithmia.com/"
 license=('MIT')
 depends=('')
 conflicts=('algorithmia-bin')
-source=("https://github.com/algorithmiaio/algorithmia-cli/releases/download/v${pkgver}/algo-linux.tar.gz")
+source=("https://github.com/algorithmiaio/algorithmia-cli/releases/download/v${pkgver//_/-}/algorithmia_linux64.tar.gz")
 md5sums=('{{MD5SUM}}')
 
 package() {

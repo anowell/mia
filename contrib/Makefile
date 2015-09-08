@@ -2,7 +2,7 @@ PACKAGE_NAME=algorithmia
 PACKAGE_VERSION=`grep version ../Cargo.toml | head -1 | cut -d'"' -f2`
 
 ARCH=amd64
-TARBALL=algo-linux.tar.gz
+TARBALL=algorithmia_linux64.tar.gz
 DOWNLOAD=https://github.com/algorithmiaio/algorithmia-cli/releases/download/v$(PACKAGE_VERSION)/$(TARBALL)
 TMPDIR=tmp
 OUTDIR=$(PWD)/out
@@ -23,15 +23,16 @@ $(OUTDIR):
 
 aur-git: $(OUTDIR)
 	$(eval SHA_VERSION=`git log -1 --format="%cd.g%h" --date=short | sed 's/-/./g'`)
-	mkdir -p $(TMPDIR)/algorithmia-git
-	sed -e "s/{{VERSION}}/$(SHA_VERSION)/g" arch/algorithmia-git/PKGBUILD.template > $(TMPDIR)/algorithmia-git/PKGBUILD
-	cd $(TMPDIR)/algorithmia-git && SRCPKGDEST=$(OUTDIR) makepkg -fS
+	if cd $(OUTDIR)/algorithmia-git; then git pull || true; else git clone ssh://aur@aur.archlinux.org/algorithmia-git.git $(OUTDIR)/algorithmia-git; fi
+	sed -e "s/{{VERSION}}/$(SHA_VERSION)/g" arch/algorithmia-git/PKGBUILD.template > $(OUTDIR)/algorithmia-git/PKGBUILD
+	cd $(OUTDIR)/algorithmia-git && mksrcinfo
 
 aur-bin: $(OUTDIR) $(TARBALL)
 	$(eval MD5SUM=`md5sum $(TARBALL) | cut -f1 -d' '`)
-	mkdir -p $(TMPDIR)/algorithmia-bin
-	sed -e "s/{{VERSION}}/$(PACKAGE_VERSION)/g; s/{{MD5SUM}}/$(MD5SUM)/g" arch/algorithmia-bin/PKGBUILD.template > $(TMPDIR)/algorithmia-bin/PKGBUILD
-	cd $(TMPDIR)/algorithmia-bin && SRCPKGDEST=$(OUTDIR) makepkg -fS
+	$(eval VERSION=`grep version ../Cargo.toml | head -1 | cut -d'"' -f2 | sed s/-/_/g`)
+	if cd $(OUTDIR)/algorithmia-bin; then git pull || true; else git clone ssh://aur@aur.archlinux.org/algorithmia-bin.git $(OUTDIR)/algorithmia-bin; fi
+	sed -e "s/{{VERSION}}/$(VERSION)/g; s/{{MD5SUM}}/$(MD5SUM)/g" arch/algorithmia-bin/PKGBUILD.template > $(OUTDIR)/algorithmia-bin/PKGBUILD
+	cd $(OUTDIR)/algorithmia-bin && mksrcinfo
 
 deb: $(OUTDIR) $(TARBALL)
 	bundle install
