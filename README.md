@@ -8,7 +8,7 @@ Cross-platform CLI for Algorithmia algorithms and data API.
 
 ## Install
 
-Latest release can be found [here](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
+Latest releases can be found [here](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
 
 **Debian/Ubuntu**
 
