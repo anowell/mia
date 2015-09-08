@@ -1,15 +1,20 @@
 language: rust
 
 script:
-  - cargo build --release --verbose
-    #  - cargo test --verbose
-  - tar -czvf algo-linux.tar.gz -C target/release algo
+  - cargo build --verbose
 
-deploy:
-  provider: releases
-  api-key: $GITHUB_API_TOKEN
-  file: "algo-linux.tar.gz"
-  skip_cleanup: true
-  on:
-    tags: true
-    all_branches: true
+#
+# Disabled until I resolve why travis builds version info for dynlibs
+#
+
+  # - cargo build --release --verbose
+  # - tar -czvf algo-linux.tar.gz -C target/release algo
+
+# deploy:
+#  provider: releases
+#  api-key: $GITHUB_API_TOKEN
+#  file: "algo-linux.tar.gz"
+#  skip_cleanup: true
+#  on:
+#    tags: true
+#    all_branches: true
