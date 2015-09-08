@@ -37,7 +37,7 @@ sudo mv algo /usr/local/bin/
 
 **Windows (64-bit)**
 
-Install OpenSSL for Windows from [https://slproweb.com/products/Win32OpenSSL.html]
+Install [OpenSSL for Windows](https://slproweb.com/products/Win32OpenSSL.html)
 
 Download and extract the [latest Windows zip file](https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_win64.zip) - recommend putting it within your `PATH`
 
