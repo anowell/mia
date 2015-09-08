@@ -14,28 +14,32 @@ Latest release can be found [here](https://github.com/algorithmiaio/algorithmia-
 
 A `.deb` package is available for installation with `dpkg`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_1.0.0-beta.1_amd64.deb | sudo dpkg -i
+```bash
+curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_1.0.0-beta.1_amd64.deb | sudo dpkg -i
+```
 
 **Arch**
 
 Arch packages available on the AUR as [algorithmia-bin](https://aur4.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur4.archlinux.org/packages/algorithmia-git/), e.g., using `aura` helper:
 
-    aura -A algorithmia-bin
+```bash
+aura -A algorithmia-bin
+```
 
 **OSX**
 
 Simply download and extract the OSX tarball - recommend putting it within your `PATH`
 
-    curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_osx.tar.gz | tar -xz
-    sudo mv algo /usr/local/bin/
+```bash
+curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_osx.tar.gz | tar -xz
+sudo mv algo /usr/local/bin/
+```
 
 **Windows (64-bit)**
 
 Install OpenSSL for Windows from [https://slproweb.com/products/Win32OpenSSL.html]
 
-Download and extract the Windows zip file - recommend putting it within your `PATH`
-
-    https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_win64.zip
+Download and extract the [latest Windows zip file](https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.1/algorithmia_win64.zip) - recommend putting it within your `PATH`
 
 
 ## Usage
