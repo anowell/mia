@@ -47,7 +47,6 @@ impl CmdRunner for Cp {
 
         let cp_client = CpClient::new(self.client.clone(), args.flag_c, &args.arg_dest);
 
-        // TODO: consider instead checking if "any" source starts_with data://
         match (args.arg_source.iter().any(|s| s.starts_with("data://")), args.arg_dest.starts_with("data://")) {
             (true, false) => cp_client.download(args.arg_source),
             (false, true) => cp_client.upload(args.arg_source),
