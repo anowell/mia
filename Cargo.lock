@@ -30,10 +30,10 @@ dependencies = [
 [[package]]
 name = "algorithmia"
 version = "0.7.0"
-source = "git+https://github.com/anowell/algorithmia_rust.git#c02be5b590daa5b7cb0a64c9978878b49ce03dd6"
+source = "git+https://github.com/anowell/algorithmia_rust.git#fa95377f4f5c7e98b8e0093ffadc41ce5024c22f"
 dependencies = [
  "chrono 0.2.16 (registry+https://github.com/rust-lang/crates.io-index)",
- "hyper 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hyper 0.6.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -83,7 +83,7 @@ dependencies = [
 
 [[package]]
 name = "gcc"
-version = "0.3.15"
+version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "advapi32-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -105,7 +105,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "hyper"
-version = "0.6.13"
+version = "0.6.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cookie 0.1.21 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -218,7 +218,7 @@ name = "openssl-sys"
 version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "libressl-pnacl-sys 2.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",

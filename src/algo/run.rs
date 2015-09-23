@@ -8,6 +8,7 @@ use std::vec::IntoIter;
 use algorithmia::Algorithmia;
 use algorithmia::algo::AlgoResponse;
 use algorithmia::mime::*;
+use algorithmia::client::Response;
 use algorithmia::error::{Error};
 
 static USAGE: &'static str = "Usage:
@@ -21,55 +22,58 @@ static USAGE: &'static str = "Usage:
     If <file> is '-', then input data will be read from STDIN.
 
     Auto-Detect Data:
-      -d <data>, --data <data>          If the data parses as JSON, assume JSON, else if the data
-                                          is valid UTF-8, assume text, else assume binary
-      -D <file>, --data-file <file>     Same as --data, but the input data is read from a file
+      -d, --data <data>             If the data parses as JSON, assume JSON, else if the data
+                                      is valid UTF-8, assume text, else assume binary
+      -D, --data-file <file>        Same as --data, but the input data is read from a file
 
     JSON Data:
-      -j <data>, --json <data>          Algorithm input data as JSON (application/json)
-      -J <file>, --json-file <file>     Same as --json, but the input data is read from a file
+      -j, --json <data>             Algorithm input data as JSON (application/json)
+      -J, --json-file <file>        Same as --json, but the input data is read from a file
 
     Text Data:
-      -t <data>, --text <data>          Algorithm input data as text (text/plain)
-      -T <file>, --text-file <file>     Same as --text, but the input data is read from a file
+      -t, --text <data>             Algorithm input data as text (text/plain)
+      -T, --text-file <file>        Same as --text, but the input data is read from a file
 
     Binary Data:
-      -b <data>, --binary <data>        Algorithm input data as binary (application/octet-stream)
-      -B <data>, --binary-file <file>   Same as --data, but the input data is read from a file
+      -b, --binary <data>           Algorithm input data as binary (application/octet-stream)
+      -B, --binary-file <file>      Same as --data, but the input data is read from a file
 
 
   Output Options:
     By default, only the algorithm result is printed to STDOUT while additional notices may be
     printed to STDERR.
 
-    --debug                             Print algorithm's STDOUT (author-only)
-    --json-response                     Print full JSON response body instead of just the result
-    -s, --silence                       Suppress printing of STDERR notices and alerts
-    --time                              Print human-readable algorithm execution time
+    --debug                         Print algorithm's STDOUT (author-only)
+    --response-body                 Print HTTP response body (replaces result)
+    --response                      Print full HTTP response including headers (replaces result)
+    -s, --silence                   Suppress any output not explicitly requested (except result)
+    -m, --meta                      Print human-readable selection of metadata (e.g. duration)
+    -o, --output <file>             Print result to a file, implies --meta
 
   Examples:
-    algo kenny/factor/0.1.0 -t '79'                 Run algorithm with specified data input
-    algo anowell/Dijkstra -J routes.json            Run algorithm with file input
-    algo anowell/Dijkstra -J - < routes.json        Same as above but using STDIN
-    algo opencv/SmartThumbnail -B in.jpg > out.jpg  Runs algorithm with binay data input
+    algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
+    algo anowell/Dijkstra -J routes.json              Run algorithm with file input
+    algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
+    algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binay data input
 ";
 
 // TODO: stderr text for:
 //    "Auto-detected input data as [json|text|binary]"
 //    "Version not specified, using latest which may result in price changes"
-//    Any alerts returned with the API metadata
 // TODO: more options
-//    --http-response                     Print full HTTP response including headers
+//    --result-json               Force result to be printed as JSON (base64 for binary)
 //    -a --async                  Return immediately from calling the algorithm
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
     cmd_run: bool,
     arg_algorithm: String,
-    flag_json_response: bool,
+    flag_response_body: bool,
+    flag_response: bool,
     flag_silence: bool,
-    flag_time: bool,
+    flag_meta: bool,
     flag_debug: bool,
+    flag_output: Option<String>,
 }
 
 pub struct Run { client: Algorithmia }
@@ -111,30 +115,65 @@ impl CmdRunner for Run {
             return die!("Multiple input data sources is currently not supported");
         }
 
-        // Run the algorithm
-        let json_response = match self.run_algorithm(&*args.arg_algorithm, input_args.remove(0)) {
-            Ok(json) => json,
-            Err(err) => die!("HTTP Error: {}", err),
-        };
+        // Open up an output device for the result/response
+        let mut output = OutputDevice::new(&args.flag_output);
 
-        // Print result according to output args
-        match args.flag_json_response {
-            true => println!("{}", json_response),
-            false => match json_response.parse::<AlgoResponse>() {
+        // Run the algorithm
+        let mut response = self.run_algorithm(&*args.arg_algorithm, input_args.remove(0));
+
+        // Read JSON response - scoped so that we can re-borrow response
+        let mut json_response = String::new();
+        {
+            match response.read_to_string(&mut json_response) {
+                Ok(json) => json,
+                Err(err) => die!("Read error: {}", err)
+            };
+        }
+
+        // Handle --response and --response-body (ignoring other flags)
+        if args.flag_response || args.flag_response_body {
+            if args.flag_response {
+                let preamble = format!("{} {}\n{}", response.version, response.status, response.headers);
+                output.writeln(preamble.as_bytes());
+            };
+            output.writeln(json_response.as_bytes());
+        } else {
+            match json_response.parse::<AlgoResponse>() {
                 Ok(response) => {
-                    match &*response.metadata.content_type {
-                        "json" => response.result_json().map(|out| {println!("{}", out);}), // TODO: call .pretty() if --pretty
-                        "text" => response.result_str().map(|out| {println!("{}", out);}),
-                        "binary" => response.result_bytes().map(|out| {let _ = io::stdout().write(out);}),
-                        ct => return die!("Unknown result content-type: {}", ct),
-                    }.unwrap_or_else(|err| return die!("Error parsing result: {}", err));
-                    if args.flag_time {
+                    // Printing any API alerts
+                    if let Some(ref alerts) = response.metadata.alerts {
+                        if !args.flag_silence {
+                            for alert in alerts {
+                                let _ = io::stderr().write(alert.as_bytes());
+                                let _ = io::stderr().write(b"\n");
+                            }
+                        }
+                    }
+
+                    // Printing algorithm stdout
+                    if let Some(ref stdout) = response.metadata.stdout {
+                        if args.flag_debug {
+                            println!("{}", stdout);
+                        }
+                    }
+
+                    // Printing metadata
+                    if args.flag_meta || (args.flag_output.is_some() && !args.flag_silence) {
                         println!("Completed in {:.1} seconds", response.metadata.duration);
                     }
+
+                    // Smart output of result
+                    match &*response.metadata.content_type {
+                        "json" => response.result_json().map(|out| output.writeln(out.as_bytes())),
+                        "text" => response.result_str().map(|out| output.writeln(out.as_bytes())),
+                        "binary" => response.result_bytes().map(|out| output.write(out)),
+                        ct => return die!("Unknown result content-type: {}", ct),
+                    }.unwrap_or_else(|err| return die!("Error parsing result: {}", err));
                 },
                 Err(err) => return die!("Error parsing response: {}", err),
-            }
-        };
+            };
+        }
+
     }
 }
 
@@ -145,24 +184,54 @@ enum InputData {
     Binary(Vec<u8>),
 }
 
+// The device specified by --output flag
+// Only the result or response is written to this device
+struct OutputDevice {
+    writer: Box<Write>
+}
+
+impl OutputDevice {
+    fn new(output_dest: &Option<String>) -> OutputDevice {
+        match output_dest {
+            &Some(ref file_path) => match File::create(file_path) {
+                Ok(buf) => OutputDevice{ writer: Box::new(buf) },
+                Err(err) => die!("Unable to create file: {}", err),
+            },
+            &None => OutputDevice{ writer: Box::new(io::stdout()) },
+        }
+    }
+
+    fn write(&mut self, bytes: &[u8]) {
+        match self.writer.write(bytes) {
+            Ok(_) => (),
+            Err(err) => die!("Error writing output: {}", err),
+        }
+    }
+
+    fn writeln(&mut self, bytes: &[u8]) {
+        self.write(bytes);
+        self.write(b"\n");
+    }
+}
+
 impl Run {
     pub fn new(client: Algorithmia) -> Self { Run{ client:client } }
 
-    fn run_algorithm(&self, algo: &str, input_data: InputData) -> Result<String, Error> {
-        let algorithm = self.client.algo_from_str(algo);
-        let mut response = try!(match input_data {
+    fn run_algorithm(&self, algo: &str, input_data: InputData) -> Response { // Result<String, Error> {
+        let algorithm = self.client.algo(algo);
+        let result = match input_data {
             InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![])),
             InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![])),
             InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![])),
-        });
+        };
 
-        let mut json_response = String::new();
-        let _ = response.read_to_string(&mut json_response);
-        Ok(json_response)
+        match result {
+            Ok(response) => response,
+            Err(err) => die!("HTTP Error: {}", err),
+        }
     }
-
-
 }
+
 
 fn read_byte_src(src: &str) -> Vec<u8> {
     let mut reader = match src {
