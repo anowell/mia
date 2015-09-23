@@ -5,6 +5,7 @@ use std::io::{self, Read, Write};
 use std::fs::File;
 use std::path::Path;
 use std::vec::IntoIter;
+use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
 use algorithmia::algo::AlgoResponse;
 use algorithmia::mime::*;
@@ -91,14 +92,14 @@ impl CmdRunner for Run {
         };
         while let Some(flag) = argv_mut.next() {
             match &*flag {
-                // "-d" | "--data" => input_args.push(InputData::auto(next_arg(&mut argv_mut))),
+                "-d" | "--data" => input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes())),
                 "-j" | "--json" => input_args.push(InputData::Json(next_arg(&mut argv_mut))),
                 "-t" | "--text" => input_args.push(InputData::Text(next_arg(&mut argv_mut))),
                 "-b" | "--binary" => input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes())),
-                // -D" | "--data-file" => input_args.push(InputData::auto(read_string_src(&next_arg(&mut argv_mut)))),
-                "-J" | "--json-file" => input_args.push(InputData::Json(read_string_src(&next_arg(&mut argv_mut)))),
-                "-T" | "--text-file" => input_args.push(InputData::Text(read_string_src(&next_arg(&mut argv_mut)))),
-                "-B" | "--binary-file" => input_args.push(InputData::Binary(read_byte_src(&next_arg(&mut argv_mut)))),
+                "-D" | "--data-file" => input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-J" | "--json-file" => input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-T" | "--text-file" => input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-B" | "--binary-file" => input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut)))),
                 _ => other_args.push(flag)
             };
         };
@@ -184,6 +185,55 @@ enum InputData {
     Binary(Vec<u8>),
 }
 
+impl InputData {
+
+    // Auto-detect the InputData type
+    // 1. Json if it parses as JSON
+    // 2. Text if it parses as UTF-8
+    // 3. Fallback to binary
+    fn auto(reader: &mut Read) -> InputData {
+        let mut data = String::new();
+        match reader.read_to_string(&mut data) {
+            Ok(_) => match Json::from_str(&data) {
+                Ok(_) => InputData::Json(data),
+                Err(_) => InputData::Text(data),
+            },
+            Err(_) => {
+                let mut bytes: Vec<u8> = Vec::new();
+                match reader.read_to_end(&mut bytes) {
+                    Ok(_) => InputData::Binary(bytes),
+                    Err(err) => die!("Read error: {}", err),
+                }
+            }
+        }
+    }
+
+    fn text(reader: &mut Read) -> InputData {
+        let mut data = String::new();
+        match reader.read_to_string(&mut data) {
+            Ok(_) => InputData::Text(data),
+            Err(err) => die!("Read error: {}", err),
+        }
+    }
+
+    fn json(reader: &mut Read) -> InputData {
+        let mut data = String::new();
+        match reader.read_to_string(&mut data) {
+            Ok(_) => InputData::Json(data),
+            Err(err) => die!("Read error: {}", err),
+        }
+    }
+
+    fn binary(reader: &mut Read) -> InputData {
+        let mut bytes: Vec<u8> = Vec::new();
+        match reader.read_to_end(&mut bytes) {
+            Ok(_) => InputData::Binary(bytes),
+            Err(err) => die!("Read error: {}", err),
+        }
+    }
+}
+
+
 // The device specified by --output flag
 // Only the result or response is written to this device
 struct OutputDevice {
@@ -233,35 +283,14 @@ impl Run {
 }
 
 
-fn read_byte_src(src: &str) -> Vec<u8> {
-    let mut reader = match src {
+fn get_src(src: &str) -> Box<Read> {
+    match src {
         "-" => Box::new(io::stdin()) as Box<Read>,
-        s => read_file(Path::new(&s)),
-    };
-
-    let mut buf: Vec<u8> = Vec::new();
-    match reader.read_to_end(&mut buf) {
-        Ok(0) => die!("Error: Read 0 bytes"),
-        Ok(_) => buf,
-        Err(err) => die!("Error: {}", err),
+        s => open_file(Path::new(&s)),
     }
 }
 
-fn read_string_src(src: &str) -> String {
-    let mut reader = match src {
-        "-" => Box::new(io::stdin()) as Box<Read>,
-        s => read_file(Path::new(&s)),
-    };
-
-    let mut buf = String::new();
-    match reader.read_to_string(&mut buf) {
-        Ok(0) => die!("Error: Read 0 bytes"),
-        Ok(_) => {buf.pop(); buf}, // pop the EOF that turns into extra \n
-        Err(err) => die!("Error: {}", err),
-    }
-}
-
-fn read_file(path: &Path) -> Box<Read> {
+fn open_file(path: &Path) -> Box<Read> {
     let display = path.display();
     let file = match File::open(&path) {
         Err(err) => die!("Error opening {}: {}", display, err),
