@@ -7,7 +7,7 @@ use std::path::Path;
 use std::vec::IntoIter;
 use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
-use algorithmia::algo::AlgoResponse;
+use algorithmia::algo::{AlgoResponse, AlgoOptions};
 use algorithmia::mime::*;
 use algorithmia::client::Response;
 use algorithmia::error::{Error};
@@ -51,6 +51,10 @@ static USAGE: &'static str = "Usage:
     -m, --meta                      Print human-readable selection of metadata (e.g. duration)
     -o, --output <file>             Print result to a file, implies --meta
 
+
+  Other Options:
+    --timeout <seconds>             Sets algorithm and connection timeout
+
   Examples:
     algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
     algo anowell/Dijkstra -J routes.json              Run algorithm with file input
@@ -75,6 +79,7 @@ struct Args {
     flag_meta: bool,
     flag_debug: bool,
     flag_output: Option<String>,
+    flag_timeout: Option<u32>,
 }
 
 pub struct Run { client: Algorithmia }
@@ -116,11 +121,16 @@ impl CmdRunner for Run {
             return die!("Multiple input data sources is currently not supported");
         }
 
+        let mut opts = AlgoOptions::new();
+        if args.flag_debug { opts.stdout(true); }
+        if let Some(timeout) = args.flag_timeout { opts.timeout(timeout); }
+
         // Open up an output device for the result/response
         let mut output = OutputDevice::new(&args.flag_output);
 
+
         // Run the algorithm
-        let mut response = self.run_algorithm(&*args.arg_algorithm, input_args.remove(0));
+        let mut response = self.run_algorithm(&*args.arg_algorithm, input_args.remove(0), opts);
 
         // Read JSON response - scoped so that we can re-borrow response
         let mut json_response = String::new();
@@ -154,7 +164,7 @@ impl CmdRunner for Run {
                     // Printing algorithm stdout
                     if let Some(ref stdout) = response.metadata.stdout {
                         if args.flag_debug {
-                            println!("{}", stdout);
+                            print!("{}", stdout);
                         }
                     }
 
@@ -267,12 +277,12 @@ impl OutputDevice {
 impl Run {
     pub fn new(client: Algorithmia) -> Self { Run{ client:client } }
 
-    fn run_algorithm(&self, algo: &str, input_data: InputData) -> Response { // Result<String, Error> {
+    fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
         let algorithm = self.client.algo(algo);
         let result = match input_data {
-            InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![])),
-            InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![])),
-            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![])),
+            InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![]), Some(&opts)),
+            InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![]), Some(&opts)),
+            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![]), Some(&opts)),
         };
 
         match result {
