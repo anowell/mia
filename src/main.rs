@@ -11,11 +11,13 @@ use toml::Value;
 
 macro_rules! die {
     ($fmt:expr) => ({
-        print!(concat!($fmt, "\n"));
+        use std::io::Write;
+        let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n")));
         ::std::process::exit(1)
     });
     ($fmt:expr, $($arg:tt)*) => ({
-        print!(concat!($fmt, "\n"), $($arg)*);
+        use std::io::Write;
+        let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n"), $($arg)*));
         ::std::process::exit(1)
     });
 }
