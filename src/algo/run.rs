@@ -202,19 +202,17 @@ impl InputData {
     // 2. Text if it parses as UTF-8
     // 3. Fallback to binary
     fn auto(reader: &mut Read) -> InputData {
-        let mut data = String::new();
-        match reader.read_to_string(&mut data) {
-            Ok(_) => match Json::from_str(&data) {
+        let mut bytes: Vec<u8> = Vec::new();
+        if let Err(err) = reader.read_to_end(&mut bytes) {
+            die!("Read error: {}", err);
+        }
+
+        match String::from_utf8(bytes) {
+            Ok(data) => match Json::from_str(&data) {
                 Ok(_) => InputData::Json(data),
                 Err(_) => InputData::Text(data),
             },
-            Err(_) => {
-                let mut bytes: Vec<u8> = Vec::new();
-                match reader.read_to_end(&mut bytes) {
-                    Ok(_) => InputData::Binary(bytes),
-                    Err(err) => die!("Read error: {}", err),
-                }
-            }
+            Err(not_utf8) => InputData::Binary(not_utf8.into_bytes()),
         }
     }
 
