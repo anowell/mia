@@ -9,15 +9,24 @@ use std::env;
 use std::vec::IntoIter;
 use toml::Value;
 
-macro_rules! die {
+macro_rules! stderrln {
     ($fmt:expr) => ({
         use std::io::Write;
         let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n")));
-        ::std::process::exit(1)
     });
     ($fmt:expr, $($arg:tt)*) => ({
         use std::io::Write;
         let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n"), $($arg)*));
+    });
+}
+
+macro_rules! die {
+    ($fmt:expr) => ({
+        errorln!($fmt);
+        ::std::process::exit(1)
+    });
+    ($fmt:expr, $($arg:tt)*) => ({
+        errorln!($fmt, $($arg)*);
         ::std::process::exit(1)
     });
 }

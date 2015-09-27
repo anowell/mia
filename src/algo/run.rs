@@ -53,7 +53,7 @@ static USAGE: &'static str = "Usage:
 
 
   Other Options:
-    --timeout <seconds>             Sets algorithm and connection timeout
+    --timeout <seconds>             Sets algorithm timeout
 
   Examples:
     algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
@@ -62,12 +62,6 @@ static USAGE: &'static str = "Usage:
     algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binay data input
 ";
 
-// TODO: stderr text for:
-//    "Auto-detected input data as [json|text|binary]"
-//    "Version not specified, using latest which may result in price changes"
-// TODO: more options
-//    --result-json               Force result to be printed as JSON (base64 for binary)
-//    -a --async                  Return immediately from calling the algorithm
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
@@ -128,7 +122,6 @@ impl CmdRunner for Run {
         // Open up an output device for the result/response
         let mut output = OutputDevice::new(&args.flag_output);
 
-
         // Run the algorithm
         let mut response = self.run_algorithm(&*args.arg_algorithm, input_args.remove(0), opts);
 
@@ -155,8 +148,7 @@ impl CmdRunner for Run {
                     if let Some(ref alerts) = response.metadata.alerts {
                         if !args.flag_silence {
                             for alert in alerts {
-                                let _ = io::stderr().write(alert.as_bytes());
-                                let _ = io::stderr().write(b"\n");
+                                stderrln!("{}", alert);
                             }
                         }
                     }
@@ -181,7 +173,11 @@ impl CmdRunner for Run {
                         ct => return die!("Unknown result content-type: {}", ct),
                     }.unwrap_or_else(|err| return die!("Error parsing result: {}", err));
                 },
-                Err(err) => return die!("Error parsing response: {}", err),
+                Err(Error::ApiError(err)) => match err.stacktrace {
+                    Some(ref trace) => die!("API error: {}\n{}", err, trace),
+                    None => die!("API error: {}", err),
+                },
+                Err(err) => die!("Response error: {}", err),
             };
         }
 
@@ -277,6 +273,7 @@ impl Run {
 
     fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
         let algorithm = self.client.algo(algo);
+
         let result = match input_data {
             InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![]), Some(&opts)),
             InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![]), Some(&opts)),
