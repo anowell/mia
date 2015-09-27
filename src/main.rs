@@ -22,11 +22,11 @@ macro_rules! stderrln {
 
 macro_rules! die {
     ($fmt:expr) => ({
-        errorln!($fmt);
+        stderrln!($fmt);
         ::std::process::exit(1)
     });
     ($fmt:expr, $($arg:tt)*) => ({
-        errorln!($fmt, $($arg)*);
+        stderrln!($fmt, $($arg)*);
         ::std::process::exit(1)
     });
 }
