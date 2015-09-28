@@ -49,11 +49,13 @@ Configure auth:
     $ algo auth
     Configuring authentication for 'default' profile
     Enter API Key (prefixed with 'sim'):
-    Profile is ready to use. Test with 'auth ls'
+    Profile is ready to use. Test with 'algo ls'
 
 Execute Algorithmia algorithms:
 
-    $ algo run kenny/factor -d 19635 --raw
+    $ algo run kenny/factor -d 19635
+    [3,5,7,11,17]
+    $ algo run kenny/factor -d 19635 --response-body
     {"result":[3,5,7,11,17],"metadata":{"content_type":"json","duration":0.001427314}}
 
 Interact with the Algorithmia Data API:
@@ -78,4 +80,3 @@ This project is built and tested with cargo:
 
     cargo build
     cargo test
-
