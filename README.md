@@ -6,6 +6,8 @@ Cross-platform CLI for Algorithmia algorithms and data API.
 [![Build Status](https://travis-ci.org/algorithmiaio/algorithmia-cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia-cli)
 
 
+[![Example CLI Usage](https://j.gifs.com/v1egak.gif)](https://www.youtube.com/watch?v=mAJagjRl_qk)
+
 ## Install
 
 Latest releases can be found [here](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
