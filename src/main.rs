@@ -103,7 +103,7 @@ fn main() {
             "--profile" => {
                 profile = args.next().unwrap_or(profile.to_string())
             },
-            "--version" => die!("{}", version::get_version()),
+            "--version" => die!("{}", version::VERSION),
             _ => cmd_args.push(arg),
         }
     };
