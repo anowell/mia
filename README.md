@@ -197,5 +197,7 @@ $ algo run kenny/factor -d 17 --profile second_user
 
 This project is built and tested with cargo:
 
+```bash
 cargo build
 cargo test
+```
