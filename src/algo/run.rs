@@ -59,7 +59,7 @@ static USAGE: &'static str = "Usage:
     algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
     algo anowell/Dijkstra -J routes.json              Run algorithm with file input
     algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
-    algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binay data input
+    algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binary data input
 ";
 
 
