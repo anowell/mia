@@ -30,7 +30,7 @@ curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.
 
 **Arch**
 
-Arch packages available on the AUR as [algorithmia-bin](https://aur4.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur4.archlinux.org/packages/algorithmia-git/). Use the `aura` helper to install:
+Arch packages available on the AUR as [algorithmia-bin](https://aur4.archlinux.org/packages/algorithmia-bin/) and [algorithmia-git](https://aur4.archlinux.org/packages/algorithmia-git/). Use your favorite AUR helper (e.g. `aura`):
 
 ```bash
 aura -A algorithmia-bin
