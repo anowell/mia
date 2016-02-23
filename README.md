@@ -44,7 +44,7 @@ Simply download and extract the OSX tarball:
 curl -L https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.0-beta.2/algorithmia_osx.tar.gz | tar -xz
 ```
 We recommend putting it within your `PATH` with the following command:
-```
+```bash
 sudo mv algo /usr/local/bin/
 ```
 
@@ -61,7 +61,7 @@ In order to make calls with the CLI, you'll need to configure the authentication
 Begin the configuration process by running the command `algo auth`. 
 You will see an interactive prompt to guide you through setting up a default profile:
 
-```
+```bash
 $ algo auth
 Configuring authentication for 'default' profile
 Enter API Key (prefixed with 'sim'):
@@ -175,7 +175,7 @@ Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
 
 With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, you will run through the same interactive prompt--simply add a profile name to the command to add a new profile.
 
-```
+```bash
 $ algo auth second_user
 Configuring authentication for 'second_user' profile
 Enter API Key (prefixed with 'sim'):
