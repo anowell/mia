@@ -2,6 +2,7 @@ use super::super::CmdRunner;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
+use algorithmia::data::dir::DataAcl;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = "Usage:
@@ -37,7 +38,7 @@ impl MkDir {
 
     fn create_dir(&self, path: &str) {
         let my_dir = self.client.dir(path);
-        match my_dir.create() {
+        match my_dir.create(DataAcl::default()) {
             Ok(_) => println!("Created directory: {}", my_dir.to_data_uri()),
             Err(err) => die!("Error creating directory: {}", err),
         };

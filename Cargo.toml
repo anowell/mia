@@ -6,16 +6,15 @@ authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 build = "build.rs"
 
 [dependencies]
-docopt = "*"
-rustc-serialize = "*"
-chan = "*"
-toml = "*"
-rpassword = "*"
+docopt = "0.6.80"
+rustc-serialize = "0.3.19"
+chan = "0.1.18"
+toml = "0.1.28"
+rpassword = "0.2.0"
 
 [dependencies.algorithmia]
-version = "*"
-git = "https://github.com/anowell/algorithmia_rust.git"
+version = "0.8.*"
 
 [build-dependencies]
-chrono = "*"
+chrono = "0.2.21"
 
