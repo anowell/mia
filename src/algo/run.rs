@@ -7,7 +7,7 @@ use std::path::Path;
 use std::vec::IntoIter;
 use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
-use algorithmia::algo::{AlgoResponse, AlgoOptions};
+use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions};
 use algorithmia::mime::*;
 use algorithmia::client::Response;
 use algorithmia::error::{Error};
@@ -166,12 +166,11 @@ impl CmdRunner for Run {
                     }
 
                     // Smart output of result
-                    match &*response.metadata.content_type {
-                        "json" => response.result_json().map(|out| output.writeln(out.as_bytes())),
-                        "text" => response.result_str().map(|out| output.writeln(out.as_bytes())),
-                        "binary" => response.result_bytes().map(|out| output.write(out)),
-                        ct => return die!("Unknown result content-type: {}", ct),
-                    }.unwrap_or_else(|err| return die!("Error parsing result: {}", err));
+                    match response.result {
+                        AlgoOutput::Json(json) => output.writeln(json.as_bytes()),
+                        AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
+                        AlgoOutput::Binary(bytes) => output.write(&bytes),
+                    };
                 },
                 Err(Error::ApiError(err)) => match err.stacktrace {
                     Some(ref trace) => die!("API error: {}\n{}", err, trace),

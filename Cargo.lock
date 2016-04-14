@@ -2,7 +2,7 @@
 name = "algo"
 version = "1.0.0-beta.2"
 dependencies = [
- "algorithmia 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "algorithmia 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "chan 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",
  "docopt 0.6.80 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -21,7 +21,7 @@ dependencies = [
 
 [[package]]
 name = "algorithmia"
-version = "0.8.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "chrono 0.2.21 (registry+https://github.com/rust-lang/crates.io-index)",

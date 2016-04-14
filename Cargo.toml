@@ -11,9 +11,7 @@ rustc-serialize = "0.3.19"
 chan = "0.1.18"
 toml = "0.1.28"
 rpassword = "0.2.0"
-
-[dependencies.algorithmia]
-version = "0.8.*"
+algorithmia = "1.1.0"
 
 [build-dependencies]
 chrono = "0.2.21"
