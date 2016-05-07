@@ -4,7 +4,7 @@ extern crate docopt;
 extern crate rustc_serialize;
 extern crate toml;
 
-use algorithmia::{Algorithmia, Url};
+use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::env;
 use std::vec::IntoIter;
 use toml::Value;
@@ -129,8 +129,8 @@ fn init_client(profile: &str) -> Algorithmia {
         // Use the profile attribute(s)
         Some(p) => match p.get("api_key") {
             Some(&Value::String(ref key)) => match p.get("api_server") {
-                Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), &key),
-                None => Algorithmia::client(&key),
+                Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), ApiAuth::SimpleAuth(key.clone())),
+                None => Algorithmia::client(ApiAuth::SimpleAuth(key.clone())),
                 _ => die!("{} profile has invalid 'api_server'", profile),
             },
             _ => die!("{} profile has missing or invalid 'api_key'", profile),

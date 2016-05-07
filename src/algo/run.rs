@@ -116,7 +116,7 @@ impl CmdRunner for Run {
         }
 
         let mut opts = AlgoOptions::new();
-        if args.flag_debug { opts.stdout(true); }
+        if args.flag_debug { opts.enable_stdout(); }
         if let Some(timeout) = args.flag_timeout { opts.timeout(timeout); }
 
         // Open up an output device for the result/response
@@ -128,9 +128,8 @@ impl CmdRunner for Run {
         // Read JSON response - scoped so that we can re-borrow response
         let mut json_response = String::new();
         {
-            match response.read_to_string(&mut json_response) {
-                Ok(json) => json,
-                Err(err) => die!("Read error: {}", err)
+            if let Err(err) = response.read_to_string(&mut json_response) {
+                die!("Read error: {}", err)
             };
         }
 
@@ -167,7 +166,7 @@ impl CmdRunner for Run {
 
                     // Smart output of result
                     match response.result {
-                        AlgoOutput::Json(json) => output.writeln(json.as_bytes()),
+                        AlgoOutput::Json(json) => output.writeln(json.to_string().as_bytes()),
                         AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
                         AlgoOutput::Binary(bytes) => output.write(&bytes),
                     };
@@ -271,12 +270,13 @@ impl Run {
     pub fn new(client: Algorithmia) -> Self { Run{ client:client } }
 
     fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
-        let algorithm = self.client.algo(algo);
+        let mut algorithm = self.client.algo(algo);
+        let algorithm = algorithm.set_options(opts);
 
         let result = match input_data {
-            InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![]), Some(&opts)),
-            InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![]), Some(&opts)),
-            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![]), Some(&opts)),
+            InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![])),
+            InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![])),
+            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![])),
         };
 
         match result {
