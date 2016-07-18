@@ -98,7 +98,7 @@ fn main() {
             "--help" => {
                 // grab one more arg in-case --help preceded <cmd>
                 cmd_args.push(args.next().unwrap_or_default());
-                print_cmd_usage(cmd_args.get(1));
+                print_cmd_usage(cmd_args.get(1).map(|s| s.as_str()));
             },
             "--profile" => {
                 profile = args.next().unwrap_or(profile.to_string())
@@ -176,8 +176,8 @@ fn run(args: Vec<String>, profile: &str) {
     };
 }
 
-fn print_cmd_usage(cmd: Option<&String>) -> ! {
-    match &**cmd.unwrap_or(&Default::default()) {
+fn print_cmd_usage(cmd: Option<&str>) -> ! {
+    match cmd.unwrap_or(Default::default()) {
         "auth" => auth::Auth::print_usage(),
         "ls" | "dir" => data::Ls::print_usage(),
         "mkdir" => data::MkDir::print_usage(),

@@ -1,8 +1,7 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
-use algorithmia::data::HasDataPath;
-use algorithmia::data::dir::DataAcl;
+use algorithmia::data::{HasDataPath, DataAcl};
 use std::vec::IntoIter;
 
 static USAGE: &'static str = "Usage:
