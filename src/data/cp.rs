@@ -1,6 +1,6 @@
 use super::super::CmdRunner;
 use algorithmia::Algorithmia;
-use algorithmia::data::{DataFile, HasDataPath};
+use algorithmia::data::{DataFile, DataItem, HasDataPath};
 use docopt::Docopt;
 use chan;
 use std::sync::{Arc, Mutex};
@@ -117,10 +117,28 @@ impl CpClient {
 
             thread::spawn(move || {
                 for rx_path in thread_rx {
-                    // TODO: dest could be file or dir.. use `into_type`
-                    let my_dir = thread_conn.client.dir(&*thread_conn.dest);
-                    let ref dir = my_dir;
-                    match dir.put_file(&*rx_path) {
+                    let dest_obj = thread_conn.client.data(&*thread_conn.dest);
+                    let put_res = match dest_obj.into_type() {
+                        // If dest exists as DataFile, overwrite it
+                        Ok(DataItem::File(f)) => {
+                            println!("DEBUG1: {}", f.to_data_uri());
+                            let mut file = File::open(&*rx_path).unwrap();
+                            f.put(&mut file)
+                        }
+                        // If dest exists as DataDir, add file to dir
+                        Ok(DataItem::Dir(d)) => {
+                            let path = Path::new(&rx_path);
+                            d.put_file(path.file_name().expect("source has no filename"))
+                        }
+                        // Otherwise, try adding new file with exact path as dest
+                        Err(_) => {
+                            let mut file = File::open(&*rx_path).unwrap();
+                            let f = thread_conn.client.file(&*thread_conn.dest);
+                            f.put(&mut file)
+                        }
+                    };
+
+                    match put_res {
                         Ok(file_added) => {
                             println!("Uploaded {}", file_added.result);
                             let mut count = thread_completed.lock().unwrap();
