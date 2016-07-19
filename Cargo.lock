@@ -22,7 +22,7 @@ dependencies = [
 [[package]]
 name = "algorithmia"
 version = "1.3.0"
-source = "git+http://github.com/anowell/algorithmia-rust#4c5623da31c81bb2cde3710f582e0abce576702f"
+source = "git+http://github.com/anowell/algorithmia-rust#afda8351f89ac0d2b40e8122e8505b506307ca16"
 dependencies = [
  "chrono 0.2.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
