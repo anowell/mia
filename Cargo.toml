@@ -12,6 +12,7 @@ chan = "0.1.18"
 toml = "0.1.28"
 rpassword = "0.2.0"
 algorithmia = { git = "http://github.com/anowell/algorithmia-rust" }
+algorithmia-fuse = { git = "http://github.com/anowell/algorithmia-fuse" }
 
 [build-dependencies]
 chrono = "0.2.21"

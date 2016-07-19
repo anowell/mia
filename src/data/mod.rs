@@ -4,6 +4,7 @@ pub use self::rmdir::RmDir;
 pub use self::rm::Rm;
 pub use self::cp::Cp;
 pub use self::cat::Cat;
+pub use self::mount::Mount;
 
 mod ls;
 mod mkdir;
@@ -11,6 +12,7 @@ mod cp;
 mod cat;
 mod rm;
 mod rmdir;
+mod mount;
 
 
 pub fn size_with_suffix(size: u64) -> String {

@@ -169,6 +169,7 @@ fn run(args: Vec<String>, profile: &str) {
                 "rm" => data::Rm::new(client).cmd_main(args_iter),
                 "cp" | "copy" => data::Cp::new(client).cmd_main(args_iter),
                 "cat" => data::Cat::new(client).cmd_main(args_iter),
+                "mount" => data::Mount::new(client).cmd_main(args_iter),
                 "run" => algo::Run::new(client).cmd_main(args_iter),
                 _ => algo::Run::new(client).cmd_main(args_iter),
             }
@@ -185,6 +186,7 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "rm" => data::Rm::print_usage(),
         "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
+        "mount" => data::Mount::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };
