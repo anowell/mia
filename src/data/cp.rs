@@ -47,11 +47,13 @@ impl CmdRunner for Cp {
 
         let cp_client = CpClient::new(self.client.clone(), args.flag_c, &args.arg_dest);
 
-        match (args.arg_source.iter().any(|s| s.starts_with("data://")), args.arg_dest.starts_with("data://")) {
-            (true, false) => cp_client.download(args.arg_source),
-            (false, true) => cp_client.upload(args.arg_source),
-            (true, true) => die!("Copying directly from Data URI to Data URI is not currently supported"),
-            (false, false) => die!("Error: paths potentially ambiguous, prefix remote path with data://"),
+        // Download if the dest is a local path or prefixed with file://_
+        //   otherwise, assume upload
+        let dest_parts: Vec<_> = args.arg_dest.splitn(2, "://").collect();
+        if dest_parts.len() < 2 || dest_parts[0] == "file" {
+            cp_client.download(args.arg_source);
+        } else {
+            cp_client.upload(args.arg_source);
         }
     }
 }
@@ -115,6 +117,7 @@ impl CpClient {
 
             thread::spawn(move || {
                 for rx_path in thread_rx {
+                    // TODO: dest could be file or dir.. use `into_type`
                     let my_dir = thread_conn.client.dir(&*thread_conn.dest);
                     let ref dir = my_dir;
                     match dir.put_file(&*rx_path) {
