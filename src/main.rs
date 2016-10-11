@@ -47,6 +47,7 @@ General commands include:
 
 Algorithm commands include:
   run       Runs an algorithm
+  clone     Clones an algorithm source
 
 Data commands include
   ls        List contents of a data directory
@@ -160,6 +161,7 @@ fn run(args: Vec<String>, profile: &str) {
     let args_iter = args.into_iter();
     match &*cmd {
         "auth" => auth::Auth::new().cmd_main(args_iter),
+        "clone" => algo::GitClone::new().cmd_main(args_iter),
         _ => {
             let client = init_client(profile);
             match &*cmd {
@@ -185,6 +187,7 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "rm" => data::Rm::print_usage(),
         "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
+        "clone" => algo::GitClone::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };
