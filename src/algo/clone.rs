@@ -52,7 +52,7 @@ impl GitClone {
             cmd.arg(dir);
         }
 
-        let mut child = cmd.spawn().expect("failed to execute `git clone`. Is git installed?");
+        let mut child = cmd.spawn().unwrap_or_else(|_| { die!("Failed to `git clone`. Is git installed?")});
         let _ = child.wait();
 
     }
