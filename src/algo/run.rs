@@ -10,7 +10,6 @@ use algorithmia::Algorithmia;
 use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions};
 use algorithmia::mime::*;
 use algorithmia::client::Response;
-use algorithmia::error::{Error};
 
 static USAGE: &'static str = "Usage:
   algo [run] [options] <algorithm>
@@ -115,7 +114,7 @@ impl CmdRunner for Run {
             return die!("Multiple input data sources is currently not supported");
         }
 
-        let mut opts = AlgoOptions::new();
+        let mut opts = AlgoOptions::default();
         if args.flag_debug { opts.enable_stdout(); }
         if let Some(timeout) = args.flag_timeout { opts.timeout(timeout); }
 
@@ -170,10 +169,6 @@ impl CmdRunner for Run {
                         AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
                         AlgoOutput::Binary(bytes) => output.write(&bytes),
                     };
-                },
-                Err(Error::ApiError(err)) => match err.stacktrace {
-                    Some(ref trace) => die!("API error: {}\n{}", err, trace),
-                    None => die!("API error: {}", err),
                 },
                 Err(err) => die!("Response error: {}", err),
             };
@@ -281,7 +276,7 @@ impl Run {
 
         match result {
             Ok(response) => response,
-            Err(err) => die!("HTTP Error: {}", err),
+            Err(err) => die!("Error calling algorithm: {}", err),
         }
     }
 }
