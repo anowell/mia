@@ -13,7 +13,7 @@ use toml::{self, Parser, Table, Value};
 
 static USAGE: &'static str = r#"
 Usage:
-  algo auth [<profile>]
+  algo auth [--profile <name>]
 
   Interactively prompts for authentication credentials. If no profile is specified,
   the changes will apply to the 'default' profile. To use a non-default profile for
@@ -30,25 +30,26 @@ Usage:
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    arg_profile: Option<String>,
+    // commented out because profile is stripped by `main` and passed directly into `new`
+    // arg_profile: Option<String>,
 }
 
-pub struct Auth { _priv: () }
+pub struct Auth { profile: String }
 impl CmdRunner for Auth {
     fn get_usage() -> &'static str { USAGE }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
-        let args: Args = Docopt::new(USAGE)
+        let _args: Args = Docopt::new(USAGE)
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        Auth::prompt_for_auth(&args.arg_profile.unwrap_or("default".into()));
+        Auth::prompt_for_auth(&self.profile);
     }
 }
 
 
 impl Auth {
-    pub fn new() -> Self { Auth{ _priv: () } }
+    pub fn new(profile: &str) -> Self { Auth{ profile: profile.to_owned() } }
 
     fn prompt_for_auth(profile_name: &str) {
         println!("Configuring authentication for '{}' profile", profile_name);

@@ -1,10 +1,11 @@
-# https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
+#compdef algo
 
 _algo () {
   local -a _1st_arguments
   _1st_arguments=(
     "auth":"Configure an authentication profile"
     "run":"Run an algorithm"
+    "clone":"Clones an algorithm repo"
     "ls":"List data in a data collection"
     "mkdir":"Create a data collection"
     "rmdir":"Remove a data collection"
@@ -23,7 +24,7 @@ _algo () {
 	local -a _command_args
 	case "$words[1]" in
     auth)
-	      __algo_profiles && return
+      _command_args=()
       ;;
 
 		run)
@@ -51,30 +52,24 @@ _algo () {
       )
       ;;
 
-#   rm)
-#			_command_args=(
-#				'1:Remote file:->data' \
-#      )
-#      ;;
-
   esac
 
 
   _arguments \
-	  '--profile=[authentication profile]:Profile name:->profiles' \
+	  '--profile[authentication profile]:Profile name:->profiles' \
 		$_command_args \
 		&&  return 0
 
 
-  __algo_data () {
-    local expl data profile
-    profile=${opt_args[--profile]:-default}
-
-    # TODO:
-    # 1: figure out how to pass in $parent
-    data=($(algo ls --profile $profile $parent))
-    _wanted data expl data compadd $* -P 'data://' - $data
-  }
+#  __algo_data () {
+#    local expl data profile
+#    profile=${opt_args[--profile]:-default}
+#
+#    # TODO:
+#    # 1: figure out how to pass in $parent
+#    data=($(algo ls --profile $profile $parent))
+#    _wanted data expl data compadd $* -P 'data://' - $data
+#  }
 
 	__algo_profiles () {
     local expl profiles
@@ -93,4 +88,5 @@ _algo () {
 
 }
 
-compdef _algo algo
+
+_algo "$@"

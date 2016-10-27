@@ -78,7 +78,8 @@ Data commands include:
 */
 
 fn print_usage() -> ! {
-    die!("{}", USAGE)
+    println!("{}", USAGE);
+    std::process::exit(0)
 }
 
 #[derive(RustcDecodable, Debug)]
@@ -160,7 +161,7 @@ fn run(args: Vec<String>, profile: &str) {
 
     let args_iter = args.into_iter();
     match &*cmd {
-        "auth" => auth::Auth::new().cmd_main(args_iter),
+        "auth" => auth::Auth::new(profile).cmd_main(args_iter),
         "clone" => algo::GitClone::new().cmd_main(args_iter),
         _ => {
             let client = init_client(profile);
@@ -193,10 +194,12 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
     };
 }
 
-
 trait CmdRunner {
     fn cmd_main(&self, argv: IntoIter<String>);
     fn get_usage() -> &'static str;
 
-    fn print_usage() -> ! { die!("{}", Self::get_usage()) }
+    fn print_usage() -> ! {
+        println!("{}", Self::get_usage());
+        std::process::exit(0)
+    }
 }
