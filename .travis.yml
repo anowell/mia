@@ -1,5 +1,9 @@
 language: rust
 
+# use beta while using serde version of algorithmia client
+rust:
+  - beta
+
 script:
   - cargo build --verbose
 
