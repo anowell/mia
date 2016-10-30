@@ -1,0 +1,52 @@
+_algo()
+{
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    cmd="${COMP_WORDS[1]}"
+
+    #
+    #  The basic options we'll complete.
+    #
+    cmds="auth cat clone cp ls mkdir rm rmdir run"
+
+
+    if [ "${prev}" == "--profile" ]; then
+        local profiles=$(cat ~/.algorithmia | gawk 'match($0, /\[profiles\.(.*)\]/, m) { printf "%s ", m[1] }')
+        COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
+        return 0
+    fi
+
+    #
+    #  Complete the arguments to some of the basic commands.
+    #
+    case "${cmd}" in
+        run)
+            local cmd_opts="--data --data-file --meta --output --profile --silence --timeout"
+            COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
+            return 0
+            ;;
+        ls)
+            local cmd_opts="--profile -l"
+            COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
+            return 0
+            ;;
+        cp)
+						compopt -o default
+						COMPREPLY=()
+						return 0
+            ;;
+        *)
+            if [ -n "${cmd}" ]; then
+							local cmd_opts="--profile"
+							COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
+							return 0
+            fi
+						;;
+    esac
+
+   COMPREPLY=($(compgen -W "${cmds}" -- ${cur}))
+   return 0
+}
+complete -F _algo algo
