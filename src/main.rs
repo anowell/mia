@@ -156,7 +156,7 @@ fn init_client(profile: &str) -> Algorithmia {
 fn run(args: Vec<String>, profile: &str) {
     let cmd = match args.get(1) {
         Some(c) => c.clone(),
-        _ => "run".into(),
+        _ => print_usage(),
     };
 
     let args_iter = args.into_iter();
@@ -173,7 +173,7 @@ fn run(args: Vec<String>, profile: &str) {
                 "cp" | "copy" => data::Cp::new(client).cmd_main(args_iter),
                 "cat" => data::Cat::new(client).cmd_main(args_iter),
                 "run" => algo::Run::new(client).cmd_main(args_iter),
-                _ => algo::Run::new(client).cmd_main(args_iter),
+                _ => print_usage(),
             }
         },
     };

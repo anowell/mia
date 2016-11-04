@@ -12,7 +12,7 @@ use algorithmia::mime::*;
 use algorithmia::client::Response;
 
 static USAGE: &'static str = "Usage:
-  algo [run] [options] <algorithm>
+  algo run [options] <algorithm>
 
   <algorithm> syntax: USERNAME/ALGONAME[/VERSION]
   Recommend specifying a version since algorithm costs can change between minor versions.
