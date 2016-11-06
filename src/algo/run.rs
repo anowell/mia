@@ -8,8 +8,8 @@ use std::vec::IntoIter;
 use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
 use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions};
-use algorithmia::mime::*;
-use algorithmia::client::Response;
+use hyper::client::response::Response;
+use hyper::mime::*;
 
 static USAGE: &'static str = "Usage:
   algo run [options] <algorithm>

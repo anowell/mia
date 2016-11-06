@@ -127,14 +127,12 @@ impl CpClient {
                     let put_res = match dest_obj.into_type() {
                         // If dest exists as DataFile, overwrite it
                         Ok(DataItem::File(f)) => {
-                            println!("DEBUG1: {}", f.to_data_uri());
                             let mut file = File::open(&*rx_path).unwrap();
                             f.put(&mut file)
                         }
                         // If dest exists as DataDir, add file to dir
                         Ok(DataItem::Dir(d)) => {
-                            let path = Path::new(&rx_path);
-                            d.put_file(path.file_name().expect("source has no filename"))
+                            d.put_file(&rx_path)
                         }
                         // Otherwise, try adding new file with exact path as dest
                         Err(_) => {

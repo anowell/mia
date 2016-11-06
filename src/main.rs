@@ -1,6 +1,7 @@
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
+extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;
 
@@ -132,10 +133,9 @@ fn init_client(profile: &str) -> Algorithmia {
                 Some(&Value::String(ref key)) => {
                     match p.get("api_server") {
                         Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => {
-                            Algorithmia::alt_client(api.parse().unwrap(),
-                                                    ApiAuth::SimpleAuth(key.clone()))
+                            Algorithmia::alt_client(api, ApiAuth::ApiKey(key.clone()))
                         }
-                        None => Algorithmia::client(ApiAuth::SimpleAuth(key.clone())),
+                        None => Algorithmia::client(ApiAuth::ApiKey(key.clone())),
                         _ => die!("{} profile has invalid 'api_server'", profile),
                     }
                 }
@@ -151,7 +151,7 @@ fn init_client(profile: &str) -> Algorithmia {
                         Ok(ref key) => {
                             match env::var("ALGORITHMIA_API") {
                                 Ok(ref api) if api.parse::<Url>().is_ok() => {
-                                    Algorithmia::alt_client(api.parse().unwrap(), &**key)
+                                    Algorithmia::alt_client(api, &**key)
                                 }
                                 Err(_) => Algorithmia::client(&**key),
                                 _ => die!("Invalid ALGORITHMIA_API environment variable"),
