@@ -8,8 +8,10 @@ use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
 
-#[cfg(unix)] use std::fs::OpenOptions;
-#[cfg(unix)] use std::os::unix::fs::OpenOptionsExt;
+#[cfg(unix)]
+use std::fs::OpenOptions;
+#[cfg(unix)]
+use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r#"
 Usage:
@@ -34,9 +36,13 @@ struct Args {
     // arg_profile: Option<String>,
 }
 
-pub struct Auth { profile: String }
+pub struct Auth {
+    profile: String,
+}
 impl CmdRunner for Auth {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let _args: Args = Docopt::new(USAGE)
@@ -49,7 +55,9 @@ impl CmdRunner for Auth {
 
 
 impl Auth {
-    pub fn new(profile: &str) -> Self { Auth{ profile: profile.to_owned() } }
+    pub fn new(profile: &str) -> Self {
+        Auth { profile: profile.to_owned() }
+    }
 
     fn prompt_for_auth(profile_name: &str) {
         println!("Configuring authentication for '{}' profile", profile_name);
@@ -69,10 +77,14 @@ impl Auth {
 
             match profile_name {
                 "default" => println!("Profile is ready to use. Test with 'algo ls'"),
-                p => println!("Profile is ready to use. Test with 'algo ls --profile {}", p),
+                p => {
+                    println!("Profile is ready to use. Test with 'algo ls --profile {}",
+                             p)
+                }
             };
         } else {
-            println!("That API Key doesn't look quite right. No changes made to '{}' profile.", profile_name);
+            println!("That API Key doesn't look quite right. No changes made to '{}' profile.",
+                     profile_name);
         }
 
     }
@@ -85,11 +97,13 @@ impl Auth {
 
     pub fn read_profile(profile_name: String) -> Option<Table> {
         match Self::read_config() {
-            Some(t) => match Value::Table(t).lookup(&format!("profiles.{}", profile_name)) {
-                Some(&Value::Table(ref p)) => Some(p.clone()),
-                Some(_) => die!("Invalid profile format in {}", get_config_path()),
-                None => None,
-            },
+            Some(t) => {
+                match Value::Table(t).lookup(&format!("profiles.{}", profile_name)) {
+                    Some(&Value::Table(ref p)) => Some(p.clone()),
+                    Some(_) => die!("Invalid profile format in {}", get_config_path()),
+                    None => None,
+                }
+            }
             None => None,
         }
     }
@@ -102,10 +116,11 @@ impl Auth {
                 let mut conf_toml = String::new();
                 let _ = f.read_to_string(&mut conf_toml);
                 let config = Parser::new(&conf_toml).parse().unwrap_or_else(|| {
-                    die!("Unable to parse {}. Consider deleting and re-running 'algo auth'", conf_path);
+                    die!("Unable to parse {}. Consider deleting and re-running 'algo auth'",
+                         conf_path);
                 });
                 Some(config)
-            },
+            }
             Err(_) => None,
         }
     }
@@ -134,7 +149,6 @@ impl Auth {
 
         }
     }
-
 }
 
 #[cfg(not(unix))]

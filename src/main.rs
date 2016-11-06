@@ -62,20 +62,20 @@ Global options:
   --profile <name>      Run a particular command for the specified profile
 ";
 
-/* TODO: Add support for:
-
-Note: Add Option [--profile <profile>]
-
-Algorithm commands include:
-  view      View algorithm details (e.g. cost)
-  clone     Clone an algorithm (wrapper around git clone)
-  fork      Fork an algorithm
-
-Data commands include:
-  download  Download file(s) from a collection
-  rm        Delete file(s) in a collection
-  chmod     Change permissions on a collection
-*/
+// TODO: Add support for:
+//
+// Note: Add Option [--profile <profile>]
+//
+// Algorithm commands include:
+// view      View algorithm details (e.g. cost)
+// clone     Clone an algorithm (wrapper around git clone)
+// fork      Fork an algorithm
+//
+// Data commands include:
+// download  Download file(s) from a collection
+// rm        Delete file(s) in a collection
+// chmod     Change permissions on a collection
+//
 
 fn print_usage() -> ! {
     println!("{}", USAGE);
@@ -101,14 +101,12 @@ fn main() {
                 // grab one more arg in-case --help preceded <cmd>
                 cmd_args.push(args.next().unwrap_or_default());
                 print_cmd_usage(cmd_args.get(1).map(|s| s.as_str()));
-            },
-            "--profile" => {
-                profile = args.next().unwrap_or(profile.to_string())
-            },
+            }
+            "--profile" => profile = args.next().unwrap_or(profile.to_string()),
             "--version" => die!("{}", version::VERSION),
             _ => cmd_args.push(arg),
         }
-    };
+    }
 
     if cmd_args.len() < 2 {
         print_cmd_usage(None);
@@ -129,26 +127,41 @@ fn init_client(profile: &str) -> Algorithmia {
     match auth::Auth::read_profile(profile.into()) {
 
         // Use the profile attribute(s)
-        Some(p) => match p.get("api_key") {
-            Some(&Value::String(ref key)) => match p.get("api_server") {
-                Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), ApiAuth::SimpleAuth(key.clone())),
-                None => Algorithmia::client(ApiAuth::SimpleAuth(key.clone())),
-                _ => die!("{} profile has invalid 'api_server'", profile),
-            },
-            _ => die!("{} profile has missing or invalid 'api_key'", profile),
-        },
+        Some(p) => {
+            match p.get("api_key") {
+                Some(&Value::String(ref key)) => {
+                    match p.get("api_server") {
+                        Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => {
+                            Algorithmia::alt_client(api.parse().unwrap(),
+                                                    ApiAuth::SimpleAuth(key.clone()))
+                        }
+                        None => Algorithmia::client(ApiAuth::SimpleAuth(key.clone())),
+                        _ => die!("{} profile has invalid 'api_server'", profile),
+                    }
+                }
+                _ => die!("{} profile has missing or invalid 'api_key'", profile),
+            }
+        }
 
         // Fall-back to env var (but only if profile was not specified)
-        None => match profile {
-            "default" => match env::var("ALGORITHMIA_API_KEY") {
-                Ok(ref key) => match env::var("ALGORITHMIA_API") {
-                    Ok(ref api) if api.parse::<Url>().is_ok() => Algorithmia::alt_client(api.parse().unwrap(), &**key),
-                    Err(_) => Algorithmia::client(&**key),
-                    _ => die!("Invalid ALGORITHMIA_API environment variable"),
-                },
-                Err(_) => die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"),
-            },
-            _ => die!("{} profile not found. Run 'algo auth {0}'", profile),
+        None => {
+            match profile {
+                "default" => {
+                    match env::var("ALGORITHMIA_API_KEY") {
+                        Ok(ref key) => {
+                            match env::var("ALGORITHMIA_API") {
+                                Ok(ref api) if api.parse::<Url>().is_ok() => {
+                                    Algorithmia::alt_client(api.parse().unwrap(), &**key)
+                                }
+                                Err(_) => Algorithmia::client(&**key),
+                                _ => die!("Invalid ALGORITHMIA_API environment variable"),
+                            }
+                        }
+                        Err(_) => die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"),
+                    }
+                }
+                _ => die!("{} profile not found. Run 'algo auth {0}'", profile),
+            }
         }
     }
 }
@@ -175,7 +188,7 @@ fn run(args: Vec<String>, profile: &str) {
                 "run" => algo::Run::new(client).cmd_main(args_iter),
                 _ => print_usage(),
             }
-        },
+        }
     };
 }
 

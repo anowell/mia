@@ -23,9 +23,13 @@ struct Args {
     flag_force: bool,
 }
 
-pub struct RmDir { client: Algorithmia }
+pub struct RmDir {
+    client: Algorithmia,
+}
 impl CmdRunner for RmDir {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -37,7 +41,9 @@ impl CmdRunner for RmDir {
 }
 
 impl RmDir {
-    pub fn new(client: Algorithmia) -> Self { RmDir{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        RmDir { client: client }
+    }
 
     fn delete_dir(&self, path: &str, force: bool) {
         let my_dir = self.client.dir(path);

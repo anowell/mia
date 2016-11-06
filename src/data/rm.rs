@@ -18,9 +18,13 @@ struct Args {
     arg_data_file: String,
 }
 
-pub struct Rm { client: Algorithmia }
+pub struct Rm {
+    client: Algorithmia,
+}
 impl CmdRunner for Rm {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -33,7 +37,9 @@ impl CmdRunner for Rm {
 }
 
 impl Rm {
-    pub fn new(client: Algorithmia) -> Self { Rm{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        Rm { client: client }
+    }
 
     fn delete_file(&self, path: &str) {
         let my_file = self.client.file(path);

@@ -18,9 +18,13 @@ struct Args {
     arg_data_dir: String,
 }
 
-pub struct MkDir { client: Algorithmia }
+pub struct MkDir {
+    client: Algorithmia,
+}
 impl CmdRunner for MkDir {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -29,11 +33,12 @@ impl CmdRunner for MkDir {
 
         self.create_dir(&*args.arg_data_dir);
     }
-
 }
 
 impl MkDir {
-    pub fn new(client: Algorithmia) -> Self { MkDir{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        MkDir { client: client }
+    }
 
     fn create_dir(&self, path: &str) {
         let my_dir = self.client.dir(path);

@@ -17,9 +17,13 @@ struct Args {
     arg_data_file: Vec<String>,
 }
 
-pub struct Cat { client: Algorithmia }
+pub struct Cat {
+    client: Algorithmia,
+}
 impl CmdRunner for Cat {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -28,13 +32,14 @@ impl CmdRunner for Cat {
 
         for f in args.arg_data_file {
             cat_file(self.client.file(&*f))
-        };
+        }
     }
 }
 
 impl Cat {
-    pub fn new(client: Algorithmia) -> Self { Cat{ client:client } }
-
+    pub fn new(client: Algorithmia) -> Self {
+        Cat { client: client }
+    }
 }
 
 fn cat_file(data_file: DataFile) {
@@ -47,9 +52,7 @@ fn cat_file(data_file: DataFile) {
                 Ok(_) => (),
                 Err(err) => die!("Error copying data: {}", err),
             }
-        },
+        }
         Err(e) => die!("Error downloading {}: {}", data_file.to_data_uri(), e),
     };
 }
-
-

@@ -75,9 +75,13 @@ struct Args {
     flag_timeout: Option<u32>,
 }
 
-pub struct Run { client: Algorithmia }
+pub struct Run {
+    client: Algorithmia,
+}
 impl CmdRunner for Run {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         // We need to preprocess input args before giving other args to Docopt
@@ -86,21 +90,34 @@ impl CmdRunner for Run {
 
         let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
         let next_arg = |argv_iter: &mut IntoIter<String>| {
-            argv_iter.next().unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
+            argv_iter.next()
+                .unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
         };
         while let Some(flag) = argv_mut.next() {
             match &*flag {
-                "-d" | "--data" => input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes())),
+                "-d" | "--data" => {
+                    input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes()))
+                }
                 "-j" | "--json" => input_args.push(InputData::Json(next_arg(&mut argv_mut))),
                 "-t" | "--text" => input_args.push(InputData::Text(next_arg(&mut argv_mut))),
-                "-b" | "--binary" => input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes())),
-                "-D" | "--data-file" => input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-J" | "--json-file" => input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-T" | "--text-file" => input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-B" | "--binary-file" => input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut)))),
-                _ => other_args.push(flag)
+                "-b" | "--binary" => {
+                    input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes()))
+                }
+                "-D" | "--data-file" => {
+                    input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-J" | "--json-file" => {
+                    input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-T" | "--text-file" => {
+                    input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-B" | "--binary-file" => {
+                    input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                _ => other_args.push(flag),
             };
-        };
+        }
 
         // Finally: parse the remaining args with Docopt
         let args: Args = Docopt::new(USAGE)
@@ -115,8 +132,12 @@ impl CmdRunner for Run {
         }
 
         let mut opts = AlgoOptions::default();
-        if args.flag_debug { opts.enable_stdout(); }
-        if let Some(timeout) = args.flag_timeout { opts.timeout(timeout); }
+        if args.flag_debug {
+            opts.enable_stdout();
+        }
+        if let Some(timeout) = args.flag_timeout {
+            opts.timeout(timeout);
+        }
 
         // Open up an output device for the result/response
         let mut output = OutputDevice::new(&args.flag_output);
@@ -135,7 +156,10 @@ impl CmdRunner for Run {
         // Handle --response and --response-body (ignoring other flags)
         if args.flag_response || args.flag_response_body {
             if args.flag_response {
-                let preamble = format!("{} {}\n{}", response.version, response.status, response.headers);
+                let preamble = format!("{} {}\n{}",
+                                       response.version,
+                                       response.status,
+                                       response.headers);
                 output.writeln(preamble.as_bytes());
             };
             output.writeln(json_response.as_bytes());
@@ -169,7 +193,7 @@ impl CmdRunner for Run {
                         AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
                         AlgoOutput::Binary(bytes) => output.write(&bytes),
                     };
-                },
+                }
                 Err(err) => die!("Response error: {}", err),
             };
         }
@@ -185,7 +209,6 @@ enum InputData {
 }
 
 impl InputData {
-
     // Auto-detect the InputData type
     // 1. Json if it parses as JSON
     // 2. Text if it parses as UTF-8
@@ -197,10 +220,12 @@ impl InputData {
         }
 
         match String::from_utf8(bytes) {
-            Ok(data) => match Json::from_str(&data) {
-                Ok(_) => InputData::Json(data),
-                Err(_) => InputData::Text(data),
-            },
+            Ok(data) => {
+                match Json::from_str(&data) {
+                    Ok(_) => InputData::Json(data),
+                    Err(_) => InputData::Text(data),
+                }
+            }
             Err(not_utf8) => InputData::Binary(not_utf8.into_bytes()),
         }
     }
@@ -234,17 +259,19 @@ impl InputData {
 // The device specified by --output flag
 // Only the result or response is written to this device
 struct OutputDevice {
-    writer: Box<Write>
+    writer: Box<Write>,
 }
 
 impl OutputDevice {
     fn new(output_dest: &Option<String>) -> OutputDevice {
         match output_dest {
-            &Some(ref file_path) => match File::create(file_path) {
-                Ok(buf) => OutputDevice{ writer: Box::new(buf) },
-                Err(err) => die!("Unable to create file: {}", err),
-            },
-            &None => OutputDevice{ writer: Box::new(io::stdout()) },
+            &Some(ref file_path) => {
+                match File::create(file_path) {
+                    Ok(buf) => OutputDevice { writer: Box::new(buf) },
+                    Err(err) => die!("Unable to create file: {}", err),
+                }
+            }
+            &None => OutputDevice { writer: Box::new(io::stdout()) },
         }
     }
 
@@ -262,16 +289,27 @@ impl OutputDevice {
 }
 
 impl Run {
-    pub fn new(client: Algorithmia) -> Self { Run{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        Run { client: client }
+    }
 
     fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
         let mut algorithm = self.client.algo(algo);
         let algorithm = algorithm.set_options(opts);
 
         let result = match input_data {
-            InputData::Text(text) => algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![])),
-            InputData::Json(json) => algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![])),
-            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, Mime(TopLevel::Application, SubLevel::Ext("octet-stream".into()), vec![])),
+            InputData::Text(text) => {
+                algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![]))
+            }
+            InputData::Json(json) => {
+                algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![]))
+            }
+            InputData::Binary(bytes) => {
+                algorithm.pipe_as(&*bytes,
+                                  Mime(TopLevel::Application,
+                                       SubLevel::Ext("octet-stream".into()),
+                                       vec![]))
+            }
         };
 
         match result {

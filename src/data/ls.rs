@@ -26,10 +26,14 @@ struct Args {
     flag_l: bool,
 }
 
-pub struct Ls { client: Algorithmia }
+pub struct Ls {
+    client: Algorithmia,
+}
 
 impl CmdRunner for Ls {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -41,7 +45,9 @@ impl CmdRunner for Ls {
 }
 
 impl Ls {
-    pub fn new(client: Algorithmia) -> Self { Ls{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        Ls { client: client }
+    }
 
     fn list_dir(&self, path: &str, long: bool) {
         let ref c = self.client;
@@ -49,20 +55,32 @@ impl Ls {
 
         if long {
             for entry_result in my_dir.list() {
-                    match entry_result {
-                        Ok(DataItem::Dir(d)) => println!("{:19} {:>5} {}", "--         --", "[dir]", d.basename().unwrap()),
-                        Ok(DataItem::File(f)) => println!("{:19} {:>5} {}", f.last_modified.format("%Y-%m-%d %H:%M:%S"), data::size_with_suffix(f.size), f.basename().unwrap()),
-                        Err(err) => die!("Error listing directory: {}", err),
-                    }
-            }
-        } else {
-            let names: Vec<String> = my_dir.list().map(|entry_result| {
                 match entry_result {
-                    Ok(DataItem::Dir(d)) => d.basename().unwrap(),
-                    Ok(DataItem::File(f)) => f.basename().unwrap(),
+                    Ok(DataItem::Dir(d)) => {
+                        println!("{:19} {:>5} {}",
+                                 "--         --",
+                                 "[dir]",
+                                 d.basename().unwrap())
+                    }
+                    Ok(DataItem::File(f)) => {
+                        println!("{:19} {:>5} {}",
+                                 f.last_modified.format("%Y-%m-%d %H:%M:%S"),
+                                 data::size_with_suffix(f.size),
+                                 f.basename().unwrap())
+                    }
                     Err(err) => die!("Error listing directory: {}", err),
                 }
-            }).collect();
+            }
+        } else {
+            let names: Vec<String> = my_dir.list()
+                .map(|entry_result| {
+                    match entry_result {
+                        Ok(DataItem::Dir(d)) => d.basename().unwrap(),
+                        Ok(DataItem::File(f)) => f.basename().unwrap(),
+                        Err(err) => die!("Error listing directory: {}", err),
+                    }
+                })
+                .collect();
 
             let width = 80; // TODO: get_winsize()
 

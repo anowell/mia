@@ -36,9 +36,13 @@ struct Args {
     flag_c: u32,
 }
 
-pub struct Cp { client: Algorithmia }
+pub struct Cp {
+    client: Algorithmia,
+}
 impl CmdRunner for Cp {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -59,7 +63,9 @@ impl CmdRunner for Cp {
 }
 
 impl Cp {
-    pub fn new(client: Algorithmia) -> Self { Cp{ client:client } }
+    pub fn new(client: Algorithmia) -> Self {
+        Cp { client: client }
+    }
 }
 
 struct CpClient {
@@ -143,7 +149,7 @@ impl CpClient {
                             println!("Uploaded {}", file_added.result);
                             let mut count = thread_completed.lock().unwrap();
                             *count += 1;
-                        },
+                        }
                         Err(e) => die!("Error uploading {}: {}", rx_path, e),
                     };
                 }
@@ -157,7 +163,7 @@ impl CpClient {
 
 
 
-    fn download(&self, sources: Vec<String>)  {
+    fn download(&self, sources: Vec<String>) {
         // As long as we aren't recursing, we can be more aggressive in limiting threads we spin up
         // TODO: when supporting datadir recursion, fall-back to max_concurrency
         let concurrency = cmp::min(sources.len(), self.max_concurrency as usize);
@@ -194,7 +200,7 @@ impl CpClient {
                             let mut count = thread_completed.lock().unwrap();
                             *count += 1;
                         }
-                        Err(err) => die!("{}", err)
+                        Err(err) => die!("{}", err),
                     }
                 }
                 thread_wg.done();
@@ -202,7 +208,8 @@ impl CpClient {
         }
 
         wg.wait();
-        println!("Finished downloading {} file(s)", *completed.lock().unwrap());
+        println!("Finished downloading {} file(s)",
+                 *completed.lock().unwrap());
     }
 }
 
@@ -211,7 +218,9 @@ fn download_file(data_file: DataFile, local_path: &str) -> Result<u64, String> {
     match data_file.get() {
         Ok(mut response) => {
             let full_path = match fs::metadata(local_path) {
-                Ok(ref m) if m.is_dir() => Path::new(local_path).join(data_file.basename().unwrap()),
+                Ok(ref m) if m.is_dir() => {
+                    Path::new(local_path).join(data_file.basename().unwrap())
+                }
                 _ => Path::new(local_path).to_owned(),
             };
 
@@ -225,8 +234,7 @@ fn download_file(data_file: DataFile, local_path: &str) -> Result<u64, String> {
                 Ok(bytes) => Ok(bytes),
                 Err(err) => Err(format!("Error copying data: {}", err)),
             }
-        },
+        }
         Err(e) => Err(format!("Error downloading ({}): {}", data_file.to_data_uri(), e)),
     }
 }
-
