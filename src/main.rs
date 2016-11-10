@@ -1,7 +1,9 @@
+#[macro_use]
+extern crate mime;
+
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
-extern crate mime;
 extern crate rustc_serialize;
 extern crate toml;
 

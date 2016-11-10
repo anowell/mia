@@ -8,7 +8,6 @@ use std::vec::IntoIter;
 use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
 use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions, Response};
-use mime::*;
 
 static USAGE: &'static str = "Usage:
   algo run [options] <algorithm>
@@ -298,16 +297,13 @@ impl Run {
 
         let result = match input_data {
             InputData::Text(text) => {
-                algorithm.pipe_as(&*text, Mime(TopLevel::Text, SubLevel::Plain, vec![]))
+                algorithm.pipe_as(&*text, mime!(Text/Plain))
             }
             InputData::Json(json) => {
-                algorithm.pipe_as(&*json, Mime(TopLevel::Application, SubLevel::Json, vec![]))
+                algorithm.pipe_as(&*json, mime!(Application/Json))
             }
             InputData::Binary(bytes) => {
-                algorithm.pipe_as(&*bytes,
-                                  Mime(TopLevel::Application,
-                                       SubLevel::Ext("octet-stream".into()),
-                                       vec![]))
+                algorithm.pipe_as(&*bytes, mime!(Application/OctetStream))
             }
         };
 
