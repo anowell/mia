@@ -1,7 +1,7 @@
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
-extern crate hyper;
+extern crate mime;
 extern crate rustc_serialize;
 extern crate toml;
 

@@ -7,9 +7,8 @@ use std::path::Path;
 use std::vec::IntoIter;
 use rustc_serialize::json::Json;
 use algorithmia::Algorithmia;
-use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions};
-use hyper::client::response::Response;
-use hyper::mime::*;
+use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions, Response};
+use mime::*;
 
 static USAGE: &'static str = "Usage:
   algo run [options] <algorithm>
@@ -157,9 +156,9 @@ impl CmdRunner for Run {
         if args.flag_response || args.flag_response_body {
             if args.flag_response {
                 let preamble = format!("{} {}\n{}",
-                                       response.version,
-                                       response.status,
-                                       response.headers);
+                                       response.version(),
+                                       response.status(),
+                                       response.headers());
                 output.writeln(preamble.as_bytes());
             };
             output.writeln(json_response.as_bytes());

@@ -11,11 +11,11 @@ rustc-serialize = "0.3.19"
 chan = "0.1.18"
 toml = "0.1.28"
 rpassword = "0.2.0"
-hyper = "0.9"
+mime = "0.2.2"
 
 [dependencies.algorithmia]
 git = "http://github.com/anowell/algorithmia-rust"
-default-features = false  # disables "with-serde" feature
+default-features = false
 features = ["with-rustc-serialize"]
 
 [build-dependencies]
