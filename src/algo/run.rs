@@ -130,9 +130,7 @@ impl CmdRunner for Run {
         }
 
         let mut opts = AlgoOptions::default();
-        if args.flag_debug {
-            opts.enable_stdout();
-        }
+        opts.stdout(args.flag_debug);
         if let Some(timeout) = args.flag_timeout {
             opts.timeout(timeout);
         }
