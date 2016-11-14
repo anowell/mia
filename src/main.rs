@@ -4,6 +4,8 @@ extern crate mime;
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
+extern crate hyper;
+extern crate langserver;
 extern crate rustc_serialize;
 extern crate toml;
 
@@ -118,6 +120,7 @@ fn main() {
     }
 }
 
+// Switch to using app_dirs crate
 pub fn get_config_path() -> String {
     if cfg!(windows) {
         format!("{}/algorithmia", env::var("LOCALAPPDATA").unwrap())
@@ -178,6 +181,7 @@ fn run(args: Vec<String>, profile: &str) {
     match &*cmd {
         "auth" => auth::Auth::new(profile).cmd_main(args_iter),
         "clone" => algo::GitClone::new().cmd_main(args_iter),
+        "serve" => algo::Serve::new().cmd_main(args_iter), // TODO: send profile info
         _ => {
             let client = init_client(profile);
             match &*cmd {
@@ -204,6 +208,7 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
         "clone" => algo::GitClone::print_usage(),
+        "serve" => algo::Serve::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };

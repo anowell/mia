@@ -13,10 +13,18 @@ toml = "0.1.28"
 rpassword = "0.2.0"
 mime = "0.2.2"
 
+[dependencies.hyper]
+version = "0.9"
+default-features = false
+
 [dependencies.algorithmia]
 git = "http://github.com/anowell/algorithmia-rust"
 default-features = false
 features = ["with-rustc-serialize"]
+
+[dependencies.langserver]
+path = "/home/anowell/algo/langpacks"
+default-features = false
 
 [build-dependencies]
 chrono = "0.2.21"
