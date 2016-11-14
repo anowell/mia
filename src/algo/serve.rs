@@ -8,22 +8,24 @@ use langserver::{LangServer, LangServerMode};
 use hyper::server::Server;
 
 static USAGE: &'static str = "Usage:
-  algo serve [options]
+  algo serve [options] [<path>]
 
   This will start a minimal server to serve the algorithm in the current directory..
 
   Note: This does not currently work for Java or Scala algorithms.
 
   Options:
-    -c <runtime_image>              Containerize server using specific docker image
-    -z <zipfile>                    Zipfile to serve
+    -c, --container <runtime_image>              Containerize server using specific docker image
+    -p, --port <port>                            Port to listen on [default: 9999]
 ";
 
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    // arg_c: String,
-    // arg_z: String,
+    // TODO: support using algorithm.zip path
+    arg_path: Option<String>,
+    flag_port: u32,
+    // arg_container: Option<String>, // TODO:
 }
 
 pub struct Serve;
@@ -37,7 +39,7 @@ impl CmdRunner for Serve {
 
 
         // Serve the algorithm
-        self.serve_algorithm();
+        self.serve_algorithm(args.flag_port as u16, args.arg_path.as_ref());
     }
 }
 
@@ -46,9 +48,11 @@ impl Serve {
         Serve
     }
 
-    fn serve_algorithm(&self) {
-        let mut path = env::current_dir().expect("Failed to get current dir");
-        path.push("bin/build");
+    fn serve_algorithm(&self, port: u16, path: Option<&String>) {
+        if let Some(p) = path {
+            env::set_current_dir(p)
+                .unwrap_or_else(|err| die!("Failed to set working directory: {}", err));
+        }
 
         let mut child = Command::new("bin/build")
                             .spawn()
@@ -58,14 +62,13 @@ impl Serve {
         let langserver = LangServer::start(LangServerMode::Sync, None)
             .unwrap_or_else(|err| { die!("Failed to start LangServer: {}", err)});
 
-        let _ = Server::http("0.0.0.0:9999")
+        let _ = Server::http(("0.0.0.0", port))
             .and_then(|s| s.handle(langserver))
             .map(|_listener| {
-                println!("Listening on port 9999.");
+                println!("Listening on port {}.", port);
                 // TODO: tear down listener cleanly when algorithm completes
             });
     }
-
 
 }
 
