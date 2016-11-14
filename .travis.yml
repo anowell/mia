@@ -17,6 +17,11 @@ matrix:
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-gnu
+      sudo: required
+      addons:
+        apt:
+          packages:
+            - libssl-dev
     - os: linux
       rust: stable
       env: TARGET=x86_64-unknown-linux-musl
@@ -24,7 +29,11 @@ matrix:
       sudo: required
       addons:
         apt:
-          packages: *musl_packages
+          packages:
+            - libssl-dev
+            - musl
+            - musl-dev
+            - musl-tools
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"

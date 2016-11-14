@@ -55,8 +55,6 @@ main() {
     configure_cargo
 
     # If you need to install extra stuff add it here
-    sudo apt-get install -y --no-install-recommends \
-                 libssl-dev
 }
 
 main
