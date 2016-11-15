@@ -10,7 +10,7 @@ use std::path::Path;
 use std::vec::IntoIter;
 use super::size_with_suffix;
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo cp [options] <source>... <dest>
   algo copy [options] <source>... <dest>
 
@@ -24,7 +24,7 @@ static USAGE: &'static str = "Usage:
   Examples:
     algo cp file1.jpg file2.jpg data://.my/foo          Upload 2 files to your 'foo' data directory
     algo cp data://.my/foo/file1.jpg .                  Download file1.jpg to the workig directory
-";
+"##;
 
 // TODO:
 // -r                   Recursive copy if the source is a directory
@@ -131,9 +131,7 @@ impl CpClient {
                             f.put(file)
                         }
                         // If dest exists as DataDir, add file to dir
-                        Ok(DataItem::Dir(d)) => {
-                            d.put_file(&rx_path)
-                        }
+                        Ok(DataItem::Dir(d)) => d.put_file(&rx_path),
                         // Otherwise, try adding new file with exact path as dest
                         Err(_) => {
                             let file = File::open(&*rx_path).unwrap();

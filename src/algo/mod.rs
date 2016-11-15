@@ -21,7 +21,6 @@ enum InputData {
 }
 
 impl InputData {
-
     // Auto-detect the InputData type
     // 1. Json if it parses as JSON
     // 2. Text if it parses as UTF-8
@@ -33,10 +32,12 @@ impl InputData {
         }
 
         match String::from_utf8(bytes) {
-            Ok(data) => match Json::from_str(&data) {
-                Ok(_) => InputData::Json(data),
-                Err(_) => InputData::Text(data),
-            },
+            Ok(data) => {
+                match Json::from_str(&data) {
+                    Ok(_) => InputData::Json(data),
+                    Err(_) => InputData::Text(data),
+                }
+            }
             Err(not_utf8) => InputData::Binary(not_utf8.into_bytes()),
         }
     }
@@ -70,17 +71,19 @@ impl InputData {
 // The device specified by --output flag
 // Only the result or response is written to this device
 struct OutputDevice {
-    writer: Box<Write>
+    writer: Box<Write>,
 }
 
 impl OutputDevice {
     fn new(output_dest: &Option<String>) -> OutputDevice {
-        match output_dest {
-            &Some(ref file_path) => match File::create(file_path) {
-                Ok(buf) => OutputDevice{ writer: Box::new(buf) },
-                Err(err) => die!("Unable to create file: {}", err),
-            },
-            &None => OutputDevice{ writer: Box::new(io::stdout()) },
+        match *output_dest {
+            Some(ref file_path) => {
+                match File::create(file_path) {
+                    Ok(buf) => OutputDevice { writer: Box::new(buf) },
+                    Err(err) => die!("Unable to create file: {}", err),
+                }
+            }
+            None => OutputDevice { writer: Box::new(io::stdout()) },
         }
     }
 

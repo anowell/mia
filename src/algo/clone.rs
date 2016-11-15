@@ -4,8 +4,7 @@ use docopt::Docopt;
 use std::process::Command;
 use std::vec::IntoIter;
 
-static USAGE: &'static str =
-    "Usage:
+static USAGE: &'static str = r##"Usage:
   algo clone <algorithm> [<directory>]
 
   <algorithm> syntax: USERNAME/ALGONAME
@@ -22,7 +21,7 @@ static USAGE: &'static str =
      anowell/bcrypt                         Clones an algorithm repo
     algo clone anowell/Pinky \
      pinky-quotes             Clones an algorithm repo into a specific directory
-";
+"##;
 
 
 #[derive(RustcDecodable, Debug)]

@@ -4,7 +4,7 @@ use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo rmdir [options] <data-dir>
 
   Removes a directory from the Agorithmia Data API
@@ -15,7 +15,7 @@ static USAGE: &'static str = "Usage:
   Options:
     -f, --force     Force deletion even directory has contents
 
-";
+"##;
 
 #[derive(RustcDecodable, Debug)]
 struct Args {

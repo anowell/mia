@@ -13,7 +13,7 @@ use std::fs::OpenOptions;
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 
-static USAGE: &'static str = r#"
+static USAGE: &'static str = r##"
 Usage:
   algo auth [--profile <name>]
 
@@ -28,7 +28,7 @@ Usage:
 
     [profiles.default]
     sim_key = "sim1234567890abcdef"
-"#;
+"##;
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
@@ -69,7 +69,7 @@ impl Auth {
             Err(err) => die!("Cannot read password: {}", err),
         };
         if api_key.len() == 28 && api_key.starts_with("sim") {
-            let mut config = Self::read_config().unwrap_or(Table::new());
+            let mut config = Self::read_config().unwrap_or_else(Table::new);
             let profile = Self::make_profile(api_key.into());
 
             Self::update_profile(&mut config, profile_name.into(), profile);

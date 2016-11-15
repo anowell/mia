@@ -6,10 +6,10 @@ use docopt::Docopt;
 use std::io;
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "Usage: algo cat <data-file>...
+static USAGE: &'static str = r##"Usage: algo cat <data-file>...
 
   Concatenate file(s) from the Algorithmia Data API and print on standard output
-";
+"##;
 
 
 #[derive(RustcDecodable, Debug)]

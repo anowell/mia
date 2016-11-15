@@ -7,7 +7,7 @@ use algorithmia::Algorithmia;
 use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions, Response};
 use super::{InputData, OutputDevice, get_src};
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo run [options] <algorithm>
 
   <algorithm> syntax: USERNAME/ALGONAME[/VERSION]
@@ -55,7 +55,7 @@ static USAGE: &'static str = "Usage:
     algo anowell/Dijkstra -J routes.json              Run algorithm with file input
     algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
     algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binary data input
-";
+"##;
 
 
 #[derive(RustcDecodable, Debug)]
@@ -205,14 +205,10 @@ impl Run {
         let algorithm = algorithm.set_options(opts);
 
         let result = match input_data {
-            InputData::Text(text) => {
-                algorithm.pipe_as(&*text, mime!(Text/Plain))
-            }
-            InputData::Json(json) => {
-                algorithm.pipe_as(&*json, mime!(Application/Json))
-            }
+            InputData::Text(text) => algorithm.pipe_as(&*text, mime!(Text / Plain)),
+            InputData::Json(json) => algorithm.pipe_as(&*json, mime!(Application / Json)),
             InputData::Binary(bytes) => {
-                algorithm.pipe_as(&*bytes, mime!(Application/OctetStream))
+                algorithm.pipe_as(&*bytes, mime!(Application / OctetStream))
             }
         };
 

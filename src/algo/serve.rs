@@ -24,13 +24,14 @@ static USAGE: &'static str = "Usage:
 struct Args {
     // TODO: support using algorithm.zip path
     arg_path: Option<String>,
-    flag_port: u32,
-    // arg_container: Option<String>, // TODO:
+    flag_port: u32, // arg_container: Option<String>, // TODO:
 }
 
 pub struct Serve;
 impl CmdRunner for Serve {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         let args: Args = Docopt::new(USAGE)
@@ -55,12 +56,12 @@ impl Serve {
         }
 
         let mut child = Command::new("bin/build")
-                            .spawn()
-                            .unwrap_or_else(|_| { die!("Failed to run `bin/build`")});
+            .spawn()
+            .unwrap_or_else(|_| die!("Failed to run `bin/build`"));
         let _ = child.wait();
 
         let langserver = LangServer::start(LangServerMode::Sync, None)
-            .unwrap_or_else(|err| { die!("Failed to start LangServer: {}", err)});
+            .unwrap_or_else(|err| die!("Failed to start LangServer: {}", err));
 
         let _ = Server::http(("0.0.0.0", port))
             .and_then(|s| s.handle(langserver))
@@ -69,6 +70,4 @@ impl Serve {
                 // TODO: tear down listener cleanly when algorithm completes
             });
     }
-
 }
-

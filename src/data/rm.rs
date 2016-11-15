@@ -4,14 +4,14 @@ use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo rm <data-file>
 
   Removes a file from the Agorithmia Data API
 
   <data-file>       Specifies the Algorithmia Data URI
                     The 'data://' prefix is optional
-";
+"##;
 
 #[derive(RustcDecodable, Debug)]
 struct Args {

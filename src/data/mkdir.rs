@@ -4,14 +4,14 @@ use algorithmia::Algorithmia;
 use algorithmia::data::{HasDataPath, DataAcl};
 use std::vec::IntoIter;
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo mkdir <data-dir>
 
   Create an Agorithmia data directory
 
   <data-dir>    Specifies the Algorithmia Data URI
                 The 'data://' prefix is optional
-";
+"##;
 
 #[derive(RustcDecodable, Debug)]
 struct Args {

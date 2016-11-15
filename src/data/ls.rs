@@ -7,7 +7,7 @@ use std::vec::IntoIter;
 use term::{self, color};
 use term::color::Color;
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo ls [options] [<data-dir>]
   algo dir [options] [<data-dir>]
 
@@ -19,7 +19,7 @@ static USAGE: &'static str = "Usage:
 
   Options:
     -l          Use long listing format
-";
+"##;
 
 
 #[derive(RustcDecodable, Debug)]
@@ -52,8 +52,7 @@ impl Ls {
     }
 
     fn list_dir(&self, path: &str, long: bool) {
-        let ref c = self.client;
-        let my_dir = c.dir(path);
+        let my_dir = self.client.dir(path);
 
         let mut t_out = term::stdout().unwrap();
 
@@ -68,9 +67,10 @@ impl Ls {
                     }
                     Ok(DataItem::File(f)) => {
                         let name = f.basename().unwrap();
-                        let _ = write!(t_out, "{:19} {:>5} ",
-                                 f.last_modified.format("%Y-%m-%d %H:%M:%S"),
-                                 data::size_with_suffix(f.size));
+                        let _ = write!(t_out,
+                                       "{:19} {:>5} ",
+                                       f.last_modified.format("%Y-%m-%d %H:%M:%S"),
+                                       data::size_with_suffix(f.size));
                         if let Some(c) = FileType::from_filename(&name).to_color() {
                             let _ = t_out.fg(c);
                         }
@@ -81,26 +81,20 @@ impl Ls {
                 }
             }
         } else {
-            let items: Vec<DataItem> = my_dir
-                .list()
+            let items: Vec<DataItem> = my_dir.list()
                 .collect::<Result<Vec<_>, _>>()
                 .unwrap_or_else(|err| die!("Error listing directory: {}", err));
 
-                    // match entry_result {
-                    //     Ok(DataItem::Dir(d)) => d.basename().unwrap(),
-                    //     Ok(DataItem::File(f)) => f.basename().unwrap(),
-                    //     Err(err) => ,
-                    // }
-
             let width = 80; // TODO: get_winsize()
 
-            let col_width = 2 + items.iter().fold(0, |max, item| {
+            let max_len = items.iter().fold(0, |max, item| {
                 let name_len = match *item {
                     DataItem::File(ref f) => f.basename().unwrap().len(),
                     DataItem::Dir(ref d) => d.basename().unwrap().len(),
                 };
                 cmp::max(max, name_len)
             });
+            let col_width = max_len + 2;
 
             let mut offset = 0;
             for item in items {
@@ -130,7 +124,7 @@ impl Ls {
                     let _ = write!(t_out, "{:1$}", "", col_width - char_count);
                 }
 
-                offset = offset + col_width;
+                offset += col_width;
             }
 
             let _ = writeln!(t_out, "");
@@ -157,22 +151,24 @@ impl FileType {
     // A basic mime guessing function
     fn from_ext(ext: &str) -> FileType {
         match &*ext.to_lowercase() {
-            "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff" | "webp" | "xcf" | "psd" | "ai" => FileType::Image,
-            "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe" | "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
-            "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" | "tlz" | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
-            "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav" | "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
+            "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff" |
+            "webp" | "xcf" | "psd" | "ai" => FileType::Image,
+            "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe" |
+            "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
+            "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" |
+            "tlz" | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
+            "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav" |
+            "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
             _ => FileType::Unknown,
         }
     }
 
     fn to_color(&self) -> Option<Color> {
         match *self {
-            FileType::Image => Some(color::BRIGHT_MAGENTA),
-            FileType::Video => Some(color::BRIGHT_MAGENTA),
+            FileType::Image | FileType::Video => Some(color::BRIGHT_MAGENTA),
             FileType::Archive => Some(color::BRIGHT_RED),
             FileType::Audio => Some(color::BRIGHT_CYAN),
             _ => None,
         }
     }
-
 }

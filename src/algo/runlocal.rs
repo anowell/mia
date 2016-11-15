@@ -12,7 +12,7 @@ use hyper::client::Client;
 use term;
 use super::{InputData, OutputDevice, get_src};
 
-static USAGE: &'static str = "Usage:
+static USAGE: &'static str = r##"Usage:
   algo runlocal [options]
 
   This will test your algorithm locally, similar to how `algo run` works but using
@@ -55,7 +55,7 @@ static USAGE: &'static str = "Usage:
 
   Examples:
     algo runlocal -d 'foo'          Tests the algorithm in the current directory with 'foo' as input
-";
+"##;
 
 
 #[derive(RustcDecodable, Debug)]
@@ -68,9 +68,13 @@ struct Args {
     flag_output: Option<String>,
 }
 
-pub struct RunLocal { client: Algorithmia }
+pub struct RunLocal {
+    client: Algorithmia,
+}
 impl CmdRunner for RunLocal {
-    fn get_usage() -> &'static str { USAGE }
+    fn get_usage() -> &'static str {
+        USAGE
+    }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         // We need to preprocess input args before giving other args to Docopt
@@ -79,21 +83,34 @@ impl CmdRunner for RunLocal {
 
         let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
         let next_arg = |argv_iter: &mut IntoIter<String>| {
-            argv_iter.next().unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
+            argv_iter.next()
+                .unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
         };
         while let Some(flag) = argv_mut.next() {
             match &*flag {
-                "-d" | "--data" => input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes())),
+                "-d" | "--data" => {
+                    input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes()))
+                }
                 "-j" | "--json" => input_args.push(InputData::Json(next_arg(&mut argv_mut))),
                 "-t" | "--text" => input_args.push(InputData::Text(next_arg(&mut argv_mut))),
-                "-b" | "--binary" => input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes())),
-                "-D" | "--data-file" => input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-J" | "--json-file" => input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-T" | "--text-file" => input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut)))),
-                "-B" | "--binary-file" => input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut)))),
-                _ => other_args.push(flag)
+                "-b" | "--binary" => {
+                    input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes()))
+                }
+                "-D" | "--data-file" => {
+                    input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-J" | "--json-file" => {
+                    input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-T" | "--text-file" => {
+                    input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                "-B" | "--binary-file" => {
+                    input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut))))
+                }
+                _ => other_args.push(flag),
             };
-        };
+        }
 
         // Finally: parse the remaining args with Docopt
         let args: Args = Docopt::new(USAGE)
@@ -126,7 +143,10 @@ impl CmdRunner for RunLocal {
         // Handle --response and --response-body (ignoring other flags)
         if args.flag_response || args.flag_response_body {
             if args.flag_response {
-                let preamble = format!("{} {}\n{}", response.version(), response.status(), response.headers());
+                let preamble = format!("{} {}\n{}",
+                                       response.version(),
+                                       response.status(),
+                                       response.headers());
                 output.writeln(preamble.as_bytes());
             };
             output.writeln(json_response.as_bytes());
@@ -160,11 +180,13 @@ impl CmdRunner for RunLocal {
                         AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
                         AlgoOutput::Binary(bytes) => output.write(&bytes),
                     };
-                },
-                Err(Error::Api(err)) => match err.stacktrace {
-                    Some(ref trace) => die!("API error: {}\n{}", err, trace),
-                    None => die!("API error: {}", err),
-                },
+                }
+                Err(Error::Api(err)) => {
+                    match err.stacktrace {
+                        Some(ref trace) => die!("API error: {}\n{}", err, trace),
+                        None => die!("API error: {}", err),
+                    }
+                }
                 Err(err) => die!("Response error: {}", err),
             };
         }
@@ -173,21 +195,21 @@ impl CmdRunner for RunLocal {
 
 impl RunLocal {
     pub fn new() -> Self {
-        RunLocal{
+        RunLocal {
             // Hard-code client to `algo serve`
-            client: Algorithmia::alt_client("http://localhost:9999", "")
+            client: Algorithmia::alt_client("http://localhost:9999", ""),
         }
     }
 
     fn serve_algorithm(&self) {
         let mut child = Command::new("algo")
-                            .arg("serve")
-                            .stdout(Stdio::null())
-                            .stderr(Stdio::null())
-                            .spawn()
-                            .unwrap_or_else(|_| { die!("Failed to run `algo serve`")});
+            .arg("serve")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap_or_else(|_| die!("Failed to run `algo serve`"));
 
-        let _ = thread::spawn( move || {
+        let _ = thread::spawn(move || {
             let _ = child.wait();
         });
 
@@ -195,14 +217,15 @@ impl RunLocal {
         let client = Client::new();
         let mut t_err = term::stderr().unwrap();
         let mut i = 0;
-        while let Err(e) = client.get("http://0.0.0.0:9999").send() {
+        while let Err(_) = client.get("http://0.0.0.0:9999").send() {
             let _ = t_err.carriage_return();
-            let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", i % 10, 9 - (i % 10));
+            let imod = i % 10;
+            let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
             let _ = io::stdout().flush();
             thread::sleep(time::Duration::from_millis(100));
             i += 1;
             if i > 10 * 60 * 2 {
-                die!("Failed to waiting for algorithm to be served. Try running `algo serve` manually.")
+                die!("Failed to wait for algorithm. Try running `algo serve` manually.")
             }
         }
     }
@@ -219,9 +242,11 @@ impl RunLocal {
         let algorithm = self.client.algo("local/local");
 
         let result = match input_data {
-            InputData::Text(text) => algorithm.pipe_as(&*text, mime!(Text/Plain)),
-            InputData::Json(json) => algorithm.pipe_as(&*json, mime!(Application/Json)),
-            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, mime!(Application/OctetStream)),
+            InputData::Text(text) => algorithm.pipe_as(&*text, mime!(Text / Plain)),
+            InputData::Json(json) => algorithm.pipe_as(&*json, mime!(Application / Json)),
+            InputData::Binary(bytes) => {
+                algorithm.pipe_as(&*bytes, mime!(Application / OctetStream))
+            }
         };
 
         match result {
@@ -230,4 +255,3 @@ impl RunLocal {
         }
     }
 }
-
