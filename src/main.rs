@@ -11,6 +11,7 @@ extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
+extern crate terminal_size;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::env;

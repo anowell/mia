@@ -6,6 +6,7 @@ use algorithmia::data::{DataItem, HasDataPath};
 use std::vec::IntoIter;
 use term::{self, color};
 use term::color::Color;
+use terminal_size::{Width, terminal_size};
 
 static USAGE: &'static str = r##"Usage:
   algo ls [options] [<data-dir>]
@@ -85,7 +86,10 @@ impl Ls {
                 .collect::<Result<Vec<_>, _>>()
                 .unwrap_or_else(|err| die!("Error listing directory: {}", err));
 
-            let width = 80; // TODO: get_winsize()
+            let width = match terminal_size() {
+                Some((Width(w), _)) => w as usize,
+                _ => 80, // default terminal width if we can't calculate it
+            };
 
             let max_len = items.iter().fold(0, |max, item| {
                 let name_len = match *item {
