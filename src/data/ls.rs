@@ -4,6 +4,8 @@ use std::cmp;
 use algorithmia::Algorithmia;
 use algorithmia::data::{DataItem, HasDataPath};
 use std::vec::IntoIter;
+use term::{self, color};
+use term::color::Color;
 
 static USAGE: &'static str = "Usage:
   algo ls [options] [<data-dir>]
@@ -53,50 +55,124 @@ impl Ls {
         let ref c = self.client;
         let my_dir = c.dir(path);
 
+        let mut t_out = term::stdout().unwrap();
+
         if long {
             for entry_result in my_dir.list() {
                 match entry_result {
                     Ok(DataItem::Dir(d)) => {
-                        println!("{:19} {:>5} {}",
-                                 "--         --",
-                                 "[dir]",
-                                 d.basename().unwrap())
+                        let _ = write!(t_out, "{:19} {:>5} ", "--         --", "[dir]");
+                        let _ = t_out.fg(color::BRIGHT_BLUE);
+                        let _ = writeln!(t_out, "{}", d.basename().unwrap());
+                        let _ = t_out.reset();
                     }
                     Ok(DataItem::File(f)) => {
-                        println!("{:19} {:>5} {}",
+                        let name = f.basename().unwrap();
+                        let _ = write!(t_out, "{:19} {:>5} ",
                                  f.last_modified.format("%Y-%m-%d %H:%M:%S"),
-                                 data::size_with_suffix(f.size),
-                                 f.basename().unwrap())
+                                 data::size_with_suffix(f.size));
+                        if let Some(c) = FileType::from_filename(&name).to_color() {
+                            let _ = t_out.fg(c);
+                        }
+                        let _ = writeln!(t_out, "{}", name);
+                        let _ = t_out.reset();
                     }
                     Err(err) => die!("Error listing directory: {}", err),
                 }
             }
         } else {
-            let names: Vec<String> = my_dir.list()
-                .map(|entry_result| {
-                    match entry_result {
-                        Ok(DataItem::Dir(d)) => d.basename().unwrap(),
-                        Ok(DataItem::File(f)) => f.basename().unwrap(),
-                        Err(err) => die!("Error listing directory: {}", err),
-                    }
-                })
-                .collect();
+            let items: Vec<DataItem> = my_dir
+                .list()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap_or_else(|err| die!("Error listing directory: {}", err));
+
+                    // match entry_result {
+                    //     Ok(DataItem::Dir(d)) => d.basename().unwrap(),
+                    //     Ok(DataItem::File(f)) => f.basename().unwrap(),
+                    //     Err(err) => ,
+                    // }
 
             let width = 80; // TODO: get_winsize()
 
-            let col_width = 2 + names.iter().fold(0, |max, name| cmp::max(max, name.len()));
+            let col_width = 2 + items.iter().fold(0, |max, item| {
+                let name_len = match *item {
+                    DataItem::File(ref f) => f.basename().unwrap().len(),
+                    DataItem::Dir(ref d) => d.basename().unwrap().len(),
+                };
+                cmp::max(max, name_len)
+            });
 
             let mut offset = 0;
-            for name in names {
+            for item in items {
                 if offset + col_width > width {
-                    println!("");
+                    let _ = writeln!(t_out, "");
                     offset = 0;
                 }
-                print!("{:1$}", name, col_width);
+                let char_count = match item {
+                    DataItem::Dir(d) => {
+                        let name = d.basename().unwrap();
+                        let _ = t_out.fg(color::BRIGHT_BLUE);
+                        let _ = write!(t_out, "{}", name);
+                        let _ = t_out.reset();
+                        name.chars().count()
+                    }
+                    DataItem::File(f) => {
+                        let name = f.basename().unwrap();
+                        if let Some(c) = FileType::from_filename(&name).to_color() {
+                            let _ = t_out.fg(c);
+                        }
+                        let _ = write!(t_out, "{}", name);
+                        let _ = t_out.reset();
+                        name.chars().count()
+                    }
+                };
+                if char_count < col_width {
+                    let _ = write!(t_out, "{:1$}", "", col_width - char_count);
+                }
+
                 offset = offset + col_width;
             }
 
-            println!("");
+            let _ = writeln!(t_out, "");
         }
     }
+}
+
+enum FileType {
+    Image,
+    Video,
+    Archive,
+    Audio,
+    Unknown,
+}
+
+impl FileType {
+    fn from_filename(filename: &str) -> FileType {
+        filename.rsplit('.')
+            .next()
+            .map(FileType::from_ext)
+            .unwrap_or(FileType::Unknown)
+    }
+
+    // A basic mime guessing function
+    fn from_ext(ext: &str) -> FileType {
+        match &*ext.to_lowercase() {
+            "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff" | "webp" | "xcf" | "psd" | "ai" => FileType::Image,
+            "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe" | "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
+            "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" | "tlz" | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
+            "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav" | "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
+            _ => FileType::Unknown,
+        }
+    }
+
+    fn to_color(&self) -> Option<Color> {
+        match *self {
+            FileType::Image => Some(color::BRIGHT_MAGENTA),
+            FileType::Video => Some(color::BRIGHT_MAGENTA),
+            FileType::Archive => Some(color::BRIGHT_RED),
+            FileType::Audio => Some(color::BRIGHT_CYAN),
+            _ => None,
+        }
+    }
+
 }

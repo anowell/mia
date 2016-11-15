@@ -12,6 +12,7 @@ chan = "0.1.18"
 toml = "0.1.28"
 rpassword = "0.2.0"
 mime = "0.2.2"
+term = "0.4"
 
 [dependencies.hyper]
 version = "0.9"

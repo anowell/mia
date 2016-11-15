@@ -182,6 +182,7 @@ impl RunLocal {
         let mut child = Command::new("algo")
                             .arg("serve")
                             .stdout(Stdio::null())
+                            .stderr(Stdio::null())
                             .spawn()
                             .unwrap_or_else(|_| { die!("Failed to run `algo serve`")});
 

@@ -8,6 +8,7 @@ extern crate hyper;
 extern crate langserver;
 extern crate rustc_serialize;
 extern crate toml;
+extern crate term;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::env;
