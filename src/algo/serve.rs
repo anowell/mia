@@ -2,6 +2,7 @@ use super::super::CmdRunner;
 use docopt::Docopt;
 use std::vec::IntoIter;
 use std::env;
+use std::net::TcpListener;
 use ::Profile;
 
 static USAGE: &'static str = "Usage:
@@ -34,6 +35,12 @@ impl CmdRunner for Serve {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
+
+        {
+            // First check that the port is available
+            TcpListener::bind(("0.0.0.0", args.flag_port as u16))
+                .unwrap_or_else(|err| die!("Unable to listen on port {}: {}", args.flag_port, err));
+        }
 
         // Serve the algorithm
         native::serve_algorithm(args.flag_port as u16, args.arg_path.as_ref());
@@ -75,7 +82,6 @@ mod native {
             .and_then(|s| s.handle(langserver))
             .map(|_listener| {
                 println!("Listening on port {}.", port);
-                // TODO: tear down listener cleanly when algorithm completes
             });
     }
 }

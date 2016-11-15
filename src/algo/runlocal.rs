@@ -83,10 +83,24 @@ impl CmdRunner for RunLocal {
             .and_then(|d| d.argv(other_args).decode())
             .unwrap_or_else(|e| e.exit());
 
+
+        // Start `algo serve` if not already running
+        let client = Client::new();
+        let started_server = match client.get("http://0.0.0.0:9999").send() {
+            Ok(_) => false,
+            Err(_) => {
+                self.serve_algorithm();
+                true
+            }
+        };
+
         // Run the algorithm
-        self.serve_algorithm();
         let response = self.call_algorithm(input_args.remove(0));
-        self.terminate_algorithm();
+
+        // Only stop `algo serve` if we started it
+        if started_server {
+            self.terminate_algorithm();
+        }
 
         let config = ResponseConfig {
             flag_response_body: args.flag_response_body,
