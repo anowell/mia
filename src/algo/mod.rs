@@ -15,7 +15,7 @@ use std::path::Path;
 use rustc_serialize::json::Json;
 use algorithmia::error::Error;
 use algorithmia::algo::{AlgoResponse, Response, AlgoOutput};
-
+use term::{self, color};
 
 
 #[derive(Debug)]
@@ -125,7 +125,6 @@ struct ResponseConfig {
     flag_response_body: bool,
     flag_response: bool,
     flag_silence: bool,
-    flag_meta: bool,
     flag_debug: bool,
     flag_output: Option<String>,
 }
@@ -133,6 +132,7 @@ struct ResponseConfig {
 fn display_response(mut response: Response, config: ResponseConfig) {
     // Open up an output device for the result/response
     let mut output = OutputDevice::new(&config.flag_output);
+    let mut t_err = term::stderr().unwrap();
 
     // Read JSON response - scoped so that we can re-borrow response
     let mut json_response = String::new();
@@ -158,22 +158,28 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 // Printing any API alerts
                 if let Some(ref alerts) = response.metadata.alerts {
                     if !config.flag_silence {
+                        let _ = t_err.fg(color::YELLOW);
                         for alert in alerts {
-                            stderrln!("{}", alert);
+                            let _ = writeln!(t_err, "{}", alert);
                         }
+                        let _ = t_err.reset();
                     }
                 }
 
                 // Printing algorithm stdout
                 if let Some(ref stdout) = response.metadata.stdout {
                     if config.flag_debug {
-                        print!("{}", stdout);
+                        let _ = t_err.fg(color::BRIGHT_BLACK);
+                        let _ = writeln!(t_err, "{}", stdout);
+                        let _ = t_err.reset();
                     }
                 }
 
                 // Printing metadata
-                if config.flag_meta || (config.flag_output.is_some() && !config.flag_silence) {
-                    println!("Completed in {:.1} seconds", response.metadata.duration);
+                if !config.flag_silence {
+                    let _ = t_err.fg(color::BRIGHT_BLACK);
+                    let _ = writeln!(t_err, "Completed in {:.1} seconds", response.metadata.duration);
+                    let _ = t_err.reset();
                 }
 
                 // Smart output of result

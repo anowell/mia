@@ -49,8 +49,7 @@ static USAGE: &'static str = r##"Usage:
     --response-body                 Print HTTP response body (replaces result)
     --response                      Print full HTTP response including headers (replaces result)
     -s, --silence                   Suppress any output not explicitly requested (except result)
-    -m, --meta                      Print human-readable selection of metadata (e.g. duration)
-    -o, --output <file>             Print result to a file, implies --meta
+    -o, --output <file>             Print result to a file
 
   Examples:
     algo runlocal -d 'foo'          Tests the algorithm in the current directory with 'foo' as input
@@ -62,7 +61,6 @@ struct Args {
     flag_response_body: bool,
     flag_response: bool,
     flag_silence: bool,
-    flag_meta: bool,
     flag_debug: bool,
     flag_output: Option<String>,
 }
@@ -93,7 +91,6 @@ impl CmdRunner for RunLocal {
             flag_response_body: args.flag_response_body,
             flag_response: args.flag_response,
             flag_silence: args.flag_silence,
-            flag_meta: args.flag_meta,
             flag_debug: args.flag_debug,
             flag_output: args.flag_output,
         };

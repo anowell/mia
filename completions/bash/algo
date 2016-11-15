@@ -23,7 +23,7 @@ _algo()
     #
     case "${cmd}" in
         run)
-            local cmd_opts="--data --data-file --meta --output --profile --silence --timeout"
+            local cmd_opts="--data --data-file --output --profile --silence --timeout"
             COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
             return 0
             ;;

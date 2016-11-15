@@ -29,7 +29,6 @@ _algo () {
 
 		run)
 			_command_args=(
-				'(-m|--meta)'{-m,--meta}'[Show metadata]' \
 				'(-o|--output)'{-o,--output}'[Output result to file]:Output file:_files' \
 				'(-s|--silence)'{-s,--silence}'[Suppress some output]' \
 				'--timeout=[Sets algorithm timeout]:timeout:' \
