@@ -15,7 +15,7 @@ install_c_toolchain() {
             curl -sL http://www.openssl.org/source/openssl-$SSL_VER.tar.gz | tar xz
             cd openssl-$SSL_VER
             ./Configure no-shared --prefix=$PREFIX --openssldir=$PREFIX/ssl no-zlib linux-x86_64
-            make depend && make -j$(nproc) && sudo make install && cd ..
+            make depend 2> /dev/null && make -j$(nproc) && sudo make install && cd ..
             ;;
         *)
             # For other targets, this is handled by addons.apt.packages in .travis.yml
