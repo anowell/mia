@@ -11,10 +11,11 @@ install_c_toolchain() {
                  gcc-aarch64-linux-gnu libc6-arm64-cross libc6-dev-arm64-cross
             ;;
         x86_64-unknown-linux-musl)
+            # musl requires building
             curl -sL http://www.openssl.org/source/openssl-$SSL_VER.tar.gz | tar xz
             cd openssl-$SSL_VER
             ./Configure no-shared --prefix=$PREFIX --openssldir=$PREFIX/ssl no-zlib linux-x86_64
-            make depend 2> /dev/null && make -j$(nproc) && sudo make install && cd ..
+            make depend && make -j$(nproc) && sudo make install && cd ..
             ;;
         *)
             # For other targets, this is handled by addons.apt.packages in .travis.yml
