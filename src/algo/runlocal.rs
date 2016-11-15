@@ -9,6 +9,7 @@ use std::{thread, time};
 use std::io::{self, Read, Write};
 use std::vec::IntoIter;
 use hyper::client::Client;
+use term;
 use super::{InputData, OutputDevice, get_src};
 
 static USAGE: &'static str = "Usage:
@@ -190,20 +191,28 @@ impl RunLocal {
             let _ = child.wait();
         });
 
-        //TODO: block until langserver is alive
+        // Block until langserver is alive (most of this time is spent in `bin/build`)
         let client = Client::new();
+        let mut t_err = term::stderr().unwrap();
+        let mut i = 0;
         while let Err(e) = client.get("http://0.0.0.0:9999").send() {
-            print!(".");
+            let _ = t_err.carriage_return();
+            let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", i % 10, 9 - (i % 10));
             let _ = io::stdout().flush();
             thread::sleep(time::Duration::from_millis(100));
-            // TODO: fail after n tries
+            i += 1;
+            if i > 10 * 60 * 2 {
+                die!("Failed to waiting for algorithm to be served. Try running `algo serve` manually.")
+            }
         }
     }
 
     fn terminate_algorithm(&self) {
         let client = Client::new();
         let _ = client.delete("http://0.0.0.0:9999").send();
-        println!("!");
+        let mut t_err = term::stderr().unwrap();
+        let _ = t_err.carriage_return();
+        let _ = t_err.delete_line();
     }
 
     fn call_algorithm(&self, input_data: InputData) -> Response {
