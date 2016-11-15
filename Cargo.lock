@@ -2,12 +2,12 @@
 name = "algo"
 version = "1.0.0-beta.2"
 dependencies = [
- "algorithmia 2.0.0-alpha (git+http://github.com/anowell/algorithmia-rust)",
+ "algorithmia 2.0.0-alpha (git+https://github.com/anowell/algorithmia-rust)",
  "chan 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.2.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "docopt 0.6.86 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.9.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "langserver 0.5.0",
+ "langserver 0.5.0 (git+https://github.com/algorithmiaio/langpacks)",
  "mime 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rpassword 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.21 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -34,7 +34,7 @@ dependencies = [
 [[package]]
 name = "algorithmia"
 version = "2.0.0-alpha"
-source = "git+http://github.com/anowell/algorithmia-rust#043289bac384e609d965432469351a1e9e847f54"
+source = "git+https://github.com/anowell/algorithmia-rust#043289bac384e609d965432469351a1e9e847f54"
 dependencies = [
  "base64 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.2.25 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -201,6 +201,7 @@ dependencies = [
 [[package]]
 name = "langserver"
 version = "0.5.0"
+source = "git+https://github.com/algorithmiaio/langpacks#69f23bdf37fe6d7507e4c773ef38ced68ed58629"
 dependencies = [
  "base64 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.9.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -627,7 +628,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [metadata]
 "checksum advapi32-sys 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e06588080cb19d0acb6739808aafa5f26bfb2ca015b2b6370028b44cf7cb8a9a"
 "checksum aho-corasick 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ca972c2ea5f742bfce5687b9aef75506a764f61d37f8f649047846a9686ddb66"
-"checksum algorithmia 2.0.0-alpha (git+http://github.com/anowell/algorithmia-rust)" = "<none>"
+"checksum algorithmia 2.0.0-alpha (git+https://github.com/anowell/algorithmia-rust)" = "<none>"
 "checksum base64 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a51012ca17f843e723dedc71fdd7feac9d8b53be85492aa9232b2da59ce6bb3b"
 "checksum base64 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2015e3793554aa5b6007e3a72959e84c1070039e74f13dde08fa64afe1ddd892"
 "checksum bitflags 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "aad18937a628ec6abcd26d1489012cc0e18c21798210f491af69ded9b881106d"
@@ -646,6 +647,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum idna 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1053236e00ce4f668aeca4a769a09b3bf5a682d802abd6f3cb39374f6b162c11"
 "checksum itoa 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ae3088ea4baeceb0284ee9eea42f591226e6beaecf65373e41b38d95a1b8e7a1"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
+"checksum langserver 0.5.0 (git+https://github.com/algorithmiaio/langpacks)" = "<none>"
 "checksum language-tags 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a91d884b6667cd606bb5a69aa0c99ba811a115fc68915e7056ec08a46e93199a"
 "checksum lazy_static 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6abe0ee2e758cd6bc8a2cd56726359007748fbf4128da998b65d0b70f881e19b"
 "checksum libc 0.2.17 (registry+https://github.com/rust-lang/crates.io-index)" = "044d1360593a78f5c8e5e710beccdc24ab71d1f01bc19a29bcacdba22e8475d8"

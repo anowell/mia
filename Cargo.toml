@@ -18,12 +18,12 @@ version = "0.9"
 default-features = false
 
 [dependencies.algorithmia]
-git = "http://github.com/anowell/algorithmia-rust"
+git = "https://github.com/anowell/algorithmia-rust"
 default-features = false
 features = ["with-rustc-serialize"]
 
 [dependencies.langserver]
-path = "/home/anowell/algo/langpacks"
+git = "https://github.com/algorithmiaio/langpacks"
 default-features = false
 
 [build-dependencies]
