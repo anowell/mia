@@ -133,45 +133,50 @@ pub fn get_config_path() -> String {
     }
 }
 
+pub struct Profile {
+    api_server: Option<String>,
+    api_key: String,
+}
+
+impl Profile {
+    fn lookup(profile: &str) -> Profile {
+        match auth::Auth::read_profile(profile.into()) {
+            Some(p) => {
+                let api_key = match p.get("api_key") {
+                    Some(&Value::String(ref key)) => key.clone(),
+                    _ => die!("{} profile has invalid 'api_server'", profile),
+                };
+
+                let api_server = match p.get("api_server") {
+                    Some(&Value::String(ref api)) => Some(api.clone()),
+                    None => None,
+                    _ => die!("{} profile has invalid 'api_server'", profile),
+                };
+                Profile { api_server: api_server, api_key: api_key }
+            }
+            None if profile == "default" => {
+                let api_key = env::var("ALGORITHMIA_API_KEY")
+                    .unwrap_or_else(|_| die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"));
+
+                let api_server = env::var("ALGORITHMIA_API").ok();
+                if let Some(ref api) = api_server {
+                    if api.parse::<Url>().is_err() {
+                        die!("ALGORITHMIA_API environment variable is not a valid URL");
+                    }
+                }
+                Profile { api_server: api_server, api_key: api_key }
+            }
+            None => die!("{} profile not found. Run 'algo auth {0}'", profile),
+        }
+    }
+}
+
 fn init_client(profile: &str) -> Algorithmia {
-    match auth::Auth::read_profile(profile.into()) {
+    let Profile{ api_key, api_server } = Profile::lookup(profile);
 
-        // Use the profile attribute(s)
-        Some(p) => {
-            match p.get("api_key") {
-                Some(&Value::String(ref key)) => {
-                    match p.get("api_server") {
-                        Some(&Value::String(ref api)) if api.parse::<Url>().is_ok() => {
-                            Algorithmia::alt_client(api, ApiAuth::ApiKey(key.clone()))
-                        }
-                        None => Algorithmia::client(ApiAuth::ApiKey(key.clone())),
-                        _ => die!("{} profile has invalid 'api_server'", profile),
-                    }
-                }
-                _ => die!("{} profile has missing or invalid 'api_key'", profile),
-            }
-        }
-
-        // Fall-back to env var (but only if profile was not specified)
-        None => {
-            match profile {
-                "default" => {
-                    match env::var("ALGORITHMIA_API_KEY") {
-                        Ok(ref key) => {
-                            match env::var("ALGORITHMIA_API") {
-                                Ok(ref api) if api.parse::<Url>().is_ok() => {
-                                    Algorithmia::alt_client(api, &**key)
-                                }
-                                Err(_) => Algorithmia::client(&**key),
-                                _ => die!("Invalid ALGORITHMIA_API environment variable"),
-                            }
-                        }
-                        Err(_) => die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"),
-                    }
-                }
-                _ => die!("{} profile not found. Run 'algo auth {0}'", profile),
-            }
-        }
+    match api_server {
+        Some(api) => Algorithmia::alt_client(&api, ApiAuth::ApiKey(api_key)),
+        None => Algorithmia::client(ApiAuth::ApiKey(api_key)),
     }
 }
 
@@ -185,8 +190,8 @@ fn run(args: Vec<String>, profile: &str) {
     match &*cmd {
         "auth" => auth::Auth::new(profile).cmd_main(args_iter),
         "clone" => algo::GitClone::new().cmd_main(args_iter),
-        "serve" => algo::Serve::new().cmd_main(args_iter), // TODO: send profile info
-        "runlocal" => algo::RunLocal::new().cmd_main(args_iter),
+        "serve" => algo::Serve::new(Profile::lookup(profile)).cmd_main(args_iter),
+        "runlocal" => algo::RunLocal::new(profile).cmd_main(args_iter),
         _ => {
             let client = init_client(profile);
             match &*cmd {

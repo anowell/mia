@@ -1,7 +1,7 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
 
-use algorithmia::Algorithmia;
+use algorithmia::{Algorithmia, ApiAuth};
 use algorithmia::algo::Response;
 use std::process::{Command, Stdio};
 use std::{thread, time};
@@ -67,6 +67,7 @@ struct Args {
 
 pub struct RunLocal {
     client: Algorithmia,
+    serve_profile: String,
 }
 impl CmdRunner for RunLocal {
     fn get_usage() -> &'static str {
@@ -83,9 +84,9 @@ impl CmdRunner for RunLocal {
             .unwrap_or_else(|e| e.exit());
 
         // Run the algorithm
-        serve_algorithm();
+        self.serve_algorithm();
         let response = self.call_algorithm(input_args.remove(0));
-        terminate_algorithm();
+        self.terminate_algorithm();
 
         let config = ResponseConfig {
             flag_response_body: args.flag_response_body,
@@ -100,10 +101,11 @@ impl CmdRunner for RunLocal {
 }
 
 impl RunLocal {
-    pub fn new() -> Self {
+    pub fn new(profile: &str) -> Self {
         RunLocal {
-            // Hard-code client to `algo serve`
-            client: Algorithmia::alt_client("http://localhost:9999", ""),
+            // Will serve with profile, and point client to `algo serve`
+            serve_profile: profile.to_owned(),
+            client: Algorithmia::alt_client("http://localhost:9999", ApiAuth::None),
         }
     }
 
@@ -123,41 +125,44 @@ impl RunLocal {
             Err(err) => die!("HTTP Error: {}", err),
         }
     }
-}
 
-fn serve_algorithm() {
-    let mut child = Command::new("algo")
-        .arg("serve")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
-        .unwrap_or_else(|_| die!("Failed to run `algo serve`"));
+    fn serve_algorithm(&self) {
+        let mut child = Command::new("algo")
+            .arg("serve")
+            .arg("--profile")
+            .arg(&self.serve_profile)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap_or_else(|_| die!("Failed to run `algo serve`"));
 
-    let _ = thread::spawn(move || {
-        let _ = child.wait();
-    });
+        let _ = thread::spawn(move || {
+            let _ = child.wait();
+        });
 
-    // Block until langserver is alive (most of this time is spent in `bin/build`)
-    let client = Client::new();
-    let mut t_err = term::stderr().unwrap();
-    let mut i = 0;
-    while let Err(_) = client.get("http://0.0.0.0:9999").send() {
-        let _ = t_err.carriage_return();
-        let imod = i % 10;
-        let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
-        let _ = io::stdout().flush();
-        thread::sleep(time::Duration::from_millis(100));
-        i += 1;
-        if i > 10 * 60 * 2 {
-            die!("Failed to wait for algorithm. Try running `algo serve` manually.")
+        // Block until langserver is alive (most of this time is spent in `bin/build`)
+        let client = Client::new();
+        let mut t_err = term::stderr().unwrap();
+        let mut i = 0;
+        while let Err(_) = client.get("http://0.0.0.0:9999").send() {
+            let _ = t_err.carriage_return();
+            let imod = i % 10;
+            let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
+            let _ = io::stdout().flush();
+            thread::sleep(time::Duration::from_millis(100));
+            i += 1;
+            if i > 10 * 60 * 2 {
+                die!("Failed to wait for algorithm. Try running `algo serve` manually.")
+            }
         }
+    }
+
+    fn terminate_algorithm(&self) {
+        let client = Client::new();
+        let _ = client.delete("http://0.0.0.0:9999").send();
+        let mut t_err = term::stderr().unwrap();
+        let _ = t_err.carriage_return();
+        let _ = t_err.delete_line();
     }
 }
 
-fn terminate_algorithm() {
-    let client = Client::new();
-    let _ = client.delete("http://0.0.0.0:9999").send();
-    let mut t_err = term::stderr().unwrap();
-    let _ = t_err.carriage_return();
-    let _ = t_err.delete_line();
-}

@@ -1,6 +1,8 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
 use std::vec::IntoIter;
+use std::env;
+use ::Profile;
 
 static USAGE: &'static str = "Usage:
   algo serve [options] [<path>]
@@ -39,7 +41,11 @@ impl CmdRunner for Serve {
 }
 
 impl Serve {
-    pub fn new() -> Self {
+    pub fn new(profile: Profile) -> Self {
+        if let Some(api) = profile.api_server {
+            env::set_var("ALGORITHMIA_API", api);
+        }
+        env::set_var("ALGORITHMIA_API_KEY", profile.api_key);
         Serve
     }
 }
