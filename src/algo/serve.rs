@@ -1,11 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
-
-use std::process::Command;
-use std::env;
 use std::vec::IntoIter;
-use langserver::{LangServer, LangServerMode};
-use hyper::server::Server;
 
 static USAGE: &'static str = "Usage:
   algo serve [options] [<path>]
@@ -38,9 +33,8 @@ impl CmdRunner for Serve {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-
         // Serve the algorithm
-        self.serve_algorithm(args.flag_port as u16, args.arg_path.as_ref());
+        native::serve_algorithm(args.flag_port as u16, args.arg_path.as_ref());
     }
 }
 
@@ -48,8 +42,16 @@ impl Serve {
     pub fn new() -> Self {
         Serve
     }
+}
 
-    fn serve_algorithm(&self, port: u16, path: Option<&String>) {
+#[cfg(not(target_os = "windows"))]
+mod native {
+    use std::env;
+    use std::process::Command;
+    use hyper::server::Server;
+    use langserver::{LangServer, LangServerMode};
+
+    pub fn serve_algorithm(port: u16, path: Option<&String>) {
         if let Some(p) = path {
             env::set_current_dir(p)
                 .unwrap_or_else(|err| die!("Failed to set working directory: {}", err));
@@ -69,5 +71,12 @@ impl Serve {
                 println!("Listening on port {}.", port);
                 // TODO: tear down listener cleanly when algorithm completes
             });
+    }
+}
+
+#[cfg(target_os = "windows")]
+mod native {
+    pub fn serve_algorithm(port: u16, path: Option<&String>) {
+        unimplemented!()
     }
 }

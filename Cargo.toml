@@ -23,7 +23,7 @@ git = "https://github.com/anowell/algorithmia-rust"
 default-features = false
 features = ["with-rustc-serialize"]
 
-[dependencies.langserver]
+[target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
 git = "https://github.com/algorithmiaio/langpacks"
 default-features = false
 

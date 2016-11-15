@@ -1,11 +1,13 @@
 #[macro_use]
 extern crate mime;
 
+#[cfg(not(target_os = "windows"))]
+extern crate langserver;
+
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
 extern crate hyper;
-extern crate langserver;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
@@ -18,6 +20,7 @@ use toml::Value;
 macro_rules! stderrln {
     ($fmt:expr) => ({
         use std::io::Write;
+
         let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n")));
     });
     ($fmt:expr, $($arg:tt)*) => ({
