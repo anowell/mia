@@ -88,7 +88,9 @@ impl CmdRunner for Run {
             .unwrap_or_else(|e| e.exit());
 
         let mut opts = AlgoOptions::default();
-        opts.stdout(args.flag_debug);
+        if args.flag_debug {
+            opts.stdout(true);
+        }
         if let Some(timeout) = args.flag_timeout {
             opts.timeout(timeout);
         }
