@@ -1,17 +1,23 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
 
-use std::io::Read;
-use std::vec::IntoIter;
 use algorithmia::Algorithmia;
-use algorithmia::algo::{AlgoResponse, AlgoOutput, AlgoOptions, Response};
+use algorithmia::error::Error;
+use algorithmia::algo::{AlgoResponse, Response, AlgoOutput};
+use std::process::{Command, Stdio};
+use std::{thread, time};
+use std::io::{self, Read, Write};
+use std::vec::IntoIter;
+use hyper::client::Client;
 use super::{InputData, OutputDevice, get_src};
 
 static USAGE: &'static str = "Usage:
-  algo run [options] <algorithm>
+  algo runlocal [options]
 
-  <algorithm> syntax: USERNAME/ALGONAME[/VERSION]
-  Recommend specifying a version since algorithm costs can change between minor versions.
+  This will test your algorithm locally, similar to how `algo run` works but using
+  an algorithm from a local directory.
+
+  Note: This does not currently work for Java or Scala algorithms.
 
   Input Data Options:
     There are option variants for specifying the type and source of input data.
@@ -46,38 +52,24 @@ static USAGE: &'static str = "Usage:
     -m, --meta                      Print human-readable selection of metadata (e.g. duration)
     -o, --output <file>             Print result to a file, implies --meta
 
-
-  Other Options:
-    --timeout <seconds>             Sets algorithm timeout
-
   Examples:
-    algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
-    algo anowell/Dijkstra -J routes.json              Run algorithm with file input
-    algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
-    algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binary data input
+    algo runlocal -d 'foo'          Tests the algorithm in the current directory with 'foo' as input
 ";
 
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
-    cmd_run: bool,
-    arg_algorithm: String,
     flag_response_body: bool,
     flag_response: bool,
     flag_silence: bool,
     flag_meta: bool,
     flag_debug: bool,
     flag_output: Option<String>,
-    flag_timeout: Option<u32>,
 }
 
-pub struct Run {
-    client: Algorithmia,
-}
-impl CmdRunner for Run {
-    fn get_usage() -> &'static str {
-        USAGE
-    }
+pub struct RunLocal { client: Algorithmia }
+impl CmdRunner for RunLocal {
+    fn get_usage() -> &'static str { USAGE }
 
     fn cmd_main(&self, argv: IntoIter<String>) {
         // We need to preprocess input args before giving other args to Docopt
@@ -86,34 +78,21 @@ impl CmdRunner for Run {
 
         let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
         let next_arg = |argv_iter: &mut IntoIter<String>| {
-            argv_iter.next()
-                .unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
+            argv_iter.next().unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", USAGE))
         };
         while let Some(flag) = argv_mut.next() {
             match &*flag {
-                "-d" | "--data" => {
-                    input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes()))
-                }
+                "-d" | "--data" => input_args.push(InputData::auto(&mut next_arg(&mut argv_mut).as_bytes())),
                 "-j" | "--json" => input_args.push(InputData::Json(next_arg(&mut argv_mut))),
                 "-t" | "--text" => input_args.push(InputData::Text(next_arg(&mut argv_mut))),
-                "-b" | "--binary" => {
-                    input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes()))
-                }
-                "-D" | "--data-file" => {
-                    input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut))))
-                }
-                "-J" | "--json-file" => {
-                    input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut))))
-                }
-                "-T" | "--text-file" => {
-                    input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut))))
-                }
-                "-B" | "--binary-file" => {
-                    input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut))))
-                }
-                _ => other_args.push(flag),
+                "-b" | "--binary" => input_args.push(InputData::Binary(next_arg(&mut argv_mut).into_bytes())),
+                "-D" | "--data-file" => input_args.push(InputData::auto(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-J" | "--json-file" => input_args.push(InputData::json(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-T" | "--text-file" => input_args.push(InputData::text(&mut get_src(&next_arg(&mut argv_mut)))),
+                "-B" | "--binary-file" => input_args.push(InputData::binary(&mut get_src(&next_arg(&mut argv_mut)))),
+                _ => other_args.push(flag)
             };
-        }
+        };
 
         // Finally: parse the remaining args with Docopt
         let args: Args = Docopt::new(USAGE)
@@ -127,17 +106,13 @@ impl CmdRunner for Run {
             return die!("Multiple input data sources is currently not supported");
         }
 
-        let mut opts = AlgoOptions::default();
-        opts.stdout(args.flag_debug);
-        if let Some(timeout) = args.flag_timeout {
-            opts.timeout(timeout);
-        }
-
         // Open up an output device for the result/response
         let mut output = OutputDevice::new(&args.flag_output);
 
         // Run the algorithm
-        let mut response = self.run_algorithm(&*args.arg_algorithm, input_args.remove(0), opts);
+        self.serve_algorithm();
+        let mut response = self.call_algorithm(input_args.remove(0));
+        self.terminate_algorithm();
 
         // Read JSON response - scoped so that we can re-borrow response
         let mut json_response = String::new();
@@ -150,10 +125,7 @@ impl CmdRunner for Run {
         // Handle --response and --response-body (ignoring other flags)
         if args.flag_response || args.flag_response_body {
             if args.flag_response {
-                let preamble = format!("{} {}\n{}",
-                                       response.version(),
-                                       response.status(),
-                                       response.headers());
+                let preamble = format!("{} {}\n{}", response.version(), response.status(), response.headers());
                 output.writeln(preamble.as_bytes());
             };
             output.writeln(json_response.as_bytes());
@@ -187,38 +159,65 @@ impl CmdRunner for Run {
                         AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
                         AlgoOutput::Binary(bytes) => output.write(&bytes),
                     };
-                }
+                },
+                Err(Error::Api(err)) => match err.stacktrace {
+                    Some(ref trace) => die!("API error: {}\n{}", err, trace),
+                    None => die!("API error: {}", err),
+                },
                 Err(err) => die!("Response error: {}", err),
             };
         }
-
     }
 }
 
-impl Run {
-    pub fn new(client: Algorithmia) -> Self {
-        Run { client: client }
+impl RunLocal {
+    pub fn new() -> Self {
+        RunLocal{
+            // Hard-code client to `algo serve`
+            client: Algorithmia::alt_client("http://localhost:9999", "")
+        }
     }
 
-    fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
-        let mut algorithm = self.client.algo(algo);
-        let algorithm = algorithm.set_options(opts);
+    fn serve_algorithm(&self) {
+        let mut child = Command::new("algo")
+                            .arg("serve")
+                            .stdout(Stdio::null())
+                            .spawn()
+                            .unwrap_or_else(|_| { die!("Failed to run `algo serve`")});
+
+        let _ = thread::spawn( move || {
+            let _ = child.wait();
+        });
+
+        //TODO: block until langserver is alive
+        let client = Client::new();
+        while let Err(e) = client.get("http://0.0.0.0:9999").send() {
+            print!(".");
+            let _ = io::stdout().flush();
+            thread::sleep(time::Duration::from_millis(100));
+            // TODO: fail after n tries
+        }
+    }
+
+    fn terminate_algorithm(&self) {
+        let client = Client::new();
+        let _ = client.delete("http://0.0.0.0:9999").send();
+        println!("!");
+    }
+
+    fn call_algorithm(&self, input_data: InputData) -> Response {
+        let algorithm = self.client.algo("local/local");
 
         let result = match input_data {
-            InputData::Text(text) => {
-                algorithm.pipe_as(&*text, mime!(Text/Plain))
-            }
-            InputData::Json(json) => {
-                algorithm.pipe_as(&*json, mime!(Application/Json))
-            }
-            InputData::Binary(bytes) => {
-                algorithm.pipe_as(&*bytes, mime!(Application/OctetStream))
-            }
+            InputData::Text(text) => algorithm.pipe_as(&*text, mime!(Text/Plain)),
+            InputData::Json(json) => algorithm.pipe_as(&*json, mime!(Application/Json)),
+            InputData::Binary(bytes) => algorithm.pipe_as(&*bytes, mime!(Application/OctetStream)),
         };
 
         match result {
             Ok(response) => response,
-            Err(err) => die!("Error calling algorithm: {}", err),
+            Err(err) => die!("HTTP Error: {}", err),
         }
     }
 }
+

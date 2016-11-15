@@ -182,6 +182,7 @@ fn run(args: Vec<String>, profile: &str) {
         "auth" => auth::Auth::new(profile).cmd_main(args_iter),
         "clone" => algo::GitClone::new().cmd_main(args_iter),
         "serve" => algo::Serve::new().cmd_main(args_iter), // TODO: send profile info
+        "runlocal" => algo::RunLocal::new().cmd_main(args_iter),
         _ => {
             let client = init_client(profile);
             match &*cmd {
@@ -209,6 +210,7 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "cat" => data::Cat::print_usage(),
         "clone" => algo::GitClone::print_usage(),
         "serve" => algo::Serve::print_usage(),
+        "runlocal" => algo::RunLocal::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };
