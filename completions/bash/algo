@@ -9,7 +9,7 @@ _algo()
     #
     #  The basic options we'll complete.
     #
-    cmds="auth cat clone cp ls mkdir rm rmdir run"
+    cmds="auth cat clone cp ls mkdir rm rmdir run runlocal"
 
 
     if [ "${prev}" == "--profile" ]; then
@@ -24,6 +24,11 @@ _algo()
     case "${cmd}" in
         run)
             local cmd_opts="--data --data-file --output --profile --silence --timeout"
+            COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
+            return 0
+            ;;
+        runlocal)
+            local cmd_opts="--data --data-file --output --profile --silence"
             COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
             return 0
             ;;

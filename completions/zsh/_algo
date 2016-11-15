@@ -5,6 +5,7 @@ _algo () {
   _1st_arguments=(
     "auth":"Configure an authentication profile"
     "run":"Run an algorithm"
+    "runlocal":"Run a local clone of an algorithm"
     "clone":"Clones an algorithm repo"
     "ls":"List data in a data collection"
     "mkdir":"Create a data collection"
@@ -32,6 +33,15 @@ _algo () {
 				'(-o|--output)'{-o,--output}'[Output result to file]:Output file:_files' \
 				'(-s|--silence)'{-s,--silence}'[Suppress some output]' \
 				'--timeout=[Sets algorithm timeout]:timeout:' \
+				- set1 '(-d|--data)'{-d,--data}'[Input data]:Input data:' \
+				- set2 '(-D|--data-file)'{-D,--data-file}'[Input data from file]:Input file:_files' \
+			)
+			;;
+
+		runlocal)
+			_command_args=(
+				'(-o|--output)'{-o,--output}'[Output result to file]:Output file:_files' \
+				'(-s|--silence)'{-s,--silence}'[Suppress some output]' \
 				- set1 '(-d|--data)'{-d,--data}'[Input data]:Input data:' \
 				- set2 '(-D|--data-file)'{-D,--data-file}'[Input data from file]:Input file:_files' \
 			)
