@@ -24,13 +24,20 @@ matrix:
             - libssl-dev
     - os: linux
       rust: stable
-      env: TARGET=x86_64-unknown-linux-musl
+      env:
+        - TARGET=x86_64-unknown-linux-musl
+        - SSL_VER=1.0.2j
+        - CC=musl-gcc
+        - PREFIX=/usr/local
+        - OPENSSL_LIB_DIR=$PREFIX/lib
+        - OPENSSL_INCLUDE_DIR=$PREFIX/include
+        - OPENSSL_DIR=$PREFIX
+        - OPENSSL_STATIC=1
       dist: trusty
       sudo: required
       addons:
         apt:
           packages:
-            - libssl-dev
             - musl
             - musl-dev
             - musl-tools
