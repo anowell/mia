@@ -41,6 +41,7 @@ matrix:
             - musl
             - musl-dev
             - musl-tools
+            - xutils-dev
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
