@@ -83,6 +83,6 @@ mod native {
 #[cfg(target_os = "windows")]
 mod native {
     pub fn serve_algorithm(port: u16, path: Option<&String>) {
-        unimplemented!()
+        die!("algo serve is not currently supported on Windows")
     }
 }
