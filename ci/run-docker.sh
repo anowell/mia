@@ -14,7 +14,7 @@ export LD_LIBRARY_PATH=/travis-rust/lib:$LD_LIBRARY_PATH
 # The target system may or may not have OpenSSL installed and it also may have
 # any one of a number of ABI-incompatible OpenSSL versions installed.
 #
-# To get around all this we just compile it statically for the rustup *we*
+# To get around all this we just compile it statically for the algo *we*
 # distribute (this can be changed by others of course).
 # ==============================================================================
 
@@ -124,7 +124,7 @@ export OPENSSL_INCLUDE_DIR=$install/include
 # Actually delgate to the test script itself
 # ==============================================================================
 
-# Our only writable directory is `target`, so place all output there and go
+# Since `target` is a writable directory, place all output there and go
 # ahead and throw the home directory in there as well.
 export CARGO_TARGET_DIR=`pwd`/target
 export CARGO_HOME=`pwd`/target/cargo-home
