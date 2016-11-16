@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PACKAGE_NAME=algorithmia
+PACKAGE_VERSION=`grep version ${DIR}/../Cargo.toml | head -1 | cut -d'"' -f2`
+
+ARCH=amd64
+TARBALL=algorithmia-v${PACKAGE_VERSION}-x86_64-unknown-linux-gnu.tar.gz
+DOWNLOAD=https://github.com/algorithmiaio/algorithmia-cli/releases/download/v${PACKAGE_VERSION}/${TARBALL}
+TMPDIR=tmp
+OUTDIR=${DIR}/out
+PREFIX=/usr/bin
+
+function clean() {
+	rm -fr ${OUTDIR} || true
+	rm -fr ${TMPDIR} || true
+	rm -f *.tar.gz
+}
+
+function fetch_tarball() {
+	mkdir -p ${OUTDIR}
+	curl -L "${DOWNLOAD}" -o "${OUTDIR}/${TARBALL}"
+}
+
+function make_aur_git {
+	SHA_VERSION=`git log -1 --format="%cd.g%h" --date=short | sed 's/-/./g'`
+
+	mkdir -p ${OUTDIR}
+	if [[ -d ${OUTDIR}/algorithmia-git ]]; then
+	  cd ${OUTDIR}/algorithmia-git
+    git pull || true;
+  else
+	  git clone ssh://aur@aur.archlinux.org/algorithmia-git.git ${OUTDIR}/algorithmia-git;
+	fi
+
+	sed -e "s/{{VERSION}}/${SHA_VERSION}/g" ${DIR}/arch/algorithmia-git/PKGBUILD.template > ${OUTDIR}/algorithmia-git/PKGBUILD
+	cd ${OUTDIR}/algorithmia-git && mksrcinfo
+}
+
+function make_aur_bin() {
+	MD5SUM=`md5sum ${OUTDIR}/${TARBALL} | cut -f1 -d' '`
+	VERSION=`echo ${PACKAGE_VERSION} | sed s/-/_/g`
+
+	mkdir -p ${OUTDIR}
+	if [[ -d ${OUTDIR}/algorithmia-bin ]]; then
+	  cd ${OUTDIR}/algorithmia-bin
+	  git pull || true;
+	else
+	  git clone ssh://aur@aur.archlinux.org/algorithmia-bin.git ${OUTDIR}/algorithmia-bin;
+	fi
+
+	sed -e "s/{{VERSION}}/${VERSION}/g; s/{{MD5SUM}}/${MD5SUM}/g" ${DIR}/arch/algorithmia-bin/PKGBUILD.template > ${OUTDIR}/algorithmia-bin/PKGBUILD
+	cd ${OUTDIR}/algorithmia-bin && mksrcinfo
+}
+
+if [[ "$1" == "clean" ]]; then
+  clean
+  fetch_tarball
+fi
+
+make_aur_git
+make_aur_bin
