@@ -27,7 +27,7 @@ install:
     sh -s -- --prefix=$HOME/rust --default-toolchain=$TRAVIS_RUST_VERSION --with-target=$TARGET
 
 script:
-  - mkdir target
+  - mkdir -p target
   - if [ ! -z "$DOCKER" ]; then
       docker run
         --entrypoint bash
