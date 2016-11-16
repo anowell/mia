@@ -2,16 +2,6 @@ mktempd() {
     echo $(mktemp -d 2>/dev/null || mktemp -d -t tmp)
 }
 
-host() {
-    case "$TRAVIS_OS_NAME" in
-        linux)
-            echo x86_64-unknown-linux-gnu
-            ;;
-        osx)
-            echo x86_64-apple-darwin
-            ;;
-    esac
-}
 
 gcc_prefix() {
     case "$TARGET" in
@@ -31,7 +21,6 @@ gcc_prefix() {
 }
 
 dobin() {
-    [ -z $MAKE_DEB ] && die 'dobin: $MAKE_DEB not set'
     [ $# -lt 1 ] && die "dobin: at least one argument needed"
 
     local f prefix=$(gcc_prefix)
@@ -42,7 +31,6 @@ dobin() {
 }
 
 dofile() {
-    [ -z $MAKE_DEB ] && die 'dofile: $MAKE_DEB not set'
     [ $# -lt 2 ] && die "dofile: at least two arguments needed"
 
     local f location=$1

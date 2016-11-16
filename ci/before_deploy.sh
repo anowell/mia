@@ -56,8 +56,8 @@ main() {
 Package: $PROJECT_NAME
 Version: ${TRAVIS_TAG#v}
 Architecture: $(architecture $TARGET)
-Maintainer: $DEB_MAINTAINER
-Description: $DEB_DESCRIPTION
+Maintainer: Anthony Nowell <anthony@algorithmia.com>
+Description: Algorithmia Command Line Tools
 EOF
 
             fakeroot dpkg-deb --build $dtd/debian
