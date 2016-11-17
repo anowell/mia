@@ -15,17 +15,17 @@ set_globals() {
     algo_version="1.0.0-beta.3"
     default_prefix="${ALGO_PREFIX-/usr/local}"
     base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
-    completions_url="https://github.com/algorithmiaio/algorithmia-cli/blob/master/completions"
+    completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
 }
 
 set_architecture() {
-    verbose_say "detecting architecture"
+    echo_verbose "detecting architecture"
 
-    local _ostype="$(uname -s)"
-    local _cputype="$(uname -m)"
+    _ostype="$(uname -s)"
+    _cputype="$(uname -m)"
 
-    verbose_say "uname -s reports: $_ostype"
-    verbose_say "uname -m reports: $_cputype"
+    echo_verbose "uname -s reports: $_ostype"
+    echo_verbose "uname -m reports: $_cputype"
 
     if [ "$_ostype" = Darwin -a "$_cputype" = i386 ]; then
         # Darwin `uname -s` lies
@@ -88,7 +88,7 @@ set_architecture() {
     fi
 
     _algo_arch="$_cputype-$_ostype"
-    verbose_say "architecture is $_algo_arch"
+    echo_verbose "architecture is $_algo_arch"
 }
 
 print_welcome_message() {
@@ -106,23 +106,23 @@ print_welcome_message() {
 
 EOF
 
-    if [ "$_disable_sudo" = false ]; then
-        if [ "$(id -u)" = 0 ]; then
-            cat <<EOF
-WARNING: This script appears to be running as root. While it will work
-correctly, it is not necessary to run this install script as root.
+#     if [ "$_disable_sudo" = false ]; then
+#         if [ "$(id -u)" = 0 ]; then
+#             cat <<EOF
+# WARNING: This script appears to be running as root. While it will work
+# correctly, it is not necessary to run this install script as root.
 
-EOF
-        fi
-    fi
+# EOF
+#         fi
+#     fi
 
 
     if [ "$_uninstall" = false ]; then
         cat <<EOF
 This script will download algo and install it to $_prefix.
-You may install elsewhere by running this script with the --prefix=<path> option.
 
 EOF
+# You may install elsewhere by running this script with the --prefix=<path> option.
     else
         cat <<EOF
 This script will uninstall the existing algo installation at $_prefix.
@@ -130,23 +130,14 @@ This script will uninstall the existing algo installation at $_prefix.
 EOF
     fi
 
-    if [ "$_disable_sudo" = false ]; then
-        cat <<EOF
-The installer will run under 'sudo' and may ask you for your password. If you do
-not want the script to run 'sudo' then pass it the --disable-sudo flag.
+#     if [ "$_disable_sudo" = false ]; then
+#         cat <<EOF
+# The installer will run under 'sudo' and may ask you for your password. If you do
+# not want the script to run 'sudo' then pass it the --disable-sudo flag.
 
-EOF
-    fi
+# EOF
+#     fi
 
-    if [ "$_uninstall" = false ]; then
-        cat <<EOF
-You may uninstall later by running $_prefix/lib/algo/uninstall.sh,
-or by running this script again with the --uninstall flag.
-
-EOF
-    fi
-
-    echo
 }
 
 
@@ -217,59 +208,102 @@ install_cli() {
     # download algo for platform
     local tmpdir=$(mktemp -d)
     cd $tmpdir
-    verbose_say "working directory: '$tmpdir'"
+    echo_verbose "working directory: '$tmpdir'"
 
     local release_url="${base_url}/v${algo_version}/algorithmia-v${algo_version}-${_algo_arch}.tar.gz"
-    verbose_say "downloading release tarball..."
-    curl -sSL "$release_url" -o "algo.tar.gz"
+    echo_verbose "downloading release tarball..."
+    curl -sSfL "$release_url" -o "algo.tar.gz"
 
-    verbose_say "extracting release tarball..."
+    echo_verbose "extracting release tarball..."
     tar -xzf algo.tar.gz
 
-    verbose_say "downloading completions..."
-    mkdir $tmpdir/zsh && cd $tmpdir/zsh && curl -sSL -O "${completions_url}/zsh/_algo"
-    mkdir $tmpdir/bash && cd $tmpdir/bash && curl -sSL -O "${completions_url}/bash/algo"
+    echo_verbose "downloading completions..."
+    mkdir $tmpdir/zsh && cd $tmpdir/zsh && curl -sSf -O "${completions_url}/zsh/_algo"
+    mkdir $tmpdir/bash && cd $tmpdir/bash && curl -sSf -O "${completions_url}/bash/algo"
+
 
     # copy to $_prefix/bin
-    say "TODO: install algo"
+    echo_verbose "installing 'algo'..."
+    maybe_sudo cp $tmpdir/algo $_prefix/bin/
 
     # install completions
-    say "TODO: install completions"
+    echo_verbose "installing shell completions..."
+    maybe_sudo mkdir -p /usr/local/share/zsh/site-functions/ || true
+    maybe_sudo cp $tmpdir/zsh/_algo /usr/local/share/zsh/site-functions/
+    maybe_sudo mkdir -p /etc/bash_completion.d/
+    maybe_sudo cp $tmpdir/bash/algo /etc/bash_completion.d/
+
+    local _shell=$(getent passwd $LOGNAME | cut -d: -f7)
+    echo_verbose "detected user shell as '$_shell'"
+    if [[ "$_shell" = "/bin/zsh" ]]; then
+        echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
+        echo
+        echo "    compinit"
+        echo
+    elif [[ "$_shell" = "/bin/bash" ]]; then
+        echo "Bash completions should be automatically sourced in subsequent shells if 'bash-completion' is installed. You may manually source them by running:"
+        echo
+        echo "    source /etc/bash_completion.d/algo"
+        echo
+    fi
+
+    echo "Installation complete! Run 'algo --help' to get started."
 }
 
 uninstall_cli() {
-    say "TODO: uninstall"
+    maybe_sudo rm -f $_prefix/bin/algo || true
+    maybe_sudo rm -f /usr/local/share/zsh/site-functions/_algo || true
+    maybe_sudo rm -f /etc/bash_completion.d/algo || true
+
+    # Remove old versions - this should be removed from future releases
+    if which algo > /dev/null 2>&1; then
+        maybe_sudo rm -f $(which algo)
+    fi
+
+    echo "Algorithmia Command Line Tools uninstalled!"
 }
 
 print_help() {
 echo '
 Usage: install-algo.sh [--verbose]
 Options:
-     --prefix=<path>                   Install to a specific location (default /usr/local)
      --uninstall                       Uninstall instead of install
-     --disable-sudo                    Do not run installer under sudo
-     --yes, -y                         Disable the interactive mode
      --help, -h                        Display usage information
 '
 }
+    #  --prefix=<path>                   Install to a specific location (default /usr/local)
+    #  --disable-sudo                    Do not run installer under sudo
+    #  --yes, -y                         Disable the interactive mode
 
-say() {
-    echo "install-algo: $1"
-}
-
-say_err() {
-    say "$1" >&2
-}
-
-verbose_say() {
+echo_verbose() {
     if [ "$flag_verbose" = true ]; then
-        say "$1"
+        echo "$1"
     fi
 }
 
 err() {
-    say "$1" >&2
+    echo "$1" >&2
     exit 1
+}
+
+maybe_sudo() {
+    local _is_windows=false
+    case "$_ostype" in
+        *windows*)
+            _is_windows=true
+            ;;
+    esac
+
+    local _is_root=false
+    if [[ $(id -u) = 0 ]]; then
+      _is_root=true
+    fi
+
+    if [ "$_disable_sudo" = true -o "$_is_windows" = true -o "$_is_root" = true ]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
 }
 
 need_cmd() {
