@@ -91,6 +91,19 @@ set_architecture() {
     echo_verbose "architecture is $_algo_arch"
 }
 
+set_shell() {
+    if command -v getent > /dev/null 2>&1 ; then
+        _shell=$(getent passwd $LOGNAME | cut -d: -f7)
+        echo_verbose "detected user shell as '$_shell'"
+    elif command -v dscl > /dev/null 2>&1 ; then
+        _shell=$(dscl . -read /Users/$(id -un) UserShell | cut -f2 -d' ')
+        echo_verbose "detected user shell as '$_shell'"
+    else
+        _shell=/bin/bash
+        echo_verbose "guessing user shell as '$_shell'"
+    fi
+}
+
 print_welcome_message() {
     local _prefix="$1"
     local _uninstall="$2"
@@ -195,6 +208,7 @@ handle_command_line_args() {
 
     print_welcome_message $_prefix $_uninstall $_disable_sudo
     set_architecture
+    set_shell
 
     if [ "$_uninstall" = true ]; then
         uninstall_cli
@@ -233,8 +247,6 @@ install_cli() {
     maybe_sudo mkdir -p /etc/bash_completion.d/
     maybe_sudo cp $tmpdir/bash/algo /etc/bash_completion.d/
 
-    local _shell=$(getent passwd $LOGNAME | cut -d: -f7)
-    echo_verbose "detected user shell as '$_shell'"
     if [[ "$_shell" = "/bin/zsh" ]]; then
         echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
         echo
