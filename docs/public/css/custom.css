@@ -1,0 +1,12 @@
+.terminal {
+  margin-top: 12px;
+}
+
+.terminal pre {
+  white-space: pre-wrap;
+  background-color: #272822;
+  color: #dddddd;
+  padding: 8px;
+  font-size: 24px;
+  margin-bottom: 0px;
+}
