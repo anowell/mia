@@ -100,18 +100,28 @@ esac
 
 mkdir -p target/$TARGET/openssl
 install=`pwd`/target/$TARGET/openssl/openssl-install
-out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
-curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-sha256sum $out > $out.sha256
-test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+installed_file=target/$TARGET/openssl/installed-${OPENSSL_VERS}
 
-tar xf $out -C target/$TARGET/openssl
-(cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
- CC=$OPENSSL_CC \
- AR=$OPENSSL_AR \
- $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
- make -j4 && \
- make install)
+if [[ ! -f ${installed_file} ]]; then
+    out=`pwd`/target/$TARGET/openssl/openssl-${OPENSSL_VERS}.tar.gz
+    curl -o $out https://www.openssl.org/source/openssl-${OPENSSL_VERS}.tar.gz
+    sha256sum $out > $out.sha256
+    test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+
+    tar xf $out -C target/$TARGET/openssl
+    (cd target/$TARGET/openssl/openssl-${OPENSSL_VERS} && \
+        CC=$OPENSSL_CC \
+        AR=$OPENSSL_AR \
+        $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
+        make -j4 && \
+        make install)
+
+    # We need to ensure a clean cargo build so that openssl-sys gets rebuilt
+    export FORCE_CLEAN=true
+    touch ${installed_file}
+else
+  echo "skipping openssl build. already installed to $install"
+fi
 
 # Variables to the openssl-sys crate to link statically against the OpenSSL we
 # just compiled above
@@ -121,7 +131,7 @@ export OPENSSL_LIB_DIR=$install/lib
 export OPENSSL_INCLUDE_DIR=$install/include
 
 # ==============================================================================
-# Actually delgate to the test script itself
+# Finally delgate back to the run script
 # ==============================================================================
 
 # Since `target` is a writable directory, place all output there and go
