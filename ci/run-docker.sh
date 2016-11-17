@@ -98,11 +98,21 @@ case $TARGET in
     ;;
 esac
 
+# Since `target` is a writable and cacheable directory, place all output
+# and cargo home directory in there as well.
+export CARGO_TARGET_DIR=`pwd`/target
+export CARGO_HOME=`pwd`/target/cargo-home
+export CARGO_TARGET_${upper_target}_LINKER=$OPENSSL_CC
+
 mkdir -p target/$TARGET/openssl
 install=`pwd`/target/$TARGET/openssl/openssl-install
 installed_file=target/$TARGET/openssl/installed-${OPENSSL_VERS}
 
 if [[ ! -f ${installed_file} ]]; then
+    # We need to ensure cargo rebuilds openssl-sys after we build a custom openssl
+    # so we clean that crate here
+    cargo clean -p openssl-sys --release --target $TARGET
+
     out=`pwd`/target/$TARGET/openssl/openssl-${OPENSSL_VERS}.tar.gz
     curl -o $out https://www.openssl.org/source/openssl-${OPENSSL_VERS}.tar.gz
     sha256sum $out > $out.sha256
@@ -116,8 +126,6 @@ if [[ ! -f ${installed_file} ]]; then
         make -j4 && \
         make install)
 
-    # We need to ensure a clean cargo build so that openssl-sys gets rebuilt
-    export FORCE_CLEAN=true
     touch ${installed_file}
 else
   echo "skipping openssl build. already installed to $install"
@@ -133,11 +141,4 @@ export OPENSSL_INCLUDE_DIR=$install/include
 # ==============================================================================
 # Finally delgate back to the run script
 # ==============================================================================
-
-# Since `target` is a writable directory, place all output there and go
-# ahead and throw the home directory in there as well.
-export CARGO_TARGET_DIR=`pwd`/target
-export CARGO_HOME=`pwd`/target/cargo-home
-export CARGO_TARGET_${upper_target}_LINKER=$OPENSSL_CC
-
 exec sh ci/run.sh
