@@ -4,11 +4,6 @@ set -ex
 
 . $(dirname $0)/utils.sh
 
-# Generate artifacts for release
-mk_artifacts() {
-    cargo build --target $TARGET --release
-}
-
 mk_tarball() {
     # create a "staging" directory
     local td=$(mktempd)
@@ -41,7 +36,6 @@ mk_deb() {
 }
 
 main() {
-    mk_artifacts
     mk_tarball
 
     if [ $TRAVIS_OS_NAME = linux ]; then

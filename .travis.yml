@@ -43,7 +43,7 @@ script:
     fi
 
 before_deploy:
-  - bash ci/before_deploy.sh
+  - bash ci/prepare_deploy.sh
 
 
 deploy:
