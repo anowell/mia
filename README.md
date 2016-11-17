@@ -167,16 +167,16 @@ Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
 
 ### Add additional profiles
 
-With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, you will run through the same interactive prompt--simply add a profile name to the command to add a new profile.
+With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, simply specify a profile to `algo auth` follow the same interactive prompt.
 
 ```bash
-$ algo auth second_user
+$ algo auth --profile second_user
 Configuring authentication for 'second_user' profile
 Enter API Key (prefixed with 'sim'):
-Profile is ready to use. Test with 'algo ls'
+Profile is ready to use. Test with 'algo ls --profile second_user'
 ```
 
-When you re-run the `algo ls` command, you should now see both profiles. For more information, see the auth command help with `algo auth --help`.
+Now you may use `algo ls --profile second_user` to list files in your `second_user` account. For more information, see the auth command help with `algo auth --help`.
 
 ### Using profiles in commands
 
