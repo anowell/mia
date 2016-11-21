@@ -60,7 +60,7 @@ In order to make calls with the CLI, you'll need to configure the authentication
 Begin the configuration process by running the command `algo auth`.
 You will see an interactive prompt to guide you through setting up a default profile:
 
-```bash
+```
 $ algo auth
 Configuring authentication for 'default' profile
 Enter API Key (prefixed with 'sim'):
@@ -73,14 +73,14 @@ See [Using multiple profiles](#using-multiple-profiles) for instructions on how 
 
 To call an algorithm from the CLI, use the command syntax: `algo run`, followed by the algorithm’s username and algorithm name, the data options, and finally the input. Here is a basic example calling the [Factor algorithm](https://algorithmia.com/algorithms/kenny/Factor):
 
-```bash
+```text
 $ algo run kenny/factor -d 19635
 [3,5,7,11,17]
 ```
 
 Add the option `--response-body` to see the full JSON response:
 
-```bash
+```text
 $ algo run kenny/factor -d 19635 --response-body
 {"result":[3,5,7,11,17],"metadata":{"content_type":"json","duration":0.001427314}}
 ```
@@ -103,7 +103,7 @@ You may also explictly specify the input type as text (`-t`/`-T`), json (`-j`/`-
 
 The algorithm result is printed to STDOUT by defauft. Additional notices may be printed to STDERR. If you'd like to output the result to a file, use the output option flag followed by a filename:
 
-```bash
+```text
 $ algo run kenny/factor -d 17 --output results.txt
 ```
 
@@ -122,7 +122,8 @@ $ algo run kenny/factor -d 17 --output results.txt
 | --timeout <seconds> | Sets algorithm timeout
 
 #### Examples:
-```bash
+
+```text
 $ algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified version & data input as text
 $ algo anowell/Dijkstra -J routes.json              Run algorithm with file input
 $ algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
@@ -149,7 +150,7 @@ Use the Algorithmia CLI to interact with the Algorithmia Data API. You can use t
 ### Examples of the Algorithmia Data API usage:
 
 Create a data directory:
-```bash
+```text
 $ algo mkdir .my/cuteAnimals
 
 Created directory data://.my/cuteAnimals
@@ -157,7 +158,7 @@ Created directory data://.my/cuteAnimals
 
 Copy a file from your local directory to the new data directory:
 
-```bash
+```text
 $ algo cp chubby_kittens.jpg data://.my/cuteAnimals
 
 Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
@@ -169,7 +170,7 @@ Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
 
 With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, simply specify a profile to `algo auth` follow the same interactive prompt.
 
-```bash
+```text
 $ algo auth --profile second_user
 Configuring authentication for 'second_user' profile
 Enter API Key (prefixed with 'sim'):
@@ -182,7 +183,7 @@ Now you may use `algo ls --profile second_user` to list files in your `second_us
 
 When running commands, the Algorithmia CLI will use the default profile unless otherwise specified with the `--profile <profile>` option. See the following example:
 
-```bash
+```text
 $ algo run kenny/factor -d 17 --profile second_user
 [17]
 ```
