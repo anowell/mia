@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
@@ -12,7 +12,7 @@ main() {
 }
 
 set_globals() {
-    algo_version="1.0.0-beta.3"
+    algo_version="1.0.0-beta.4"
     default_prefix="${ALGO_PREFIX-/usr/local}"
     base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
     completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
@@ -247,12 +247,12 @@ install_cli() {
     maybe_sudo mkdir -p /etc/bash_completion.d/
     maybe_sudo cp $tmpdir/bash/algo /etc/bash_completion.d/
 
-    if [[ "$_shell" = "/bin/zsh" ]]; then
+    if [ "$_shell" = "/bin/zsh" ]; then
         echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
         echo
         echo "    compinit"
         echo
-    elif [[ "$_shell" = "/bin/bash" ]]; then
+    elif [ "$_shell" = "/bin/bash" ]; then
         echo "Bash completions should be automatically sourced in subsequent shells if 'bash-completion' is installed. You may manually source them by running:"
         echo
         echo "    source /etc/bash_completion.d/algo"
@@ -307,7 +307,7 @@ maybe_sudo() {
     esac
 
     local _is_root=false
-    if [[ $(id -u) = 0 ]]; then
+    if [ $(id -u) = 0 ]; then
       _is_root=true
     fi
 
