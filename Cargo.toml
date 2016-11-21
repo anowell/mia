@@ -25,6 +25,9 @@ git = "https://github.com/anowell/algorithmia-rust"
 default-features = false
 features = ["with-rustc-serialize"]
 
+[target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
+openssl-probe = "0.1"
+
 [target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
 git = "https://github.com/algorithmiaio/langpacks"
 default-features = false
