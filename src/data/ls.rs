@@ -7,6 +7,7 @@ use std::vec::IntoIter;
 use term::{self, color};
 use term::color::Color;
 use terminal_size::{Width, terminal_size};
+use isatty::stdout_isatty;
 
 static USAGE: &'static str = r##"Usage:
   algo ls [options] [<data-dir>]
@@ -62,9 +63,9 @@ impl Ls {
                 match entry_result {
                     Ok(DataItem::Dir(d)) => {
                         let _ = write!(t_out, "{:19} {:>5} ", "--         --", "[dir]");
-                        let _ = t_out.fg(color::BRIGHT_BLUE);
+                        if stdout_isatty() { let _ = t_out.fg(color::BRIGHT_BLUE); }
                         let _ = writeln!(t_out, "{}", d.basename().unwrap());
-                        let _ = t_out.reset();
+                        if stdout_isatty() { let _ = t_out.reset(); }
                     }
                     Ok(DataItem::File(f)) => {
                         let name = f.basename().unwrap();
@@ -72,11 +73,13 @@ impl Ls {
                                        "{:19} {:>5} ",
                                        f.last_modified.format("%Y-%m-%d %H:%M:%S"),
                                        data::size_with_suffix(f.size));
-                        if let Some(c) = FileType::from_filename(&name).to_color() {
-                            let _ = t_out.fg(c);
+                        if stdout_isatty() {
+                            if let Some(c) = FileType::from_filename(&name).to_color() {
+                                let _ = t_out.fg(c);
+                            }
                         }
                         let _ = writeln!(t_out, "{}", name);
-                        let _ = t_out.reset();
+                        if stdout_isatty() { let _ = t_out.reset(); }
                     }
                     Err(err) => die!("Error listing directory: {}", err),
                 }
@@ -109,18 +112,20 @@ impl Ls {
                 let char_count = match item {
                     DataItem::Dir(d) => {
                         let name = d.basename().unwrap();
-                        let _ = t_out.fg(color::BRIGHT_BLUE);
+                        if stdout_isatty() { let _ = t_out.fg(color::BRIGHT_BLUE); }
                         let _ = write!(t_out, "{}", name);
-                        let _ = t_out.reset();
+                        if stdout_isatty() { let _ = t_out.reset(); }
                         name.chars().count()
                     }
                     DataItem::File(f) => {
                         let name = f.basename().unwrap();
-                        if let Some(c) = FileType::from_filename(&name).to_color() {
-                            let _ = t_out.fg(c);
+                        if stdout_isatty() {
+                            if let Some(c) = FileType::from_filename(&name).to_color() {
+                                let _ = t_out.fg(c);
+                            }
                         }
                         let _ = write!(t_out, "{}", name);
-                        let _ = t_out.reset();
+                        if { stdout_isatty() } { let _ = t_out.reset(); }
                         name.chars().count()
                     }
                 };

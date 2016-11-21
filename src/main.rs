@@ -12,11 +12,13 @@ extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
 extern crate terminal_size;
+extern crate isatty;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::env;
 use std::vec::IntoIter;
 use toml::Value;
+use isatty::{stderr_isatty};
 
 macro_rules! stderrln {
     ($fmt:expr) => ({
@@ -123,9 +125,9 @@ fn main() {
             "--profile" => profile = args.next().unwrap_or(profile.to_string()),
             "--version" => {
                 let mut t_err = term::stderr().unwrap();
-                let _ = t_err.fg(93); // purple
+                if stderr_isatty() { let _ = t_err.fg(93); } // purple
                 let _ = writeln!(t_err, "{}", ASCII_ART);
-                let _ = t_err.reset();
+                if stderr_isatty() { let _ = t_err.reset(); }
                 die!("{}",  version::VERSION);
             }
             _ => cmd_args.push(arg),

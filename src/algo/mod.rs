@@ -16,6 +16,7 @@ use rustc_serialize::json::Json;
 use algorithmia::error::Error;
 use algorithmia::algo::{AlgoResponse, Response, AlgoOutput};
 use term::{self, color};
+use isatty::stderr_isatty;
 
 
 #[derive(Debug)]
@@ -158,28 +159,28 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 // Printing any API alerts
                 if let Some(ref alerts) = response.metadata.alerts {
                     if !config.flag_silence {
-                        let _ = t_err.fg(color::YELLOW);
+                        if stderr_isatty() { let _ = t_err.fg(color::YELLOW); }
                         for alert in alerts {
                             let _ = writeln!(t_err, "{}", alert);
                         }
-                        let _ = t_err.reset();
+                        if stderr_isatty() { let _ = t_err.reset(); }
                     }
                 }
 
                 // Printing algorithm stdout
                 if let Some(ref stdout) = response.metadata.stdout {
                     if config.flag_debug {
-                        let _ = t_err.fg(color::BRIGHT_BLACK);
+                        if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_BLACK); }
                         let _ = writeln!(t_err, "{}", stdout);
-                        let _ = t_err.reset();
+                        if stderr_isatty() { let _ = t_err.reset(); }
                     }
                 }
 
                 // Printing metadata
                 if !config.flag_silence {
-                    let _ = t_err.fg(color::BRIGHT_BLACK);
+                    if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_BLACK); }
                     let _ = writeln!(t_err, "Completed in {:.1} seconds", response.metadata.duration);
-                    let _ = t_err.reset();
+                    if stderr_isatty() { let _ = t_err.reset(); }
                 }
 
                 // Smart output of result
