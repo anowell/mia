@@ -6,11 +6,11 @@ authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 build = "build.rs"
 
 [dependencies]
-docopt = "0.6.80"
+docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
-toml = "0.1.28"
-rpassword = "0.2.0"
+toml = "0.2.1"
+rpassword = "0.3.1"
 mime = "0.2.2"
 term = "0.4"
 terminal_size = "0.1"
