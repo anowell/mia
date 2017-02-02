@@ -13,7 +13,7 @@ use std::io::{self, Read, Write};
 use std::fs::File;
 use std::path::Path;
 use rustc_serialize::json::Json;
-use algorithmia::error::Error;
+use algorithmia::error::{Error, ErrorKind};
 use algorithmia::algo::{AlgoResponse, Response, AlgoOutput};
 use term::{self, color};
 use isatty::stderr_isatty;
@@ -34,7 +34,7 @@ impl InputData {
     fn auto(reader: &mut Read) -> InputData {
         let mut bytes: Vec<u8> = Vec::new();
         if let Err(err) = reader.read_to_end(&mut bytes) {
-            die!("Read error: {}", err);
+            quit_err!("Read error: {}", err);
         }
 
         match String::from_utf8(bytes) {
@@ -52,7 +52,7 @@ impl InputData {
         let mut data = String::new();
         match reader.read_to_string(&mut data) {
             Ok(_) => InputData::Text(data),
-            Err(err) => die!("Read error: {}", err),
+            Err(err) => quit_err!("Read error: {}", err),
         }
     }
 
@@ -60,7 +60,7 @@ impl InputData {
         let mut data = String::new();
         match reader.read_to_string(&mut data) {
             Ok(_) => InputData::Json(data),
-            Err(err) => die!("Read error: {}", err),
+            Err(err) => quit_err!("Read error: {}", err),
         }
     }
 
@@ -68,7 +68,7 @@ impl InputData {
         let mut bytes: Vec<u8> = Vec::new();
         match reader.read_to_end(&mut bytes) {
             Ok(_) => InputData::Binary(bytes),
-            Err(err) => die!("Read error: {}", err),
+            Err(err) => quit_err!("Read error: {}", err),
         }
     }
 }
@@ -86,7 +86,7 @@ impl OutputDevice {
             Some(ref file_path) => {
                 match File::create(file_path) {
                     Ok(buf) => OutputDevice { writer: Box::new(buf) },
-                    Err(err) => die!("Unable to create file: {}", err),
+                    Err(err) => quit_err!("Unable to create file: {}", err),
                 }
             }
             None => OutputDevice { writer: Box::new(io::stdout()) },
@@ -96,7 +96,7 @@ impl OutputDevice {
     fn write(&mut self, bytes: &[u8]) {
         match self.writer.write(bytes) {
             Ok(_) => (),
-            Err(err) => die!("Error writing output: {}", err),
+            Err(err) => quit_err!("Error writing output: {}", err),
         }
     }
 
@@ -116,7 +116,7 @@ fn get_src(src: &str) -> Box<Read> {
 fn open_file(path: &Path) -> Box<Read> {
     let display = path.display();
     let file = match File::open(&path) {
-        Err(err) => die!("Error opening {}: {}", display, err),
+        Err(err) => quit_err!("Error opening {}: {}", display, err),
         Ok(file) => file,
     };
     Box::new(file)
@@ -139,7 +139,7 @@ fn display_response(mut response: Response, config: ResponseConfig) {
     let mut json_response = String::new();
     {
         if let Err(err) = response.read_to_string(&mut json_response) {
-            die!("Read error: {}", err)
+            quit_err!("Error reading response: {}", err)
         };
     }
 
@@ -190,13 +190,13 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                     AlgoOutput::Binary(bytes) => output.write(&bytes),
                 };
             }
-            Err(Error::Api(err)) => {
+            Err(Error(ErrorKind::Api(err), _)) => {
                 match err.stacktrace {
-                    Some(ref trace) => die!("API error: {}\n{}", err, trace),
-                    None => die!("API error: {}", err),
+                    Some(ref trace) => quit_msg!("API error: {}\n{}", err, trace),
+                    None => quit_msg!("API error: {}", err),
                 }
             }
-            Err(err) => die!("Response error: {}", err),
+            Err(err) => quit_err!("failed to parse algorithm response (debug with --response-body)\n{}", err),
         };
     }
 }
@@ -209,7 +209,7 @@ fn split_args(argv: IntoIter<String>, usage: &'static str) -> (Vec<InputData>, V
     let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
     let next_arg = |argv_iter: &mut IntoIter<String>| {
         argv_iter.next()
-            .unwrap_or_else(|| die!("Missing arg for input data option\n\n{}", usage))
+            .unwrap_or_else(|| quit_msg!("Missing arg for input data option\n\n{}", usage))
     };
     while let Some(flag) = argv_mut.next() {
         match &*flag {
@@ -239,9 +239,9 @@ fn split_args(argv: IntoIter<String>, usage: &'static str) -> (Vec<InputData>, V
 
     // Validating args and options
     if input_args.len() < 1 {
-        return die!("Must specify an input data option\n\n{}", usage);
+        quit_msg!("Must specify an input data option\n\n{}", usage);
     } else if input_args.len() > 1 {
-        return die!("Multiple input data sources is currently not supported");
+        quit_msg!("Multiple input data sources is currently not supported");
     }
 
     (input_args, other_args)

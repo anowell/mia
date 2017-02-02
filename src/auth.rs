@@ -66,7 +66,7 @@ impl Auth {
 
         let api_key = match rpassword::read_password() {
             Ok(key) => key,
-            Err(err) => die!("Cannot read password: {}", err),
+            Err(err) => quit_err!("Cannot read password: {}", err),
         };
         if api_key.len() == 28 && api_key.starts_with("sim") {
             let mut config = Self::read_config().unwrap_or_else(Table::new);
@@ -100,7 +100,7 @@ impl Auth {
             Some(t) => {
                 match Value::Table(t).lookup(&format!("profiles.{}", profile_name)) {
                     Some(&Value::Table(ref p)) => Some(p.clone()),
-                    Some(_) => die!("Invalid profile format in {}", get_config_path()),
+                    Some(_) => quit_msg!("Invalid profile format in {}", get_config_path()),
                     None => None,
                 }
             }
@@ -116,7 +116,7 @@ impl Auth {
                 let mut conf_toml = String::new();
                 let _ = f.read_to_string(&mut conf_toml);
                 let config = Parser::new(&conf_toml).parse().unwrap_or_else(|| {
-                    die!("Unable to parse {}. Consider deleting and re-running 'algo auth'",
+                    quit_msg!("Unable to parse {}. Consider deleting and re-running 'algo auth'",
                          conf_path);
                 });
                 Some(config)
@@ -130,7 +130,7 @@ impl Auth {
 
         let _ = match open_writable_config() {
             Ok(mut f) => f.write_all(output.as_bytes()),
-            Err(e) => die!("Unable to write config file: {}", e),
+            Err(e) => quit_err!("Unable to write config file: {}", e),
         };
     }
 
@@ -140,7 +140,7 @@ impl Auth {
                 section.remove(&name);
                 section.insert(name, Value::Table(value));
             } else {
-                die!("Unable to parse [profiles] section of configuration");
+                quit_msg!("Unable to parse [profiles] section of configuration");
             }
         } else {
             let mut section = Table::new();

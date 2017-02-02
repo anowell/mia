@@ -128,25 +128,28 @@ impl CpClient {
                         // If dest exists as DataFile, overwrite it
                         Ok(DataItem::File(f)) => {
                             let file = File::open(&*rx_path).unwrap();
-                            f.put(file)
+                            f.put(file).map(|_| f.to_data_uri())
                         }
                         // If dest exists as DataDir, add file to dir
-                        Ok(DataItem::Dir(d)) => d.put_file(&rx_path),
+                        Ok(DataItem::Dir(d)) => {
+                            d.put_file(&rx_path)
+                                .map(|_| d.child::<DataFile>(&rx_path).to_data_uri())
+                        }
                         // Otherwise, try adding new file with exact path as dest
                         Err(_) => {
                             let file = File::open(&*rx_path).unwrap();
                             let f = thread_conn.client.file(&*thread_conn.dest);
-                            f.put(file)
+                            f.put(file).map(|_| f.to_data_uri())
                         }
                     };
 
                     match put_res {
-                        Ok(file_added) => {
-                            println!("Uploaded {}", file_added.result);
+                        Ok(uri) => {
+                            println!("Uploaded {}", uri);
                             let mut count = thread_completed.lock().unwrap();
                             *count += 1;
                         }
-                        Err(e) => die!("Error uploading {}: {}", rx_path, e),
+                        Err(e) => quit_err!("Error uploading {}: {}", rx_path, e),
                     };
                 }
                 thread_wg.done();
@@ -196,7 +199,7 @@ impl CpClient {
                             let mut count = thread_completed.lock().unwrap();
                             *count += 1;
                         }
-                        Err(err) => die!("{}", err),
+                        Err(err_msg) => quit_msg!("Failed to download {}: {}", rx_path, err_msg),
                     }
                 }
                 thread_wg.done();

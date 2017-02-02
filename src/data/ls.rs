@@ -81,13 +81,13 @@ impl Ls {
                         let _ = writeln!(t_out, "{}", name);
                         if stdout_isatty() { let _ = t_out.reset(); }
                     }
-                    Err(err) => die!("Error listing directory: {}", err),
+                    Err(err) => quit_err!("Error listing directory: {}", err),
                 }
             }
         } else {
             let items: Vec<DataItem> = my_dir.list()
                 .collect::<Result<Vec<_>, _>>()
-                .unwrap_or_else(|err| die!("Error listing directory: {}", err));
+                .unwrap_or_else(|err| quit_err!("Error listing directory: {}", err));
 
             let width = match terminal_size() {
                 Some((Width(w), _)) => w as usize,

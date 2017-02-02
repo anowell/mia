@@ -63,7 +63,7 @@ impl GitClone {
         }
 
         let mut child = cmd.spawn()
-            .unwrap_or_else(|_| die!("Failed to `git clone`. Is git installed?"));
+            .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
         let _ = child.wait();
 
     }

@@ -49,8 +49,7 @@ impl RmDir {
         let my_dir = self.client.dir(path);
         match my_dir.delete(force) {
             Ok(_) => println!("Deleted directory {}", my_dir.to_data_uri()),
-            // TODO: Improve error message when delete failed for lack of --force
-            Err(err) => die!("Error deleting directory: {}", err),
+            Err(err) => quit_err!("Error deleting directory: {}", err),
         };
     }
 }

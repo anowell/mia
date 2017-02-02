@@ -39,7 +39,7 @@ impl CmdRunner for Serve {
         {
             // First check that the port is available
             TcpListener::bind(("0.0.0.0", args.flag_port as u16))
-                .unwrap_or_else(|err| die!("Unable to listen on port {}: {}", args.flag_port, err));
+                .unwrap_or_else(|err| quit_err!("Unable to listen on port {}: {}", args.flag_port, err));
         }
 
         // Serve the algorithm
@@ -67,16 +67,16 @@ mod native {
     pub fn serve_algorithm(port: u16, path: Option<&String>) {
         if let Some(p) = path {
             env::set_current_dir(p)
-                .unwrap_or_else(|err| die!("Failed to set working directory: {}", err));
+                .unwrap_or_else(|err| quit_err!("Failed to set working directory: {}", err));
         }
 
         let mut child = Command::new("bin/build")
             .spawn()
-            .unwrap_or_else(|_| die!("Failed to run `bin/build`"));
+            .unwrap_or_else(|err| quit_err!("Failed to run `bin/build`: {}", err));
         let _ = child.wait();
 
         let langserver = LangServer::start(LangServerMode::Sync, None)
-            .unwrap_or_else(|err| die!("Failed to start LangServer: {}", err));
+            .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
 
         let _ = Server::http(("0.0.0.0", port))
             .and_then(|s| s.handle(langserver))
@@ -89,6 +89,6 @@ mod native {
 #[cfg(target_os = "windows")]
 mod native {
     pub fn serve_algorithm(port: u16, path: Option<&String>) {
-        die!("algo serve is not currently supported on Windows")
+        quit_msg!("algo serve is not currently supported on Windows")
     }
 }

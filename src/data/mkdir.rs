@@ -44,7 +44,7 @@ impl MkDir {
         let my_dir = self.client.dir(path);
         match my_dir.create(DataAcl::default()) {
             Ok(_) => println!("Created directory: {}", my_dir.to_data_uri()),
-            Err(err) => die!("Error creating directory: {}", err),
+            Err(err) => quit_err!("Error creating directory: {}", err),
         };
     }
 }

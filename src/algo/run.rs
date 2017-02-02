@@ -126,7 +126,7 @@ impl Run {
 
         match result {
             Ok(response) => response,
-            Err(err) => die!("Error calling algorithm: {}", err),
+            Err(err) => quit_err!("Error calling algorithm: {} {}", 1, err),
         }
     }
 }

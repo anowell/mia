@@ -119,7 +119,7 @@ impl RunLocal {
         RunLocal {
             // Will serve with profile, and point client to `algo serve`
             serve_profile: profile.to_owned(),
-            client: Algorithmia::alt_client("http://localhost:9999", ApiAuth::None),
+            client: Algorithmia::client_with_url("http://localhost:9999", ApiAuth::None),
         }
     }
 
@@ -136,7 +136,7 @@ impl RunLocal {
 
         match result {
             Ok(response) => response,
-            Err(err) => die!("HTTP Error: {}", err),
+            Err(err) => quit_err!("HTTP Error: {}", err),
         }
     }
 
@@ -148,7 +148,7 @@ impl RunLocal {
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .spawn()
-            .unwrap_or_else(|_| die!("Failed to run `algo serve`"));
+            .unwrap_or_else(|_| quit_msg!("Failed to run `algo serve`"));
 
         let _ = thread::spawn(move || {
             let _ = child.wait();
@@ -166,7 +166,7 @@ impl RunLocal {
             thread::sleep(time::Duration::from_millis(100));
             i += 1;
             if i > 10 * 60 * 2 {
-                die!("Failed to wait for algorithm. Try running `algo serve` manually.")
+                quit_msg!("Failed to wait for algorithm. Try running `algo serve` manually.")
             }
         }
     }

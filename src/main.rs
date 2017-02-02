@@ -20,13 +20,13 @@ extern crate isatty;
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::env;
 use std::vec::IntoIter;
+use std::error::Error as StdError;
 use toml::Value;
 use isatty::{stderr_isatty};
 
 macro_rules! stderrln {
     ($fmt:expr) => ({
         use std::io::Write;
-
         let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n")));
     });
     ($fmt:expr, $($arg:tt)*) => ({
@@ -35,13 +35,39 @@ macro_rules! stderrln {
     });
 }
 
-macro_rules! die {
+macro_rules! quit_msg {
     ($fmt:expr) => ({
         stderrln!($fmt);
         ::std::process::exit(1)
     });
     ($fmt:expr, $($arg:tt)*) => ({
         stderrln!($fmt, $($arg)*);
+        ::std::process::exit(1)
+    });
+}
+
+fn print_cause_chain(e: &StdError) {
+    let mut err = e;;
+    while let Some(cause) = err.cause() {
+        stderrln!("  caused by: {}", cause);
+        err = cause as &StdError;
+    }
+}
+
+macro_rules! quit_err {
+    ($err:tt) => ({
+        stderrln!("{}", $err);
+        ::print_cause_chain(&$err);
+        ::std::process::exit(1)
+    });
+    ($fmt:expr, $err:tt) => ({
+        stderrln!($fmt, $err);
+        ::print_cause_chain(&$err);
+        ::std::process::exit(1)
+    });
+    ($fmt:expr, $arg:expr, $err:tt) => ({
+        stderrln!($fmt, $arg, $err);
+        ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
 }
@@ -131,7 +157,7 @@ fn main() {
                 if stderr_isatty() { let _ = t_err.fg(93); } // purple
                 let _ = writeln!(t_err, "{}", ASCII_ART);
                 if stderr_isatty() { let _ = t_err.reset(); }
-                die!("{}",  version::VERSION);
+                quit_msg!("{}",  version::VERSION);
             }
             _ => cmd_args.push(arg),
         }
@@ -164,29 +190,29 @@ impl Profile {
             Some(p) => {
                 let api_key = match p.get("api_key") {
                     Some(&Value::String(ref key)) => key.clone(),
-                    _ => die!("{} profile has invalid 'api_server'", profile),
+                    _ => quit_msg!("{} profile has invalid 'api_server'", profile),
                 };
 
                 let api_server = match p.get("api_server") {
                     Some(&Value::String(ref api)) => Some(api.clone()),
                     None => None,
-                    _ => die!("{} profile has invalid 'api_server'", profile),
+                    _ => quit_msg!("{} profile has invalid 'api_server'", profile),
                 };
                 Profile { api_server: api_server, api_key: api_key }
             }
             None if profile == "default" => {
                 let api_key = env::var("ALGORITHMIA_API_KEY")
-                    .unwrap_or_else(|_| die!("Run 'algo auth' or set ALGORITHMIA_API_KEY"));
+                    .unwrap_or_else(|_| quit_msg!("Run 'algo auth' or set ALGORITHMIA_API_KEY"));
 
                 let api_server = env::var("ALGORITHMIA_API").ok();
                 if let Some(ref api) = api_server {
                     if api.parse::<Url>().is_err() {
-                        die!("ALGORITHMIA_API environment variable is not a valid URL");
+                        quit_msg!("ALGORITHMIA_API environment variable is not a valid URL");
                     }
                 }
                 Profile { api_server: api_server, api_key: api_key }
             }
-            None => die!("{} profile not found. Run 'algo auth {0}'", profile),
+            None => quit_msg!("{} profile not found. Run 'algo auth {0}'", profile),
         }
     }
 }
@@ -195,7 +221,7 @@ fn init_client(profile: &str) -> Algorithmia {
     let Profile{ api_key, api_server } = Profile::lookup(profile);
 
     match api_server {
-        Some(api) => Algorithmia::alt_client(&api, ApiAuth::ApiKey(api_key)),
+        Some(api) => Algorithmia::client_with_url(&api, ApiAuth::ApiKey(api_key)),
         None => Algorithmia::client(ApiAuth::ApiKey(api_key)),
     }
 }

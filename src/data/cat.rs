@@ -50,9 +50,9 @@ fn cat_file(data_file: DataFile) {
             // Copy downloaded data to stdout
             match io::copy(&mut response, &mut stdout) {
                 Ok(_) => (),
-                Err(err) => die!("Error copying data: {}", err),
+                Err(err) => quit_err!("Error copying data: {}", err),
             }
         }
-        Err(e) => die!("Error downloading {}: {}", data_file.to_data_uri(), e),
+        Err(e) => quit_err!("Error downloading {}: {}", data_file.to_data_uri(), e),
     };
 }

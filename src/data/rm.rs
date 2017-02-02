@@ -45,7 +45,7 @@ impl Rm {
         let my_file = self.client.file(path);
         match my_file.delete() {
             Ok(_) => println!("Deleted file {}", my_file.to_data_uri()),
-            Err(err) => die!("Error deleting file: {}", err),
+            Err(err) => quit_err!("Error deleting file: {}", err),
         };
     }
 }
