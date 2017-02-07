@@ -21,7 +21,7 @@ version = "0.9"
 default-features = false
 
 [dependencies.algorithmia]
-git = "https://github.com/anowell/algorithmia-rust"
+version = "2.0.0-beta"
 
 [target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
 openssl-probe = "0.1"
