@@ -18,7 +18,8 @@ extern crate terminal_size;
 extern crate isatty;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
-use std::env;
+use std::{env, fs};
+use std::path::PathBuf;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
 use toml::Value;
@@ -170,13 +171,20 @@ fn main() {
     }
 }
 
-// Switch to using app_dirs crate
-pub fn get_config_path() -> String {
-    if cfg!(windows) {
-        format!("{}/algorithmia", env::var("LOCALAPPDATA").unwrap())
+pub fn get_config_path() -> PathBuf {
+    let app_dir = if cfg!(windows) {
+        PathBuf::from(format!("{}/Algorithmia", env::var("LOCALAPPDATA").unwrap()))
     } else {
-        format!("{}/.algorithmia", env::var("HOME").unwrap())
+        PathBuf::from(format!("{}/.algorithmia", env::var("HOME").unwrap()))
+    };
+
+    if !app_dir.is_dir() {
+        fs::create_dir(&app_dir)
+            .unwrap_or_else(|err|
+                quit_err!("Failed to create app dir '{}': {}", app_dir.display(), err)
+            );
     }
+    app_dir.join("config")
 }
 
 pub struct Profile {

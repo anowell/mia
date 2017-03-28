@@ -100,7 +100,7 @@ impl Auth {
             Some(t) => {
                 match Value::Table(t).lookup(&format!("profiles.{}", profile_name)) {
                     Some(&Value::Table(ref p)) => Some(p.clone()),
-                    Some(_) => quit_msg!("Invalid profile format in {}", get_config_path()),
+                    Some(_) => quit_msg!("Invalid profile format in {}", get_config_path().display()),
                     None => None,
                 }
             }
@@ -117,7 +117,7 @@ impl Auth {
                 let _ = f.read_to_string(&mut conf_toml);
                 let config = Parser::new(&conf_toml).parse().unwrap_or_else(|| {
                     quit_msg!("Unable to parse {}. Consider deleting and re-running 'algo auth'",
-                         conf_path);
+                         conf_path.display());
                 });
                 Some(config)
             }

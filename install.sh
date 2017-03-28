@@ -153,6 +153,16 @@ EOF
 
 }
 
+# Migrate from pre-1.0 config location of ~/.algorithmia
+# to the 1.0 location: ~/.algorithmia/config
+migrate_config() {
+    if [[ -f ~/.algorithmia ]]; then
+        echo_verbose "migrating configuration..."
+        mv ~/.algorithmia ~/.algorithmia.bak
+        mkdir ~/.algorithmia
+        mv ~/.algorithmia.bak ~/.algorithmia/config
+    fi
+}
 
 handle_command_line_args() {
     local _prefix="$default_prefix"
@@ -219,6 +229,8 @@ handle_command_line_args() {
 }
 
 install_cli() {
+    migrate_config
+
     # download algo for platform
     local tmpdir=$(mktemp -d)
     cd $tmpdir
@@ -234,7 +246,6 @@ install_cli() {
     echo_verbose "downloading completions..."
     mkdir $tmpdir/zsh && cd $tmpdir/zsh && curl -sSf -O "${completions_url}/zsh/_algo"
     mkdir $tmpdir/bash && cd $tmpdir/bash && curl -sSf -O "${completions_url}/bash/algo"
-
 
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
