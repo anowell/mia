@@ -156,7 +156,7 @@ EOF
 # Migrate from pre-1.0 config location of ~/.algorithmia
 # to the 1.0 location: ~/.algorithmia/config
 migrate_config() {
-    if [[ -f ~/.algorithmia ]]; then
+    if [ -f ~/.algorithmia ]; then
         echo_verbose "migrating configuration..."
         mv ~/.algorithmia ~/.algorithmia.bak
         mkdir ~/.algorithmia
@@ -229,7 +229,7 @@ handle_command_line_args() {
 }
 
 install_cli() {
-    # migrate_config
+    migrate_config
 
     # download algo for platform
     local tmpdir=$(mktemp -d)
