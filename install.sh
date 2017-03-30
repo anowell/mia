@@ -229,7 +229,7 @@ handle_command_line_args() {
 }
 
 install_cli() {
-    migrate_config
+    # migrate_config
 
     # download algo for platform
     local tmpdir=$(mktemp -d)
