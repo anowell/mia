@@ -4,6 +4,7 @@ use std::cmp;
 use algorithmia::Algorithmia;
 use algorithmia::data::{DataItem, HasDataPath};
 use std::vec::IntoIter;
+use std::ops::Deref;
 use term::{self, color};
 use term::color::Color;
 use terminal_size::{Width, terminal_size};
@@ -44,7 +45,8 @@ impl CmdRunner for Ls {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        self.list_dir(&*args.arg_data_dir.unwrap_or("data://".into()), args.flag_l);
+        let data_uri = args.arg_data_dir.as_ref().map(Deref::deref).unwrap_or("data://");
+        self.list_dir(data_uri, args.flag_l);
     }
 }
 
@@ -125,7 +127,7 @@ impl Ls {
                             }
                         }
                         let _ = write!(t_out, "{}", name);
-                        if { stdout_isatty() } { let _ = t_out.reset(); }
+                        if stdout_isatty() { let _ = t_out.reset(); }
                         name.chars().count()
                     }
                 };
