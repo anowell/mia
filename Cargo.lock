@@ -16,6 +16,7 @@ dependencies = [
  "term 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "terminal_size 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

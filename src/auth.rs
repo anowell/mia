@@ -4,9 +4,10 @@ extern crate rpassword;
 use super::{CmdRunner, get_config_path};
 use docopt::Docopt;
 use std::fs::File;
-use std::io::{self, Read, Write};
+use std::io::{self, Read, Write, BufRead};
 use std::vec::IntoIter;
 use toml::{self, Parser, Table, Value};
+use url::Url;
 
 #[cfg(unix)]
 use std::fs::OpenOptions;
@@ -61,6 +62,30 @@ impl Auth {
 
     fn prompt_for_auth(profile_name: &str) {
         println!("Configuring authentication for '{}' profile", profile_name);
+
+        // Handle Endpoint URL
+        print!("Enter API Endpoint [https://api.algorithmia.com]: ");
+        let _ = io::stdout().flush();
+        let mut line = String::new();
+        let stdin = io::stdin();
+        stdin.lock().read_line(&mut line)
+            .unwrap_or_else(|err| quit_err!("Cannot read API endpoint: {}", err));
+        let api_server = if line.trim().is_empty() {
+            None
+        } else {
+            let trimmed = line.trim();
+            let parsed = Url::parse(trimmed).unwrap_or_else(|err|
+                Url::parse(&format!("https://{}", trimmed)).unwrap_or_else(|_|
+                    quit_err!("Cannot parse '{}' as URL: {}", trimmed, err)
+                )
+            );
+            if !parsed.scheme().starts_with("http") {
+                quit_msg!("Invalid URL: '{}'", parsed);
+            }
+            Some(parsed)
+        };
+
+        // Handle API Key
         print!("Enter API Key (prefixed with 'sim'): ");
         let _ = io::stdout().flush();
 
@@ -70,17 +95,14 @@ impl Auth {
         };
         if api_key.len() == 28 && api_key.starts_with("sim") {
             let mut config = Self::read_config().unwrap_or_else(Table::new);
-            let profile = Self::make_profile(api_key.into());
+            let profile = Self::make_profile(api_key.into(), api_server);
 
             Self::update_profile(&mut config, profile_name.into(), profile);
             Self::write_config(config);
 
             match profile_name {
                 "default" => println!("Profile is ready to use. Test with 'algo ls'"),
-                p => {
-                    println!("Profile is ready to use. Test with 'algo ls --profile {}",
-                             p)
-                }
+                p => println!("Profile is ready to use. Test with 'algo ls --profile {}'", p)
             };
         } else {
             println!("That API Key doesn't look quite right. No changes made to '{}' profile.",
@@ -89,9 +111,15 @@ impl Auth {
 
     }
 
-    fn make_profile(api_key: String) -> Table {
+    fn make_profile(api_key: String, api_server: Option<Url>) -> Table {
         let mut profile = Table::new();
-        profile.insert("api_key".into(), Value::String(api_key));
+        api_server.map(|s|
+            profile.insert(
+                "api_server".to_owned(),
+                Value::String(s.as_str().trim_right_matches('/').to_owned()),
+            )
+        );
+        profile.insert("api_key".to_owned(), Value::String(api_key));
         profile
     }
 

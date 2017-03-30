@@ -17,6 +17,7 @@ term = "0.4"
 terminal_size = "0.1"
 isatty = "0.1"
 hyper = "0.10"
+url = "1.4.0"
 
 [target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
 openssl-probe = "0.1"

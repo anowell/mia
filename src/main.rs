@@ -16,6 +16,7 @@ extern crate toml;
 extern crate term;
 extern crate terminal_size;
 extern crate isatty;
+extern crate url;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::{env, fs};
