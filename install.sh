@@ -12,7 +12,7 @@ main() {
 }
 
 set_globals() {
-    algo_version="1.0.0-beta.4"
+    algo_version="1.0.0"
     default_prefix="${ALGO_PREFIX-/usr/local}"
     base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
     completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
@@ -254,9 +254,9 @@ install_cli() {
     # install completions
     echo_verbose "installing shell completions..."
     maybe_sudo mkdir -p /usr/local/share/zsh/site-functions/ || true
-    maybe_sudo cp $tmpdir/zsh/_algo /usr/local/share/zsh/site-functions/
+    maybe_sudo cp $tmpdir/completions/zsh/_algo /usr/local/share/zsh/site-functions/
     maybe_sudo mkdir -p /etc/bash_completion.d/
-    maybe_sudo cp $tmpdir/bash/algo /etc/bash_completion.d/
+    maybe_sudo cp $tmpdir/completions/bash/algo /etc/bash_completion.d/
 
     if [ "$_shell" = "/bin/zsh" ]; then
         echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
