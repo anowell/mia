@@ -5,10 +5,11 @@ use algorithmia::{Algorithmia, ApiAuth};
 use algorithmia::algo::Response;
 use std::process::{Command, Stdio};
 use std::{thread, time};
-use std::io::{self, Write};
+use std::io::{self, Write, BufRead, BufReader};
 use std::vec::IntoIter;
 use hyper::client::Client;
-use term;
+use term::{self, color};
+use isatty::stderr_isatty;
 use super::{InputData, ResponseConfig, split_args, display_response};
 
 static USAGE: &'static str = r##"Usage:
@@ -45,7 +46,8 @@ static USAGE: &'static str = r##"Usage:
     By default, only the algorithm result is printed to STDOUT while additional notices may be
     printed to STDERR.
 
-    --debug                         Print algorithm's STDOUT (author-only)
+    --debug                         Print algorithm's STDOUT (default for 'algo runlocal')
+    --no-debug                      Don't print algorithm's STDOUT (default for 'algo run')
     --response-body                 Print HTTP response body (replaces result)
     --response                      Print full HTTP response including headers (replaces result)
     -s, --silence                   Suppress any output not explicitly requested (except result)
@@ -62,6 +64,7 @@ struct Args {
     flag_response: bool,
     flag_silence: bool,
     flag_debug: bool,
+    flag_no_debug: bool,
     flag_output: Option<String>,
 }
 
@@ -83,16 +86,26 @@ impl CmdRunner for RunLocal {
             .and_then(|d| d.argv(other_args).decode())
             .unwrap_or_else(|e| e.exit());
 
+        if args.flag_debug && args.flag_no_debug {
+            quit_msg!("Cannot specify both --debug and --no-debug");
+        }
+
+        // --debug can override --silence, but the lack of --debug respects --silence
+        let debug = args.flag_debug || !(args.flag_no_debug || args.flag_silence);
 
         // Start `algo serve` if not already running
         let client = Client::new();
         let started_server = match client.get("http://0.0.0.0:9999").send() {
-            Ok(_) => false,
+            Ok(_) => {
+                println!("Using previously running instance of `algo serve`");
+                false
+            }
             Err(_) => {
-                self.serve_algorithm();
+                self.serve_algorithm(debug, args.flag_silence);
                 true
             }
         };
+
 
         // Run the algorithm
         let response = self.call_algorithm(input_args.remove(0));
@@ -106,7 +119,7 @@ impl CmdRunner for RunLocal {
             flag_response_body: args.flag_response_body,
             flag_response: args.flag_response,
             flag_silence: args.flag_silence,
-            flag_debug: args.flag_debug,
+            flag_debug: false, // use real-time debug instead of response debug
             flag_output: args.flag_output,
         };
 
@@ -140,35 +153,67 @@ impl RunLocal {
         }
     }
 
-    fn serve_algorithm(&self) {
+    fn serve_algorithm(&self, debug: bool, silence: bool) {
         let mut child = Command::new("algo")
             .arg("serve")
             .arg("--profile")
             .arg(&self.serve_profile)
+            .env_remove("RUST_LOG")
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
+            .stderr(Stdio::piped())
             .spawn()
             .unwrap_or_else(|_| quit_msg!("Failed to run `algo serve`"));
 
-        let _ = thread::spawn(move || {
-            let _ = child.wait();
-        });
 
         // Block until langserver is alive (most of this time is spent in `bin/build`)
         let client = Client::new();
         let mut t_err = term::stderr().unwrap();
         let mut i = 0;
         while let Err(_) = client.get("http://0.0.0.0:9999").send() {
-            let _ = t_err.carriage_return();
-            let imod = i % 10;
-            let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
-            let _ = io::stdout().flush();
+            if !silence {
+                let _ = t_err.carriage_return();
+                let imod = i % 10;
+                let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
+                let _ = io::stdout().flush();
+            }
             thread::sleep(time::Duration::from_millis(100));
             i += 1;
             if i > 10 * 60 * 2 {
                 quit_msg!("Failed to wait for algorithm. Try running `algo serve` manually.")
             }
         }
+        if !silence {
+            let _ = t_err.carriage_return();
+            let _ = write!(t_err, "{:24}", "");
+            let _ = t_err.carriage_return();
+            let _ = io::stdout().flush();
+        }
+
+        let stderr = child.stderr.take()
+            .unwrap_or_else(|| quit_msg!("Failed to open algorithm's STDOUT"));
+        let _ = thread::spawn(move || {
+            if debug {
+                let stderr_reader = BufReader::new(stderr);
+                let line_iter = stderr_reader.lines()
+                    .filter_map(Result::ok)
+                    .filter_map(|line| {
+                        let mut parts = line.splitn(4, ' ');
+                        let color = match parts.nth(1) {
+                            Some("ALGOOUT") => color::BRIGHT_BLACK,
+                            Some("ALGOERR") => color::BRIGHT_RED,
+                            _ => return None,
+                        };
+                        parts.nth(1).map(|msg| (color, msg.to_owned()))
+                    });
+                for (color, line) in line_iter {
+                    // TODO color based on line.1
+                    if stderr_isatty() { let _ = t_err.fg(color); }
+                    let _ = writeln!(t_err, "{}", line);
+                    if stderr_isatty() { let _ = t_err.reset(); }
+                }
+            }
+            let _ = child.wait();
+        });
     }
 
     fn terminate_algorithm(&self) {

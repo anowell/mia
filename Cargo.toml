@@ -10,6 +10,7 @@ algorithmia = "2.0.0"
 docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
+env_logger = "0.4.2"
 toml = "0.2.1"
 rpassword = "0.3.1"
 mime = "0.2.2"
@@ -24,6 +25,7 @@ openssl-probe = "0.1"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
 git = "https://github.com/algorithmiaio/langpacks"
+rev = "3ace88605895a3c8c75ba47e9bcb1058ce7c5c30"
 default-features = false
 
 [build-dependencies]

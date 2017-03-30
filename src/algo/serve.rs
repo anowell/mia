@@ -4,6 +4,7 @@ use std::vec::IntoIter;
 use std::env;
 use std::net::TcpListener;
 use ::Profile;
+use env_logger::{LogBuilder};
 
 static USAGE: &'static str = "Usage:
   algo serve [options] [<path>]
@@ -13,8 +14,8 @@ static USAGE: &'static str = "Usage:
   Note: This does not currently work for Java or Scala algorithms.
 
   Options:
-    -c, --container <runtime_image>              Containerize server using specific docker image
-    -p, --port <port>                            Port to listen on [default: 9999]
+    --no-build                           Skip building the project (reuse previous build artifact)
+    -p, --port <port>                    Port to listen on [default: 9999]
 ";
 
 
@@ -22,7 +23,8 @@ static USAGE: &'static str = "Usage:
 struct Args {
     // TODO: support using algorithm.zip path
     arg_path: Option<String>,
-    flag_port: u32, // arg_container: Option<String>, // TODO:
+    flag_port: u32,
+    flag_no_build: bool,
 }
 
 pub struct Serve;
@@ -31,10 +33,28 @@ impl CmdRunner for Serve {
         USAGE
     }
 
+    #[cfg(target_os = "windows")]
     fn cmd_main(&self, argv: IntoIter<String>) {
+        quit_msg!("algo serve is not currently supported on Windows")
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn cmd_main(&self, argv: IntoIter<String>) {
+        // Setup logging for langserver
+        let mut builder = LogBuilder::new();
+        builder.format(|record| format!("{} {}", record.level(), record.args()));
+        if let Ok(log_var) = env::var("RUST_LOG") {
+            builder.parse(&log_var);
+        } else {
+            builder.parse("error,langserver=info/ALGO(OUT|ERR)");
+        }
+        builder.init().unwrap();
+
+        // Handle args
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
+        let build = !args.flag_no_build;
 
         {
             // First check that the port is available
@@ -42,8 +62,11 @@ impl CmdRunner for Serve {
                 .unwrap_or_else(|err| quit_err!("Unable to listen on port {}: {}", args.flag_port, err));
         }
 
-        // Serve the algorithm
-        native::serve_algorithm(args.flag_port as u16, args.arg_path.as_ref());
+        args.arg_path.map(|path| helpers::set_cwd(&path));
+        if build {
+            helpers::build_cwd();
+        }
+        helpers::serve_cwd(args.flag_port as u16);
     }
 }
 
@@ -57,24 +80,25 @@ impl Serve {
     }
 }
 
-#[cfg(not(target_os = "windows"))]
-mod native {
+mod helpers {
     use std::env;
     use std::process::Command;
     use hyper::server::Server;
     use langserver::{LangServer, LangServerMode};
 
-    pub fn serve_algorithm(port: u16, path: Option<&String>) {
-        if let Some(p) = path {
-            env::set_current_dir(p)
-                .unwrap_or_else(|err| quit_err!("Failed to set working directory: {}", err));
-        }
+    pub fn set_cwd(path: &str) {
+        env::set_current_dir(path)
+            .unwrap_or_else(|err| quit_err!("Failed to set working directory: {}", err));
+    }
 
+    pub fn build_cwd() {
         let mut child = Command::new("bin/build")
             .spawn()
             .unwrap_or_else(|err| quit_err!("Failed to run `bin/build`: {}", err));
         let _ = child.wait();
+    }
 
+    pub fn serve_cwd(port: u16) {
         let langserver = LangServer::start(LangServerMode::Sync, None)
             .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
 
@@ -83,12 +107,5 @@ mod native {
             .map(|_listener| {
                 println!("Listening on port {}.", port);
             });
-    }
-}
-
-#[cfg(target_os = "windows")]
-mod native {
-    pub fn serve_algorithm(port: u16, path: Option<&String>) {
-        quit_msg!("algo serve is not currently supported on Windows")
     }
 }

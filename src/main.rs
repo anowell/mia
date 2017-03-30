@@ -10,6 +10,7 @@ extern crate openssl_probe;
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
+extern crate env_logger;
 extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;

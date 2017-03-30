@@ -38,7 +38,8 @@ static USAGE: &'static str = r##"Usage:
     By default, only the algorithm result is printed to STDOUT while additional notices may be
     printed to STDERR.
 
-    --debug                         Print algorithm's STDOUT (author-only)
+    --debug                         Print algorithm's STDOUT (default for 'algo runlocal')
+    --no-debug                      Don't print algorithm's STDOUT (default for 'algo run')
     --response-body                 Print HTTP response body (replaces result)
     --response                      Print full HTTP response including headers (replaces result)
     -s, --silence                   Suppress any output not explicitly requested (except result)
@@ -63,6 +64,7 @@ struct Args {
     flag_response: bool,
     flag_silence: bool,
     flag_debug: bool,
+    flag_no_debug: bool,
     flag_output: Option<String>,
     flag_timeout: Option<u32>,
 }
@@ -84,8 +86,11 @@ impl CmdRunner for Run {
             .and_then(|d| d.argv(other_args).decode())
             .unwrap_or_else(|e| e.exit());
 
+        // --debug can override --silence, but the lack of --debug respects --silence
+        let debug = args.flag_debug || !(args.flag_no_debug || args.flag_silence);
+
         let mut opts = AlgoOptions::default();
-        if args.flag_debug {
+        if debug {
             opts.stdout(true);
         }
         if let Some(timeout) = args.flag_timeout {
@@ -99,7 +104,7 @@ impl CmdRunner for Run {
             flag_response_body: args.flag_response_body,
             flag_response: args.flag_response,
             flag_silence: args.flag_silence,
-            flag_debug: args.flag_debug,
+            flag_debug: debug,
             flag_output: args.flag_output,
         };
 
