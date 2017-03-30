@@ -80,6 +80,7 @@ impl Serve {
     }
 }
 
+#[cfg(not(target_os = "windows"))]
 mod helpers {
     use std::env;
     use std::process::Command;
