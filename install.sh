@@ -243,10 +243,6 @@ install_cli() {
     echo_verbose "extracting release tarball..."
     tar -xzf algo.tar.gz
 
-    echo_verbose "downloading completions..."
-    mkdir $tmpdir/zsh && cd $tmpdir/zsh && curl -sSf -O "${completions_url}/zsh/_algo"
-    mkdir $tmpdir/bash && cd $tmpdir/bash && curl -sSf -O "${completions_url}/bash/algo"
-
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
     maybe_sudo cp $tmpdir/algo $_prefix/bin/
