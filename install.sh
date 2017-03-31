@@ -12,7 +12,7 @@ main() {
 }
 
 set_globals() {
-    algo_version="1.0.0"
+    algo_version="1.0.1"
     default_prefix="${ALGO_PREFIX-/usr/local}"
     base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
     completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
