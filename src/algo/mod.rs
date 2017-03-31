@@ -191,12 +191,17 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 };
             }
             Err(Error(ErrorKind::Api(err), _)) => {
-                match err.stacktrace {
-                    Some(ref trace) => quit_msg!("API error: {}\n{}", err, trace),
-                    None => quit_msg!("API error: {}", err),
+                let mut t_err = term::stderr().unwrap();
+                if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_RED); }
+                let _ = writeln!(t_err, "API error: {}", err.message);
+                if stderr_isatty() { let _ = t_err.reset(); }
+
+                if let Some(ref trace) = err.stacktrace {
+                    stderrln!("{}", trace)
                 }
+                ::std::process::exit(1);
             }
-            Err(err) => quit_err!("failed to parse algorithm response (debug with --response-body)\n{}", err),
+            Err(err) => quit_err!("Failed to parse algorithm response (debug with --response-body)\n{}", err),
         };
     }
 }

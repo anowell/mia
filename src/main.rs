@@ -38,6 +38,22 @@ macro_rules! stderrln {
     });
 }
 
+macro_rules! stderrln_red {
+    ($fmt:expr) => ({
+        let mut t_err = ::term::stderr().unwrap();
+        if ::isatty::stderr_isatty() { let _ = t_err.fg(::term::color::BRIGHT_RED); }
+        let _ = writeln!(t_err, $fmt);
+        if ::isatty::stderr_isatty() { let _ = t_err.reset(); }
+    });
+    ($fmt:expr, $($arg:tt)*) => ({
+        let mut t_err = ::term::stderr().unwrap();
+        if ::isatty::stderr_isatty() { let _ = t_err.fg(::term::color::BRIGHT_RED); }
+        let _ = writeln!(t_err, $fmt, $($arg)*);
+        if ::isatty::stderr_isatty() { let _ = t_err.reset(); }
+    });
+}
+
+
 macro_rules! quit_msg {
     ($fmt:expr) => ({
         stderrln!($fmt);
@@ -45,6 +61,17 @@ macro_rules! quit_msg {
     });
     ($fmt:expr, $($arg:tt)*) => ({
         stderrln!($fmt, $($arg)*);
+        ::std::process::exit(1)
+    });
+}
+
+macro_rules! quit_msg_red {
+    ($fmt:expr) => ({
+        stderrln_red!($fmt)
+        ::std::process::exit(1)
+    });
+    ($fmt:expr, $($arg:tt)*) => ({
+        stderrln_red!(t_err, $fmt, $($arg)*);
         ::std::process::exit(1)
     });
 }
@@ -59,17 +86,17 @@ fn print_cause_chain(e: &StdError) {
 
 macro_rules! quit_err {
     ($err:tt) => ({
-        stderrln!("{}", $err);
+        stderrln_red!("{}", $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $err:tt) => ({
-        stderrln!($fmt, $err);
+        stderrln_red!($fmt, $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $arg:expr, $err:tt) => ({
-        stderrln!($fmt, $arg, $err);
+        stderrln_red!($fmt, $arg, $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
@@ -160,7 +187,8 @@ fn main() {
                 if stderr_isatty() { let _ = t_err.fg(93); } // purple
                 let _ = writeln!(t_err, "{}", ASCII_ART);
                 if stderr_isatty() { let _ = t_err.reset(); }
-                quit_msg!("{}",  version::VERSION);
+                println!("{}",  version::VERSION);
+                std::process::exit(0);
             }
             _ => cmd_args.push(arg),
         }

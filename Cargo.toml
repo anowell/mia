@@ -25,7 +25,7 @@ openssl-probe = "0.1"
 
 [target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
 git = "https://github.com/algorithmiaio/langpacks"
-rev = "3ace88605895a3c8c75ba47e9bcb1058ce7c5c30"
+rev = "6da786a1e217ac24bdd1c21bbd88a9854cf21b55"
 default-features = false
 
 [build-dependencies]
