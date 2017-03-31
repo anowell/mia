@@ -10,15 +10,14 @@ use std::vec::IntoIter;
 use hyper::client::Client;
 use term::{self, color};
 use isatty::stderr_isatty;
+use wait_timeout::ChildExt;
 use super::{InputData, ResponseConfig, split_args, display_response};
 
 static USAGE: &'static str = r##"Usage:
-  algo runlocal [options]
+  algo runlocal [options] [-- [<extra>...]]
 
   This will test your algorithm locally, similar to how `algo run` works but using
   an algorithm from a local directory.
-
-  Note: This does not currently work for Java or Scala algorithms.
 
   Input Data Options:
     There are option variants for specifying the type and source of input data.
@@ -53,8 +52,13 @@ static USAGE: &'static str = r##"Usage:
     -s, --silence                   Suppress any output not explicitly requested (except result)
     -o, --output <file>             Print result to a file
 
+  Extra args:
+    Arguments after the '--' are passed through to 'algo serve'. This is primarily useful for
+    having 'algo serve' skip the build step with '--no-build'.
+
   Examples:
-    algo runlocal -d 'foo'          Tests the algorithm in the current directory with 'foo' as input
+    algo runlocal -d 'foo'                  Tests current directory's algorithm with 'foo' as input
+    algo runlocal -d 'foo' -- --no-build    Same as above but skips re-building
 "##;
 
 
@@ -66,6 +70,7 @@ struct Args {
     flag_debug: bool,
     flag_no_debug: bool,
     flag_output: Option<String>,
+    arg_extra: Vec<String>,
 }
 
 pub struct RunLocal {
@@ -101,7 +106,7 @@ impl CmdRunner for RunLocal {
                 false
             }
             Err(_) => {
-                self.serve_algorithm(debug, args.flag_silence);
+                self.serve_algorithm(debug, args.flag_silence, args.arg_extra);
                 true
             }
         };
@@ -153,11 +158,12 @@ impl RunLocal {
         }
     }
 
-    fn serve_algorithm(&self, debug: bool, silence: bool) {
+    fn serve_algorithm(&self, debug: bool, silence: bool, args: Vec<String>) {
         let mut child = Command::new("algo")
             .arg("serve")
             .arg("--profile")
             .arg(&self.serve_profile)
+            .args(&args)
             .env_remove("RUST_LOG")
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
@@ -173,10 +179,17 @@ impl RunLocal {
             if !silence {
                 let _ = t_err.carriage_return();
                 let imod = i % 10;
-                let _ = write!(t_err, "[{0:1$}*{0:2$}] Building... ", "", imod, 9 - imod);
+                let _ = write!(t_err, "[{0:1$}*{0:2$}] Starting... ", "", imod, 9 - imod);
                 let _ = io::stdout().flush();
             }
-            thread::sleep(time::Duration::from_millis(100));
+            match child.wait_timeout(time::Duration::from_millis(100)) {
+                Ok(None) => (),
+                Ok(Some(status)) => {
+                    stderrln_red!("Error running 'algo serve'");
+                    ::std::process::exit(status.code().unwrap_or(-99));
+                }
+                Err(err) => quit_err!("Error waiting on 'algo serve': {}", err),
+            }
             i += 1;
             if i > 10 * 60 * 2 {
                 quit_msg!("Failed to wait for algorithm. Try running `algo serve` manually.")

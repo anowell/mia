@@ -93,10 +93,13 @@ mod helpers {
     }
 
     pub fn build_cwd() {
-        let mut child = Command::new("bin/build")
-            .spawn()
-            .unwrap_or_else(|err| quit_err!("Failed to run `bin/build`: {}", err));
-        let _ = child.wait();
+        let status = Command::new("bin/build")
+            .status()
+            .unwrap_or_else(|err| quit_err!("Failed to run 'bin/build': {}", err));
+        if !status.success() {
+            stderrln_red!("Error running 'bin/build'");
+            ::std::process::exit(status.code().unwrap_or(-99));
+        }
     }
 
     pub fn serve_cwd(port: u16) {
