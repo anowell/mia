@@ -1,4 +1,4 @@
-## 1.0.0 (Mar 29, 2017)
+## 1.0.0 (Mar 30, 2017)
 - Fix I/O hanging on OSX
 - Revamp error messages
 - Migrate config to ~/.algorithmia/config
