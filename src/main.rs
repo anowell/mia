@@ -10,12 +10,14 @@ extern crate openssl_probe;
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
+extern crate env_logger;
 extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
 extern crate terminal_size;
 extern crate isatty;
+extern crate url;
 
 use algorithmia::{Algorithmia, ApiAuth, Url};
 use std::{env, fs};
@@ -152,7 +154,7 @@ fn main() {
                 cmd_args.push(args.next().unwrap_or_default());
                 print_cmd_usage(cmd_args.get(1).map(|s| s.as_str()));
             }
-            "--profile" => profile = args.next().unwrap_or(profile.to_string()),
+            "--profile" => profile = args.next().unwrap_or_else(|| profile.to_string()),
             "--version" => {
                 let mut t_err = term::stderr().unwrap();
                 if stderr_isatty() { let _ = t_err.fg(93); } // purple

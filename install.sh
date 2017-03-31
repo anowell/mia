@@ -12,7 +12,7 @@ main() {
 }
 
 set_globals() {
-    algo_version="1.0.0-beta.4"
+    algo_version="1.0.0"
     default_prefix="${ALGO_PREFIX-/usr/local}"
     base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
     completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
@@ -156,7 +156,7 @@ EOF
 # Migrate from pre-1.0 config location of ~/.algorithmia
 # to the 1.0 location: ~/.algorithmia/config
 migrate_config() {
-    if [[ -f ~/.algorithmia ]]; then
+    if [ -f ~/.algorithmia ]; then
         echo_verbose "migrating configuration..."
         mv ~/.algorithmia ~/.algorithmia.bak
         mkdir ~/.algorithmia
@@ -229,7 +229,7 @@ handle_command_line_args() {
 }
 
 install_cli() {
-    # migrate_config
+    migrate_config
 
     # download algo for platform
     local tmpdir=$(mktemp -d)
@@ -243,9 +243,11 @@ install_cli() {
     echo_verbose "extracting release tarball..."
     tar -xzf algo.tar.gz
 
-    echo_verbose "downloading completions..."
-    mkdir $tmpdir/zsh && cd $tmpdir/zsh && curl -sSf -O "${completions_url}/zsh/_algo"
-    mkdir $tmpdir/bash && cd $tmpdir/bash && curl -sSf -O "${completions_url}/bash/algo"
+    # Remove old versions - this should be removed from future releases
+    if which algo > /dev/null 2>&1; then
+        echo_verbose "removing old version: $(which algo)"
+        maybe_sudo rm -f $(which algo)
+    fi
 
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
@@ -254,9 +256,9 @@ install_cli() {
     # install completions
     echo_verbose "installing shell completions..."
     maybe_sudo mkdir -p /usr/local/share/zsh/site-functions/ || true
-    maybe_sudo cp $tmpdir/zsh/_algo /usr/local/share/zsh/site-functions/
+    maybe_sudo cp $tmpdir/completions/zsh/_algo /usr/local/share/zsh/site-functions/
     maybe_sudo mkdir -p /etc/bash_completion.d/
-    maybe_sudo cp $tmpdir/bash/algo /etc/bash_completion.d/
+    maybe_sudo cp $tmpdir/completions/bash/algo /etc/bash_completion.d/
 
     if [ "$_shell" = "/bin/zsh" ]; then
         echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
