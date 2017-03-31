@@ -229,8 +229,6 @@ handle_command_line_args() {
 }
 
 install_cli() {
-    migrate_config
-
     # download algo for platform
     local tmpdir=$(mktemp -d)
     cd $tmpdir
@@ -252,6 +250,7 @@ install_cli() {
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
     maybe_sudo cp $tmpdir/algo $_prefix/bin/
+    migrate_config
 
     # install completions
     echo_verbose "installing shell completions..."
