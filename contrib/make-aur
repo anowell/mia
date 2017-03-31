@@ -40,7 +40,6 @@ function make_aur_git {
 }
 
 function make_aur_bin() {
-	MD5SUM=`md5sum ${OUTDIR}/${TARBALL} | cut -f1 -d' '`
 	VERSION=`echo ${PACKAGE_VERSION} | sed s/-/_/g`
 
 	mkdir -p ${OUTDIR}
@@ -50,6 +49,9 @@ function make_aur_bin() {
 	else
 	  git clone ssh://aur@aur.archlinux.org/algorithmia-bin.git ${OUTDIR}/algorithmia-bin;
 	fi
+
+  test -f "${OUTDIR}/${TARBALL}" || fetch_tarball
+	MD5SUM=`md5sum ${OUTDIR}/${TARBALL} | cut -f1 -d' '`
 
 	sed -e "s/{{VERSION}}/${VERSION}/g; s/{{MD5SUM}}/${MD5SUM}/g" ${DIR}/arch/algorithmia-bin/PKGBUILD.template > ${OUTDIR}/algorithmia-bin/PKGBUILD
 	cd ${OUTDIR}/algorithmia-bin && mksrcinfo
