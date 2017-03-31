@@ -49,10 +49,10 @@ static USAGE: &'static str = r##"Usage:
     --timeout <seconds>             Sets algorithm timeout
 
   Examples:
-    algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified data input
-    algo anowell/Dijkstra -J routes.json              Run algorithm with file input
-    algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
-    algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binary data input
+    algo run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified data input
+    algo run anowell/Dijkstra -D routes.json              Run algorithm with file input
+    algo run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
+    algo run opencv/SmartThumbnail -D in.png -o out.png   Run algorithm saving output to a file
 "##;
 
 
