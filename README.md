@@ -124,11 +124,11 @@ $ algo run kenny/factor -d 17 --output results.txt
 #### Examples:
 
 ```text
-$ algo kenny/factor/0.1.0 -t '79'                   Run algorithm with specified version & data input as text
-$ algo anowell/Dijkstra -J routes.json              Run algorithm with file input
-$ algo anowell/Dijkstra -J - < routes.json          Same as above but using STDIN
-$ algo opencv/SmartThumbnail -B in.png -o out.png   Runs algorithm with binary data input
-$ algo run kenny/factor -d 17 --timeout 2           Runs algorithm with a timeout of 2 seconds
+$ algo run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified version & data input
+$ algo run anowell/Dijkstra -D routes.json              Run algorithm with file input
+$ algo run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
+$ algo run opencv/SmartThumbnail -D in.png -o out.png   Runs algorithm with binary files as input
+$ algo run kenny/factor -d 17 --timeout 2               Runs algorithm with a timeout of 2 seconds
 ```
 
 
