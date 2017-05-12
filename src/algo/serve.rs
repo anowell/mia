@@ -1,9 +1,9 @@
-use super::super::CmdRunner;
+use CmdRunner;
 use docopt::Docopt;
 use std::vec::IntoIter;
 use std::env;
 use std::net::TcpListener;
-use ::Profile;
+use config::Profile;
 use env_logger::{LogBuilder};
 
 static USAGE: &'static str = "Usage:
@@ -72,10 +72,8 @@ impl CmdRunner for Serve {
 
 impl Serve {
     pub fn new(profile: Profile) -> Self {
-        if let Some(api) = profile.api_server {
-            env::set_var("ALGORITHMIA_API", api);
-        }
-        env::set_var("ALGORITHMIA_API_KEY", profile.api_key);
+        env::set_var("ALGORITHMIA_API", profile.api_server());
+        env::set_var("ALGORITHMIA_API_KEY", profile.api_key());
         Serve
     }
 }

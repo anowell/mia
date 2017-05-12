@@ -1,18 +1,10 @@
-
-extern crate rpassword;
-
-use super::{CmdRunner, get_config_path};
+use CmdRunner;
+use config::{self, Config, Profile};
 use docopt::Docopt;
-use std::fs::File;
-use std::io::{self, Read, Write, BufRead};
+use std::io::{self, Write, BufRead};
 use std::vec::IntoIter;
-use toml::{self, Parser, Table, Value};
+use rpassword;
 use url::Url;
-
-#[cfg(unix)]
-use std::fs::OpenOptions;
-#[cfg(unix)]
-use std::os::unix::fs::OpenOptionsExt;
 
 static USAGE: &'static str = r##"
 Usage:
@@ -55,6 +47,7 @@ impl CmdRunner for Auth {
 }
 
 
+
 impl Auth {
     pub fn new(profile: &str) -> Self {
         Auth { profile: profile.to_owned() }
@@ -64,25 +57,20 @@ impl Auth {
         println!("Configuring authentication for '{}' profile", profile_name);
 
         // Handle Endpoint URL
-        print!("Enter API Endpoint [https://api.algorithmia.com]: ");
+        print!("Enter API Endpoint [{}]: ", config::DEFAULT_API_SERVER);
         let _ = io::stdout().flush();
-        let mut line = String::new();
-        let stdin = io::stdin();
-        stdin.lock().read_line(&mut line)
-            .unwrap_or_else(|err| quit_err!("Cannot read API endpoint: {}", err));
-        let api_server = if line.trim().is_empty() {
-            None
-        } else {
-            let trimmed = line.trim();
-            let parsed = Url::parse(trimmed).unwrap_or_else(|err|
-                Url::parse(&format!("https://{}", trimmed)).unwrap_or_else(|_|
-                    quit_err!("Cannot parse '{}' as URL: {}", trimmed, err)
-                )
-            );
-            if !parsed.scheme().starts_with("http") {
-                quit_msg!("Invalid URL: '{}'", parsed);
+        let api_server = prompt_for_url();
+
+
+        // Handle Git URL
+        let git_server = match api_server {
+            Some(ref api_server) if api_server.as_str() != config::DEFAULT_API_SERVER => {
+                let default_git = api_server.as_str().replace("//api.", "//git.");
+                print!("Enter Git Endpoint [{}]: ", &default_git);
+                let _ = io::stdout().flush();
+                Some(prompt_for_url().unwrap_or_else(|| Url::parse(&default_git).unwrap()))
             }
-            Some(parsed)
+            _ => None
         };
 
         // Handle API Key
@@ -94,11 +82,11 @@ impl Auth {
             Err(err) => quit_err!("Cannot read password: {}", err),
         };
         if api_key.len() == 28 && api_key.starts_with("sim") {
-            let mut config = Self::read_config().unwrap_or_else(Table::new);
-            let profile = Self::make_profile(api_key.into(), api_server);
+            let mut config = Config::read_config().unwrap_or_else(Config::default);
+            let profile = Profile::new(api_key.into(), api_server, git_server);
 
-            Self::update_profile(&mut config, profile_name.into(), profile);
-            Self::write_config(config);
+            config.update_profile(profile_name.into(), profile);
+            config.write_config();
 
             match profile_name {
                 "default" => println!("Profile is ready to use. Test with 'algo ls'"),
@@ -111,82 +99,28 @@ impl Auth {
 
     }
 
-    fn make_profile(api_key: String, api_server: Option<Url>) -> Table {
-        let mut profile = Table::new();
-        api_server.map(|s|
-            profile.insert(
-                "api_server".to_owned(),
-                Value::String(s.as_str().trim_right_matches('/').to_owned()),
+}
+
+fn prompt_for_url() -> Option<Url> {
+    let mut line = String::new();
+    let stdin = io::stdin();
+    stdin.lock().read_line(&mut line)
+        .unwrap_or_else(|err| quit_err!("Cannot read input: {}", err));
+
+    if line.trim().is_empty() {
+        None
+    } else {
+        let trimmed = line.trim();
+        let parsed = Url::parse(trimmed).unwrap_or_else(|err|
+            Url::parse(&format!("https://{}", trimmed)).unwrap_or_else(|_|
+                quit_err!("Cannot parse '{}' as URL: {}", trimmed, err)
             )
         );
-        profile.insert("api_key".to_owned(), Value::String(api_key));
-        profile
-    }
-
-    pub fn read_profile(profile_name: String) -> Option<Table> {
-        match Self::read_config() {
-            Some(t) => {
-                match Value::Table(t).lookup(&format!("profiles.{}", profile_name)) {
-                    Some(&Value::Table(ref p)) => Some(p.clone()),
-                    Some(_) => quit_msg!("Invalid profile format in {}", get_config_path().display()),
-                    None => None,
-                }
-            }
-            None => None,
+        if !parsed.scheme().starts_with("http") {
+            quit_msg!("Invalid URL: '{}'", parsed);
         }
+
+        Some(parsed)
     }
 
-    fn read_config() -> Option<Table> {
-        let conf_path = get_config_path();
-
-        match File::open(&conf_path) {
-            Ok(mut f) => {
-                let mut conf_toml = String::new();
-                let _ = f.read_to_string(&mut conf_toml);
-                let config = Parser::new(&conf_toml).parse().unwrap_or_else(|| {
-                    quit_msg!("Unable to parse {}. Consider deleting and re-running 'algo auth'",
-                         conf_path.display());
-                });
-                Some(config)
-            }
-            Err(_) => None,
-        }
-    }
-
-    fn write_config(config: Table) {
-        let output = toml::encode_str(&Value::Table(config));
-
-        let _ = match open_writable_config() {
-            Ok(mut f) => f.write_all(output.as_bytes()),
-            Err(e) => quit_err!("Unable to write config file: {}", e),
-        };
-    }
-
-    fn update_profile(config: &mut Table, name: String, value: Table) {
-        if config.contains_key("profiles") {
-            if let Some(&mut Value::Table(ref mut section)) = config.get_mut("profiles") {
-                section.remove(&name);
-                section.insert(name, Value::Table(value));
-            } else {
-                quit_msg!("Unable to parse [profiles] section of configuration");
-            }
-        } else {
-            let mut section = Table::new();
-            section.insert(name, Value::Table(value));
-            config.insert("profiles".into(), Value::Table(section));
-
-        }
-    }
-}
-
-#[cfg(not(unix))]
-fn open_writable_config() -> Result<File, io::Error> {
-    let conf_path = get_config_path();
-    File::create(&conf_path)
-}
-
-#[cfg(unix)]
-fn open_writable_config() -> Result<File, io::Error> {
-    let conf_path = get_config_path();
-    OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
 }

@@ -1,5 +1,6 @@
 use super::super::CmdRunner;
 use docopt::Docopt;
+use config::Profile;
 
 use std::process::Command;
 use std::vec::IntoIter;
@@ -30,7 +31,7 @@ struct Args {
     arg_directory: Option<String>,
 }
 
-pub struct GitClone;
+pub struct GitClone { profile: Profile }
 impl CmdRunner for GitClone {
     fn get_usage() -> &'static str {
         USAGE
@@ -47,12 +48,12 @@ impl CmdRunner for GitClone {
 }
 
 impl GitClone {
-    pub fn new() -> Self {
-        GitClone
+    pub fn new(profile: Profile) -> Self {
+        GitClone{ profile }
     }
 
     fn git_clone(&self, algo: &str, dir_opt: Option<&str>) {
-        let url = format!("https://git.algorithmia.com/git/{}.git", algo);
+        let url = format!("{}/git/{}.git", self.profile.git_server(), algo);
         println!("Cloning {}", &url);
 
         let mut cmd = Command::new("git");
