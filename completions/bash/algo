@@ -13,7 +13,7 @@ _algo()
 
 
     if [ "${prev}" == "--profile" ]; then
-        local profiles=$(cat ~/.algorithmia | gawk 'match($0, /\[profiles\.(.*)\]/, m) { printf "%s ", m[1] }')
+        local profiles=$(cat ~/.algorithmia/config | gawk 'match($0, /\[profiles\.(.*)\]/, m) { printf "%s ", m[1] }')
         COMPREPLY=( $(compgen -W "${profiles}" -- ${cur}) )
         return 0
     fi
