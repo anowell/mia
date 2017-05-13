@@ -1,6 +1,6 @@
-use super::super::CmdRunner;
-use docopt::Docopt;
+use CmdRunner;
 use config::Profile;
+use docopt::Docopt;
 
 use std::process::Command;
 use std::vec::IntoIter;

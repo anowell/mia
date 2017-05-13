@@ -1,4 +1,5 @@
-use super::super::CmdRunner;
+use CmdRunner;
+use config::Profile;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
@@ -37,8 +38,8 @@ impl CmdRunner for Rm {
 }
 
 impl Rm {
-    pub fn new(client: Algorithmia) -> Self {
-        Rm { client: client }
+    pub fn new(profile: Profile) -> Self {
+        Rm { client: profile.client() }
     }
 
     fn delete_file(&self, path: &str) {

@@ -1,4 +1,5 @@
-use super::super::CmdRunner;
+use CmdRunner;
+use config::Profile;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::HasDataPath;
@@ -41,8 +42,8 @@ impl CmdRunner for RmDir {
 }
 
 impl RmDir {
-    pub fn new(client: Algorithmia) -> Self {
-        RmDir { client: client }
+    pub fn new(profile: Profile) -> Self {
+        RmDir { client: profile.client() }
     }
 
     fn delete_dir(&self, path: &str, force: bool) {

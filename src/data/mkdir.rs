@@ -1,4 +1,5 @@
-use super::super::CmdRunner;
+use CmdRunner;
+use config::Profile;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::{HasDataPath, DataAcl};
@@ -36,8 +37,8 @@ impl CmdRunner for MkDir {
 }
 
 impl MkDir {
-    pub fn new(client: Algorithmia) -> Self {
-        MkDir { client: client }
+    pub fn new(profile: Profile) -> Self {
+        MkDir { client: profile.client() }
     }
 
     fn create_dir(&self, path: &str) {

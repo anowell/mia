@@ -1,4 +1,5 @@
-use super::super::{data, CmdRunner};
+use {data, CmdRunner};
+use config::Profile;
 use docopt::Docopt;
 use std::cmp;
 use algorithmia::Algorithmia;
@@ -51,8 +52,8 @@ impl CmdRunner for Ls {
 }
 
 impl Ls {
-    pub fn new(client: Algorithmia) -> Self {
-        Ls { client: client }
+    pub fn new(profile: Profile) -> Self {
+        Ls { client: profile.client() }
     }
 
     fn list_dir(&self, path: &str, long: bool) {

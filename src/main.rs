@@ -10,7 +10,6 @@ extern crate langserver;
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 extern crate openssl_probe;
 
-
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
@@ -26,7 +25,6 @@ extern crate serde;
 extern crate url;
 extern crate wait_timeout;
 
-use algorithmia::Algorithmia;
 use std::env;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
@@ -150,8 +148,6 @@ Global options:
 
 // TODO: Add support for:
 //
-// Note: Add Option [--profile <profile>]
-//
 // Algorithm commands include:
 // view      View algorithm details (e.g. cost)
 // fork      Fork an algorithm
@@ -203,13 +199,8 @@ fn main() {
     if cmd_args.len() < 2 {
         print_cmd_usage(None);
     } else {
-        run(cmd_args, &*profile);
+        run(cmd_args, &profile);
     }
-}
-
-fn init_client(profile_name: &str) -> Algorithmia {
-    let profile = Profile::lookup(profile_name);
-    profile.client()
 }
 
 // Tell our statically-linked OpenSSL where to find root certs
@@ -226,7 +217,7 @@ fn maybe_init_certs() {
 #[cfg(any(target_os = "windows", target_os = "macos"))]
 fn maybe_init_certs() { }
 
-fn run(args: Vec<String>, profile: &str) {
+fn run(args: Vec<String>, profile_name: &str) {
     let cmd = match args.get(1) {
         Some(c) => c.clone(),
         _ => print_usage(),
@@ -236,20 +227,20 @@ fn run(args: Vec<String>, profile: &str) {
 
     let args_iter = args.into_iter();
     match &*cmd {
-        "auth" => auth::Auth::new(profile).cmd_main(args_iter),
-        "clone" => algo::GitClone::new(Profile::lookup(profile)).cmd_main(args_iter),
-        "serve" => algo::Serve::new(Profile::lookup(profile)).cmd_main(args_iter),
-        "runlocal" => algo::RunLocal::new(profile).cmd_main(args_iter),
+        "auth" => auth::Auth::new(profile_name).cmd_main(args_iter),
+        "runlocal" => algo::RunLocal::new(profile_name).cmd_main(args_iter),
         _ => {
-            let client = init_client(profile);
+            let profile = Profile::lookup(profile_name);
             match &*cmd {
-                "ls" | "dir" => data::Ls::new(client).cmd_main(args_iter),
-                "mkdir" => data::MkDir::new(client).cmd_main(args_iter),
-                "rmdir" => data::RmDir::new(client).cmd_main(args_iter),
-                "rm" => data::Rm::new(client).cmd_main(args_iter),
-                "cp" | "copy" => data::Cp::new(client).cmd_main(args_iter),
-                "cat" => data::Cat::new(client).cmd_main(args_iter),
-                "run" => algo::Run::new(client).cmd_main(args_iter),
+                "clone" => algo::GitClone::new(profile).cmd_main(args_iter),
+                "serve" => algo::Serve::new(profile).cmd_main(args_iter),
+                "ls" | "dir" => data::Ls::new(profile).cmd_main(args_iter),
+                "mkdir" => data::MkDir::new(profile).cmd_main(args_iter),
+                "rmdir" => data::RmDir::new(profile).cmd_main(args_iter),
+                "rm" => data::Rm::new(profile).cmd_main(args_iter),
+                "cp" | "copy" => data::Cp::new(profile).cmd_main(args_iter),
+                "cat" => data::Cat::new(profile).cmd_main(args_iter),
+                "run" => algo::Run::new(profile).cmd_main(args_iter),
                 _ => print_usage(),
             }
         }

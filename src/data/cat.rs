@@ -1,4 +1,5 @@
-use super::super::CmdRunner;
+use CmdRunner;
+use config::Profile;
 use algorithmia::Algorithmia;
 use algorithmia::data::{DataFile, HasDataPath};
 use docopt::Docopt;
@@ -37,8 +38,8 @@ impl CmdRunner for Cat {
 }
 
 impl Cat {
-    pub fn new(client: Algorithmia) -> Self {
-        Cat { client: client }
+    pub fn new(profile: Profile) -> Self {
+        Cat { client: profile.client() }
     }
 }
 

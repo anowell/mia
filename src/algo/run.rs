@@ -1,6 +1,6 @@
-use super::super::CmdRunner;
+use CmdRunner;
+use config::Profile;
 use docopt::Docopt;
-
 use std::vec::IntoIter;
 use algorithmia::Algorithmia;
 use algorithmia::algo::{AlgoOptions, Response};
@@ -113,8 +113,8 @@ impl CmdRunner for Run {
 }
 
 impl Run {
-    pub fn new(client: Algorithmia) -> Self {
-        Run { client: client }
+    pub fn new(profile: Profile) -> Self {
+        Run { client: profile.client() }
     }
 
     fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {
