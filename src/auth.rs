@@ -70,7 +70,7 @@ impl Auth {
                 let _ = io::stdout().flush();
                 Some(prompt_for_url().unwrap_or_else(|| Url::parse(&default_git).unwrap()))
             }
-            _ => None
+            _ => None,
         };
 
         // Handle API Key
@@ -88,34 +88,39 @@ impl Auth {
             config.update_profile(profile_name.into(), profile);
             config.write_config();
 
-            match profile_name {
-                "default" => println!("Profile is ready to use. Test with 'algo ls'"),
-                p => println!("Profile is ready to use. Test with 'algo ls --profile {}'", p)
-            };
+            if profile_name == "default" {
+                println!("Profile is ready to use. Try 'algo ls'");
+            } else {
+                println!("Profile is ready to use. Try 'algo ls --profile {}'",
+                         profile_name);
+            }
         } else {
             println!("That API Key doesn't look quite right. No changes made to '{}' profile.",
                      profile_name);
         }
 
     }
-
 }
 
 fn prompt_for_url() -> Option<Url> {
     let mut line = String::new();
     let stdin = io::stdin();
-    stdin.lock().read_line(&mut line)
+    stdin
+        .lock()
+        .read_line(&mut line)
         .unwrap_or_else(|err| quit_err!("Cannot read input: {}", err));
 
     if line.trim().is_empty() {
         None
     } else {
         let trimmed = line.trim();
-        let parsed = Url::parse(trimmed).unwrap_or_else(|err|
-            Url::parse(&format!("https://{}", trimmed)).unwrap_or_else(|_|
+        let parsed = Url::parse(trimmed).unwrap_or_else(|err| {
+                                                            Url::parse(&format!("https://{}",
+                                                                               trimmed))
+                                                                    .unwrap_or_else(|_| {
                 quit_err!("Cannot parse '{}' as URL: {}", trimmed, err)
-            )
-        );
+            })
+                                                        });
         if !parsed.scheme().starts_with("http") {
             quit_msg!("Invalid URL: '{}'", parsed);
         }

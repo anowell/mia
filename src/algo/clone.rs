@@ -31,7 +31,9 @@ struct Args {
     arg_directory: Option<String>,
 }
 
-pub struct GitClone { profile: Profile }
+pub struct GitClone {
+    profile: Profile,
+}
 impl CmdRunner for GitClone {
     fn get_usage() -> &'static str {
         USAGE
@@ -49,7 +51,7 @@ impl CmdRunner for GitClone {
 
 impl GitClone {
     pub fn new(profile: Profile) -> Self {
-        GitClone{ profile }
+        GitClone { profile }
     }
 
     fn git_clone(&self, algo: &str, dir_opt: Option<&str>) {
@@ -63,8 +65,9 @@ impl GitClone {
             cmd.arg(dir);
         }
 
-        let mut child = cmd.spawn()
-            .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
+        let mut child =
+            cmd.spawn()
+                .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
         let _ = child.wait();
 
     }

@@ -202,12 +202,15 @@ impl RunLocal {
             let _ = io::stdout().flush();
         }
 
-        let stderr = child.stderr.take()
+        let stderr = child
+            .stderr
+            .take()
             .unwrap_or_else(|| quit_msg!("Failed to open algorithm's STDOUT"));
         let _ = thread::spawn(move || {
             if debug {
                 let stderr_reader = BufReader::new(stderr);
-                let line_iter = stderr_reader.lines()
+                let line_iter = stderr_reader
+                    .lines()
                     .filter_map(Result::ok)
                     .filter_map(|line| {
                         let mut parts = line.splitn(4, ' ');
@@ -220,9 +223,13 @@ impl RunLocal {
                     });
                 for (color, line) in line_iter {
                     // TODO color based on line.1
-                    if stderr_isatty() { let _ = t_err.fg(color); }
+                    if stderr_isatty() {
+                        let _ = t_err.fg(color);
+                    }
                     let _ = writeln!(t_err, "{}", line);
-                    if stderr_isatty() { let _ = t_err.reset(); }
+                    if stderr_isatty() {
+                        let _ = t_err.reset();
+                    }
                 }
             }
             let _ = child.wait();
@@ -237,4 +244,3 @@ impl RunLocal {
         let _ = t_err.delete_line();
     }
 }
-

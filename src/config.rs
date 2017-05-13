@@ -114,10 +114,11 @@ pub fn get_config_path() -> PathBuf {
     };
 
     if !app_dir.is_dir() {
-        fs::create_dir(&app_dir)
-            .unwrap_or_else(|err|
-                quit_err!("Failed to create app dir '{}': {}", app_dir.display(), err)
-            );
+        fs::create_dir(&app_dir).unwrap_or_else(|err| {
+                                                    quit_err!("Failed to create app dir '{}': {}",
+                                                              app_dir.display(),
+                                                              err)
+                                                });
     }
     app_dir.join("config")
 }
@@ -131,5 +132,10 @@ fn open_writable_config() -> Result<File, io::Error> {
 #[cfg(unix)]
 fn open_writable_config() -> Result<File, io::Error> {
     let conf_path = get_config_path();
-    OpenOptions::new().create(true).truncate(true).write(true).mode(0o600).open(&conf_path)
+    OpenOptions::new()
+        .create(true)
+        .truncate(true)
+        .write(true)
+        .mode(0o600)
+        .open(&conf_path)
 }

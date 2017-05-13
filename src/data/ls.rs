@@ -46,7 +46,10 @@ impl CmdRunner for Ls {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        let data_uri = args.arg_data_dir.as_ref().map(Deref::deref).unwrap_or("data://");
+        let data_uri = args.arg_data_dir
+            .as_ref()
+            .map(Deref::deref)
+            .unwrap_or("data://");
         self.list_dir(data_uri, args.flag_l);
     }
 }
@@ -66,9 +69,13 @@ impl Ls {
                 match entry_result {
                     Ok(DataItem::Dir(d)) => {
                         let _ = write!(t_out, "{:19} {:>5} ", "--         --", "[dir]");
-                        if stdout_isatty() { let _ = t_out.fg(color::BRIGHT_BLUE); }
+                        if stdout_isatty() {
+                            let _ = t_out.fg(color::BRIGHT_BLUE);
+                        }
                         let _ = writeln!(t_out, "{}", d.basename().unwrap());
-                        if stdout_isatty() { let _ = t_out.reset(); }
+                        if stdout_isatty() {
+                            let _ = t_out.reset();
+                        }
                     }
                     Ok(DataItem::File(f)) => {
                         let name = f.basename().unwrap();
@@ -82,28 +89,34 @@ impl Ls {
                             }
                         }
                         let _ = writeln!(t_out, "{}", name);
-                        if stdout_isatty() { let _ = t_out.reset(); }
+                        if stdout_isatty() {
+                            let _ = t_out.reset();
+                        }
                     }
                     Err(err) => quit_err!("Error listing directory: {}", err),
                 }
             }
         } else {
-            let items: Vec<DataItem> = my_dir.list()
-                .collect::<Result<Vec<_>, _>>()
-                .unwrap_or_else(|err| quit_err!("Error listing directory: {}", err));
+            let items: Vec<DataItem> =
+                my_dir
+                    .list()
+                    .collect::<Result<Vec<_>, _>>()
+                    .unwrap_or_else(|err| quit_err!("Error listing directory: {}", err));
 
             let width = match terminal_size() {
                 Some((Width(w), _)) => w as usize,
                 _ => 80, // default terminal width if we can't calculate it
             };
 
-            let max_len = items.iter().fold(0, |max, item| {
-                let name_len = match *item {
-                    DataItem::File(ref f) => f.basename().unwrap().len(),
-                    DataItem::Dir(ref d) => d.basename().unwrap().len(),
-                };
-                cmp::max(max, name_len)
-            });
+            let max_len = items
+                .iter()
+                .fold(0, |max, item| {
+                    let name_len = match *item {
+                        DataItem::File(ref f) => f.basename().unwrap().len(),
+                        DataItem::Dir(ref d) => d.basename().unwrap().len(),
+                    };
+                    cmp::max(max, name_len)
+                });
             let col_width = max_len + 2;
 
             let mut offset = 0;
@@ -115,9 +128,13 @@ impl Ls {
                 let char_count = match item {
                     DataItem::Dir(d) => {
                         let name = d.basename().unwrap();
-                        if stdout_isatty() { let _ = t_out.fg(color::BRIGHT_BLUE); }
+                        if stdout_isatty() {
+                            let _ = t_out.fg(color::BRIGHT_BLUE);
+                        }
                         let _ = write!(t_out, "{}", name);
-                        if stdout_isatty() { let _ = t_out.reset(); }
+                        if stdout_isatty() {
+                            let _ = t_out.reset();
+                        }
                         name.chars().count()
                     }
                     DataItem::File(f) => {
@@ -128,7 +145,9 @@ impl Ls {
                             }
                         }
                         let _ = write!(t_out, "{}", name);
-                        if stdout_isatty() { let _ = t_out.reset(); }
+                        if stdout_isatty() {
+                            let _ = t_out.reset();
+                        }
                         name.chars().count()
                     }
                 };
@@ -154,7 +173,8 @@ enum FileType {
 
 impl FileType {
     fn from_filename(filename: &str) -> FileType {
-        filename.rsplit('.')
+        filename
+            .rsplit('.')
             .next()
             .map(FileType::from_ext)
             .unwrap_or(FileType::Unknown)

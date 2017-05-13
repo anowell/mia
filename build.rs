@@ -41,5 +41,6 @@ pub static VERSION: &'static str =
         git_sha = git_sha.trim(),
         build_date = UTC::today().format("%Y-%m-%d"),
         rustc_version = rustc_version.trim(),
-    ).unwrap();
+    )
+            .unwrap();
 }

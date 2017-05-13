@@ -159,28 +159,42 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 // Printing any API alerts
                 if let Some(ref alerts) = response.metadata.alerts {
                     if !config.flag_silence {
-                        if stderr_isatty() { let _ = t_err.fg(color::YELLOW); }
+                        if stderr_isatty() {
+                            let _ = t_err.fg(color::YELLOW);
+                        }
                         for alert in alerts {
                             let _ = writeln!(t_err, "{}", alert);
                         }
-                        if stderr_isatty() { let _ = t_err.reset(); }
+                        if stderr_isatty() {
+                            let _ = t_err.reset();
+                        }
                     }
                 }
 
                 // Printing algorithm stdout
                 if let Some(ref stdout) = response.metadata.stdout {
                     if config.flag_debug {
-                        if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_BLACK); }
+                        if stderr_isatty() {
+                            let _ = t_err.fg(color::BRIGHT_BLACK);
+                        }
                         let _ = writeln!(t_err, "{}", stdout);
-                        if stderr_isatty() { let _ = t_err.reset(); }
+                        if stderr_isatty() {
+                            let _ = t_err.reset();
+                        }
                     }
                 }
 
                 // Printing metadata
                 if !config.flag_silence {
-                    if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_BLACK); }
-                    let _ = writeln!(t_err, "Completed in {:.1} seconds", response.metadata.duration);
-                    if stderr_isatty() { let _ = t_err.reset(); }
+                    if stderr_isatty() {
+                        let _ = t_err.fg(color::BRIGHT_BLACK);
+                    }
+                    let _ = writeln!(t_err,
+                                     "Completed in {:.1} seconds",
+                                     response.metadata.duration);
+                    if stderr_isatty() {
+                        let _ = t_err.reset();
+                    }
                 }
 
                 // Smart output of result
@@ -192,16 +206,23 @@ fn display_response(mut response: Response, config: ResponseConfig) {
             }
             Err(Error(ErrorKind::Api(err), _)) => {
                 let mut t_err = term::stderr().unwrap();
-                if stderr_isatty() { let _ = t_err.fg(color::BRIGHT_RED); }
+                if stderr_isatty() {
+                    let _ = t_err.fg(color::BRIGHT_RED);
+                }
                 let _ = writeln!(t_err, "API error: {}", err.message);
-                if stderr_isatty() { let _ = t_err.reset(); }
+                if stderr_isatty() {
+                    let _ = t_err.reset();
+                }
 
                 if let Some(ref trace) = err.stacktrace {
                     stderrln!("{}", trace)
                 }
                 ::std::process::exit(1);
             }
-            Err(err) => quit_err!("Failed to parse algorithm response (debug with --response-body)\n{}", err),
+            Err(err) => {
+                quit_err!("Failed to parse algorithm response (debug with --response-body)\n{}",
+                          err)
+            }
         };
     }
 }
@@ -213,7 +234,8 @@ fn split_args(argv: IntoIter<String>, usage: &'static str) -> (Vec<InputData>, V
 
     let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
     let next_arg = |argv_iter: &mut IntoIter<String>| {
-        argv_iter.next()
+        argv_iter
+            .next()
             .unwrap_or_else(|| quit_msg!("Missing arg for input data option\n\n{}", usage))
     };
     while let Some(flag) = argv_mut.next() {

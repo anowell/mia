@@ -28,7 +28,7 @@ extern crate wait_timeout;
 use std::env;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
-use isatty::{stderr_isatty};
+use isatty::stderr_isatty;
 use config::Profile;
 
 macro_rules! stderrln {
@@ -81,7 +81,7 @@ macro_rules! quit_msg_red {
 }
 
 fn print_cause_chain(e: &StdError) {
-    let mut err = e;;
+    let mut err = e;
     while let Some(cause) = err.cause() {
         stderrln!("  caused by: {}", cause);
         err = cause as &StdError;
@@ -186,10 +186,14 @@ fn main() {
             "--profile" => profile = args.next().unwrap_or_else(|| profile.to_string()),
             "--version" => {
                 let mut t_err = term::stderr().unwrap();
-                if stderr_isatty() { let _ = t_err.fg(93); } // purple
+                if stderr_isatty() {
+                    let _ = t_err.fg(93);
+                } // purple
                 let _ = writeln!(t_err, "{}", ASCII_ART);
-                if stderr_isatty() { let _ = t_err.reset(); }
-                println!("{}",  version::VERSION);
+                if stderr_isatty() {
+                    let _ = t_err.reset();
+                }
+                println!("{}", version::VERSION);
                 std::process::exit(0);
             }
             _ => cmd_args.push(arg),
@@ -209,13 +213,11 @@ fn main() {
 fn maybe_init_certs() {
     use std::sync::{Once, ONCE_INIT};
     static INIT: Once = ONCE_INIT;
-    INIT.call_once(|| {
-        openssl_probe::init_ssl_cert_env_vars();
-    });
+    INIT.call_once(|| { openssl_probe::init_ssl_cert_env_vars(); });
 }
 
 #[cfg(any(target_os = "windows", target_os = "macos"))]
-fn maybe_init_certs() { }
+fn maybe_init_certs() {}
 
 fn run(args: Vec<String>, profile_name: &str) {
     let cmd = match args.get(1) {

@@ -4,7 +4,7 @@ use std::vec::IntoIter;
 use std::env;
 use std::net::TcpListener;
 use config::Profile;
-use env_logger::{LogBuilder};
+use env_logger::LogBuilder;
 
 static USAGE: &'static str = "Usage:
   algo serve [options] [<path>]
@@ -58,8 +58,9 @@ impl CmdRunner for Serve {
 
         {
             // First check that the port is available
-            TcpListener::bind(("0.0.0.0", args.flag_port as u16))
-                .unwrap_or_else(|err| quit_err!("Unable to listen on port {}: {}", args.flag_port, err));
+            TcpListener::bind(("0.0.0.0", args.flag_port as u16)).unwrap_or_else(|err| {
+                quit_err!("Unable to listen on port {}: {}", args.flag_port, err)
+            });
         }
 
         args.arg_path.map(|path| helpers::set_cwd(&path));
@@ -101,13 +102,14 @@ mod helpers {
     }
 
     pub fn serve_cwd(port: u16) {
-        let langserver = LangServer::start(LangServerMode::Sync, None)
-            .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
+        let langserver =
+            LangServer::start(LangServerMode::Sync, None)
+                .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
 
         let _ = Server::http(("0.0.0.0", port))
             .and_then(|s| s.handle(langserver))
             .map(|_listener| {
-                println!("Listening on port {}.", port);
-            });
+                     println!("Listening on port {}.", port);
+                 });
     }
 }
