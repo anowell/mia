@@ -32,7 +32,7 @@ impl CmdRunner for Cat {
             .unwrap_or_else(|e| e.exit());
 
         for f in args.arg_data_file {
-            cat_file(self.client.file(&*f))
+            cat_file(&self.client.file(&f))
         }
     }
 }
@@ -43,7 +43,7 @@ impl Cat {
     }
 }
 
-fn cat_file(data_file: DataFile) {
+fn cat_file(data_file: &DataFile) {
     match data_file.get() {
         Ok(mut response) => {
             let mut stdout = io::stdout();

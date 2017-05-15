@@ -194,7 +194,7 @@ impl CpClient {
             thread::spawn(move || {
                 for rx_path in thread_rx {
                     let my_file = thread_conn.client.file(&*rx_path);
-                    match download_file(my_file, &*thread_conn.dest) {
+                    match download_file(&my_file, &*thread_conn.dest) {
                         Ok(bytes) => {
                             println!("Downloaded {} ({}B)", rx_path, size_with_suffix(bytes));
                             let mut count = thread_completed.lock().unwrap();
@@ -214,7 +214,7 @@ impl CpClient {
 }
 
 
-fn download_file(data_file: DataFile, local_path: &str) -> Result<u64, String> {
+fn download_file(data_file: &DataFile, local_path: &str) -> Result<u64, String> {
     match data_file.get() {
         Ok(mut response) => {
             let full_path = match fs::metadata(local_path) {
