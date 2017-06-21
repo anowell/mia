@@ -63,6 +63,7 @@ You will see an interactive prompt to guide you through setting up a default pro
 ```
 $ algo auth
 Configuring authentication for 'default' profile
+Enter API Endpoint [https://api.algorithmia.com]:
 Enter API Key (prefixed with 'sim'):
 Profile is ready to use. Test with 'algo ls'
 ```
