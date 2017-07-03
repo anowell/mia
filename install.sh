@@ -238,14 +238,14 @@ install_cli() {
     echo_verbose "downloading release tarball..."
     curl -sSfL "$release_url" -o "algo.tar.gz"
 
-    echo_verbose "extracting release tarball..."
-    tar -xzf algo.tar.gz
-
     # Remove old versions - this should be removed from future releases
     if which algo > /dev/null 2>&1; then
         echo_verbose "removing old version: $(which algo)"
         maybe_sudo rm -f $(which algo)
     fi
+
+    echo_verbose "extracting release tarball..."
+    tar -xzf algo.tar.gz
 
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
