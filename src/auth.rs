@@ -50,7 +50,9 @@ impl CmdRunner for Auth {
 
 impl Auth {
     pub fn new(profile: &str) -> Self {
-        Auth { profile: profile.to_owned() }
+        Auth {
+            profile: profile.to_owned(),
+        }
     }
 
     fn prompt_for_auth(profile_name: &str) {
@@ -68,7 +70,9 @@ impl Auth {
                 let default_git = api_server.as_str().replace("//api.", "//git.");
                 print!("Enter Git Endpoint [{}]: ", &default_git);
                 let _ = io::stdout().flush();
-                Some(prompt_for_url().unwrap_or_else(|| Url::parse(&default_git).unwrap()))
+                Some(
+                    prompt_for_url().unwrap_or_else(|| Url::parse(&default_git).unwrap()),
+                )
             }
             _ => None,
         };
@@ -91,12 +95,16 @@ impl Auth {
             if profile_name == "default" {
                 println!("Profile is ready to use. Try 'algo ls'");
             } else {
-                println!("Profile is ready to use. Try 'algo ls --profile {}'",
-                         profile_name);
+                println!(
+                    "Profile is ready to use. Try 'algo ls --profile {}'",
+                    profile_name
+                );
             }
         } else {
-            println!("That API Key doesn't look quite right. No changes made to '{}' profile.",
-                     profile_name);
+            println!(
+                "That API Key doesn't look quite right. No changes made to '{}' profile.",
+                profile_name
+            );
         }
 
     }
@@ -115,12 +123,9 @@ fn prompt_for_url() -> Option<Url> {
     } else {
         let trimmed = line.trim();
         let parsed = Url::parse(trimmed).unwrap_or_else(|err| {
-                                                            Url::parse(&format!("https://{}",
-                                                                               trimmed))
-                                                                    .unwrap_or_else(|_| {
-                quit_err!("Cannot parse '{}' as URL: {}", trimmed, err)
-            })
-                                                        });
+            Url::parse(&format!("https://{}", trimmed))
+                .unwrap_or_else(|_| quit_err!("Cannot parse '{}' as URL: {}", trimmed, err))
+        });
         if !parsed.scheme().starts_with("http") {
             quit_msg!("Invalid URL: '{}'", parsed);
         }

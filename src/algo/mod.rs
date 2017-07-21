@@ -85,11 +85,15 @@ impl OutputDevice {
         match *output_dest {
             Some(ref file_path) => {
                 match File::create(file_path) {
-                    Ok(buf) => OutputDevice { writer: Box::new(buf) },
+                    Ok(buf) => OutputDevice {
+                        writer: Box::new(buf),
+                    },
                     Err(err) => quit_err!("Unable to create file: {}", err),
                 }
             }
-            None => OutputDevice { writer: Box::new(io::stdout()) },
+            None => OutputDevice {
+                writer: Box::new(io::stdout()),
+            },
         }
     }
 
@@ -146,10 +150,12 @@ fn display_response(mut response: Response, config: ResponseConfig) {
     // Handle --response and --response-body (ignoring other flags)
     if config.flag_response || config.flag_response_body {
         if config.flag_response {
-            let preamble = format!("{} {}\n{}",
-                                   response.version(),
-                                   response.status(),
-                                   response.headers());
+            let preamble = format!(
+                "{} {}\n{}",
+                response.version(),
+                response.status(),
+                response.headers()
+            );
             output.writeln(preamble.as_bytes());
         };
         output.writeln(json_response.as_bytes());
@@ -189,9 +195,11 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                     if stderr_isatty() {
                         let _ = t_err.fg(color::BRIGHT_BLACK);
                     }
-                    let _ = writeln!(t_err,
-                                     "Completed in {:.1} seconds",
-                                     response.metadata.duration);
+                    let _ = writeln!(
+                        t_err,
+                        "Completed in {:.1} seconds",
+                        response.metadata.duration
+                    );
                     if stderr_isatty() {
                         let _ = t_err.reset();
                     }
@@ -220,8 +228,10 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 ::std::process::exit(1);
             }
             Err(err) => {
-                quit_err!("Failed to parse algorithm response (debug with --response-body)\n{}",
-                          err)
+                quit_err!(
+                    "Failed to parse algorithm response (debug with --response-body)\n{}",
+                    err
+                )
             }
         };
     }
@@ -234,9 +244,9 @@ fn split_args(argv: IntoIter<String>, usage: &'static str) -> (Vec<InputData>, V
 
     let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
     let next_arg = |argv_iter: &mut IntoIter<String>| {
-        argv_iter
-            .next()
-            .unwrap_or_else(|| quit_msg!("Missing arg for input data option\n\n{}", usage))
+        argv_iter.next().unwrap_or_else(|| {
+            quit_msg!("Missing arg for input data option\n\n{}", usage)
+        })
     };
     while let Some(flag) = argv_mut.next() {
         match &*flag {

@@ -38,7 +38,9 @@ impl CmdRunner for MkDir {
 
 impl MkDir {
     pub fn new(profile: Profile) -> Self {
-        MkDir { client: profile.client() }
+        MkDir {
+            client: profile.client(),
+        }
     }
 
     fn create_dir(&self, path: &str) {

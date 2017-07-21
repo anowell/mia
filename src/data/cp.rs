@@ -65,7 +65,9 @@ impl CmdRunner for Cp {
 
 impl Cp {
     pub fn new(profile: Profile) -> Self {
-        Cp { client: profile.client() }
+        Cp {
+            client: profile.client(),
+        }
     }
 }
 
@@ -105,12 +107,12 @@ impl CpClient {
 
         // One Producer thread queuing up file paths to upload
         thread::spawn(move || {
-                          for path in sources {
-                              // TODO: if recursing and is_dir: recurse_and_send(&tx, path)
-                              tx.send(path);
-                          }
-                          drop(tx);
-                      });
+            for path in sources {
+                // TODO: if recursing and is_dir: recurse_and_send(&tx, path)
+                tx.send(path);
+            }
+            drop(tx);
+        });
 
 
         // Spin up threads to concurrently upload files per that paths received on rx channel
@@ -174,12 +176,12 @@ impl CpClient {
 
         // One Producer thread queuing up file paths to upload
         thread::spawn(move || {
-                          for path in sources {
-                              // TODO: if recursing and is_dir: recurse_remote_and_send(&tx, path)
-                              tx.send(path);
-                          }
-                          drop(tx);
-                      });
+            for path in sources {
+                // TODO: if recursing and is_dir: recurse_remote_and_send(&tx, path)
+                tx.send(path);
+            }
+            drop(tx);
+        });
 
 
         // Spin up threads to concurrently download files per that paths received on rx channel
@@ -208,8 +210,10 @@ impl CpClient {
         }
 
         wg.wait();
-        println!("Finished downloading {} file(s)",
-                 *completed.lock().unwrap());
+        println!(
+            "Finished downloading {} file(s)",
+            *completed.lock().unwrap()
+        );
     }
 }
 
@@ -235,6 +239,10 @@ fn download_file(data_file: &DataFile, local_path: &str) -> Result<u64, String> 
                 Err(err) => Err(format!("Error copying data: {}", err)),
             }
         }
-        Err(e) => Err(format!("Error downloading ({}): {}", data_file.to_data_uri(), e)),
+        Err(e) => Err(format!(
+            "Error downloading ({}): {}",
+            data_file.to_data_uri(),
+            e
+        )),
     }
 }

@@ -39,7 +39,9 @@ impl CmdRunner for Cat {
 
 impl Cat {
     pub fn new(profile: Profile) -> Self {
-        Cat { client: profile.client() }
+        Cat {
+            client: profile.client(),
+        }
     }
 }
 

@@ -114,7 +114,9 @@ impl CmdRunner for Run {
 
 impl Run {
     pub fn new(profile: Profile) -> Self {
-        Run { client: profile.client() }
+        Run {
+            client: profile.client(),
+        }
     }
 
     fn run_algorithm(&self, algo: &str, input_data: InputData, opts: AlgoOptions) -> Response {

@@ -43,7 +43,9 @@ impl CmdRunner for RmDir {
 
 impl RmDir {
     pub fn new(profile: Profile) -> Self {
-        RmDir { client: profile.client() }
+        RmDir {
+            client: profile.client(),
+        }
     }
 
     fn delete_dir(&self, path: &str, force: bool) {

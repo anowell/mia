@@ -71,8 +71,11 @@ impl Config {
                 let mut conf_toml = String::new();
                 let _ = f.read_to_string(&mut conf_toml);
                 let config = toml::from_str(&conf_toml).unwrap_or_else(|err| {
-                    quit_msg!("Unable to parse {}: {}\nConsider deleting and re-running 'algo auth'",
-                         conf_path.display(), err);
+                    quit_msg!(
+                        "Unable to parse {}: {}\nConsider deleting and re-running 'algo auth'",
+                        conf_path.display(),
+                        err
+                    );
                 });
                 Some(config)
             }
@@ -102,7 +105,9 @@ impl Profile {
     pub fn lookup(profile: &str) -> Profile {
         Config::read_config()
             .and_then(|c| c.get_profile(profile).cloned())
-            .unwrap_or_else(|| quit_msg!("{} profile not found. Run 'algo auth {0}'", profile))
+            .unwrap_or_else(|| {
+                quit_msg!("{} profile not found. Run 'algo auth {0}'", profile)
+            })
     }
 }
 
@@ -115,10 +120,8 @@ pub fn get_config_path() -> PathBuf {
 
     if !app_dir.is_dir() {
         fs::create_dir(&app_dir).unwrap_or_else(|err| {
-                                                    quit_err!("Failed to create app dir '{}': {}",
-                                                              app_dir.display(),
-                                                              err)
-                                                });
+            quit_err!("Failed to create app dir '{}': {}", app_dir.display(), err)
+        });
     }
     app_dir.join("config")
 }

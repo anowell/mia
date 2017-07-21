@@ -102,14 +102,13 @@ mod helpers {
     }
 
     pub fn serve_cwd(port: u16) {
-        let langserver =
-            LangServer::start(LangServerMode::Sync, None)
-                .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
+        let langserver = LangServer::start(LangServerMode::Sync, None)
+            .unwrap_or_else(|err| quit_err!("Failed to start LangServer: {}", err));
 
         let _ = Server::http(("0.0.0.0", port))
             .and_then(|s| s.handle(langserver))
             .map(|_listener| {
-                     println!("Listening on port {}.", port);
-                 });
+                println!("Listening on port {}.", port);
+            });
     }
 }

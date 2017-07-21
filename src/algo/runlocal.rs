@@ -209,10 +209,8 @@ impl RunLocal {
         let _ = thread::spawn(move || {
             if debug {
                 let stderr_reader = BufReader::new(stderr);
-                let line_iter = stderr_reader
-                    .lines()
-                    .filter_map(Result::ok)
-                    .filter_map(|line| {
+                let line_iter = stderr_reader.lines().filter_map(Result::ok).filter_map(
+                    |line| {
                         let mut parts = line.splitn(4, ' ');
                         let color = match parts.nth(1) {
                             Some("ALGOOUT") => color::BRIGHT_BLACK,
@@ -220,7 +218,8 @@ impl RunLocal {
                             _ => return None,
                         };
                         parts.nth(1).map(|msg| (color, msg.to_owned()))
-                    });
+                    },
+                );
                 for (color, line) in line_iter {
                     // TODO color based on line.1
                     if stderr_isatty() {

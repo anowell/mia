@@ -44,8 +44,10 @@ impl CmdRunner for GitClone {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        self.git_clone(&*args.arg_algorithm,
-                       args.arg_directory.as_ref().map(String::as_ref));
+        self.git_clone(
+            &*args.arg_algorithm,
+            args.arg_directory.as_ref().map(String::as_ref),
+        );
     }
 }
 
@@ -65,9 +67,8 @@ impl GitClone {
             cmd.arg(dir);
         }
 
-        let mut child =
-            cmd.spawn()
-                .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
+        let mut child = cmd.spawn()
+            .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
         let _ = child.wait();
 
     }

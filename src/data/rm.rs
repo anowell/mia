@@ -39,7 +39,9 @@ impl CmdRunner for Rm {
 
 impl Rm {
     pub fn new(profile: Profile) -> Self {
-        Rm { client: profile.client() }
+        Rm {
+            client: profile.client(),
+        }
     }
 
     fn delete_file(&self, path: &str) {

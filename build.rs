@@ -32,8 +32,9 @@ fn main() {
 
     // Write it all to version.rs
     let mut f = File::create("src/version.rs").unwrap();
-    write!(f,
-r#"
+    write!(
+        f,
+        r#"
 pub static VERSION: &'static str =
     "algo {pkg_ver} ({git_sha} {build_date})\n{rustc_version}";
 "#,
@@ -41,6 +42,5 @@ pub static VERSION: &'static str =
         git_sha = git_sha.trim(),
         build_date = UTC::today().format("%Y-%m-%d"),
         rustc_version = rustc_version.trim(),
-    )
-            .unwrap();
+    ).unwrap();
 }

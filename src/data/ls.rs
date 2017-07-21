@@ -56,7 +56,9 @@ impl CmdRunner for Ls {
 
 impl Ls {
     pub fn new(profile: Profile) -> Self {
-        Ls { client: profile.client() }
+        Ls {
+            client: profile.client(),
+        }
     }
 
     fn list_dir(&self, path: &str, long: bool) {
@@ -79,10 +81,12 @@ impl Ls {
                     }
                     Ok(DataItem::File(f)) => {
                         let name = f.basename().unwrap();
-                        let _ = write!(t_out,
-                                       "{:19} {:>5} ",
-                                       f.last_modified.format("%Y-%m-%d %H:%M:%S"),
-                                       data::size_with_suffix(f.size));
+                        let _ = write!(
+                            t_out,
+                            "{:19} {:>5} ",
+                            f.last_modified.format("%Y-%m-%d %H:%M:%S"),
+                            data::size_with_suffix(f.size)
+                        );
                         if stdout_isatty() {
                             if let Some(c) = FileType::from_filename(&name).to_color() {
                                 let _ = t_out.fg(c);
@@ -97,26 +101,23 @@ impl Ls {
                 }
             }
         } else {
-            let items: Vec<DataItem> =
-                my_dir
-                    .list()
-                    .collect::<Result<Vec<_>, _>>()
-                    .unwrap_or_else(|err| quit_err!("Error listing directory: {}", err));
+            let items: Vec<DataItem> = my_dir
+                .list()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap_or_else(|err| quit_err!("Error listing directory: {}", err));
 
             let width = match terminal_size() {
                 Some((Width(w), _)) => w as usize,
                 _ => 80, // default terminal width if we can't calculate it
             };
 
-            let max_len = items
-                .iter()
-                .fold(0, |max, item| {
-                    let name_len = match *item {
-                        DataItem::File(ref f) => f.basename().unwrap().len(),
-                        DataItem::Dir(ref d) => d.basename().unwrap().len(),
-                    };
-                    cmp::max(max, name_len)
-                });
+            let max_len = items.iter().fold(0, |max, item| {
+                let name_len = match *item {
+                    DataItem::File(ref f) => f.basename().unwrap().len(),
+                    DataItem::Dir(ref d) => d.basename().unwrap().len(),
+                };
+                cmp::max(max, name_len)
+            });
             let col_width = max_len + 2;
 
             let mut offset = 0;
@@ -185,12 +186,16 @@ impl FileType {
         match &*ext.to_lowercase() {
             "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff" |
             "webp" | "xcf" | "psd" | "ai" => FileType::Image,
+
             "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe" |
             "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
+
             "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" |
             "tlz" | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
+
             "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav" |
             "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
+
             _ => FileType::Unknown,
         }
     }
