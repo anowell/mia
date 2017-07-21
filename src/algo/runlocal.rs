@@ -185,7 +185,7 @@ impl RunLocal {
             match child.wait_timeout(time::Duration::from_millis(100)) {
                 Ok(None) => (),
                 Ok(Some(status)) => {
-                    stderrln_red!("Error running 'algo serve'");
+                    eprintln_red!("Error running 'algo serve'");
                     ::std::process::exit(status.code().unwrap_or(-99));
                 }
                 Err(err) => quit_err!("Error waiting on 'algo serve': {}", err),

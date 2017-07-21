@@ -96,7 +96,7 @@ mod helpers {
             .status()
             .unwrap_or_else(|err| quit_err!("Failed to run 'bin/build': {}", err));
         if !status.success() {
-            stderrln_red!("Error running 'bin/build'");
+            eprintln_red!("Error running 'bin/build'");
             ::std::process::exit(status.code().unwrap_or(-99));
         }
     }

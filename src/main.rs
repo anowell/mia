@@ -31,18 +31,7 @@ use std::error::Error as StdError;
 use isatty::stderr_isatty;
 use config::Profile;
 
-macro_rules! stderrln {
-    ($fmt:expr) => ({
-        use std::io::Write;
-        let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n")));
-    });
-    ($fmt:expr, $($arg:tt)*) => ({
-        use std::io::Write;
-        let _ = ::std::io::stderr().write_fmt(format_args!(concat!($fmt, "\n"), $($arg)*));
-    });
-}
-
-macro_rules! stderrln_red {
+macro_rules! eprintln_red {
     ($fmt:expr) => ({
         let mut t_err = ::term::stderr().unwrap();
         if ::isatty::stderr_isatty() { let _ = t_err.fg(::term::color::BRIGHT_RED); }
@@ -60,22 +49,11 @@ macro_rules! stderrln_red {
 
 macro_rules! quit_msg {
     ($fmt:expr) => ({
-        stderrln!($fmt);
+        eprintln!($fmt);
         ::std::process::exit(1)
     });
     ($fmt:expr, $($arg:tt)*) => ({
-        stderrln!($fmt, $($arg)*);
-        ::std::process::exit(1)
-    });
-}
-
-macro_rules! quit_msg_red {
-    ($fmt:expr) => ({
-        stderrln_red!($fmt)
-        ::std::process::exit(1)
-    });
-    ($fmt:expr, $($arg:tt)*) => ({
-        stderrln_red!(t_err, $fmt, $($arg)*);
+        eprintln!($fmt, $($arg)*);
         ::std::process::exit(1)
     });
 }
@@ -83,24 +61,24 @@ macro_rules! quit_msg_red {
 fn print_cause_chain(e: &StdError) {
     let mut err = e;
     while let Some(cause) = err.cause() {
-        stderrln!("  caused by: {}", cause);
+        eprintln!("  caused by: {}", cause);
         err = cause as &StdError;
     }
 }
 
 macro_rules! quit_err {
     ($err:tt) => ({
-        stderrln_red!("{}", $err);
+        eprintln_red!("{}", $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $err:tt) => ({
-        stderrln_red!($fmt, $err);
+        eprintln_red!($fmt, $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $arg:expr, $err:tt) => ({
-        stderrln_red!($fmt, $arg, $err);
+        eprintln_red!($fmt, $arg, $err);
         ::print_cause_chain(&$err);
         ::std::process::exit(1)
     });

@@ -215,7 +215,7 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 }
 
                 if let Some(ref trace) = err.stacktrace {
-                    stderrln!("{}", trace)
+                    eprintln!("{}", trace)
                 }
                 ::std::process::exit(1);
             }
