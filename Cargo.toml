@@ -17,7 +17,6 @@ mime = "0.2.2"
 term = "0.4"
 terminal_size = "0.1"
 isatty = "0.1"
-hyper = "0.10"
 url = "1.4.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
@@ -25,10 +24,6 @@ wait-timeout = "0.1.5"
 
 [target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
 openssl-probe = "0.1"
-
-[target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
-git = "https://github.com/algorithmiaio/langpacks"
-default-features = false
 
 [build-dependencies]
 chrono = "0.2.21"

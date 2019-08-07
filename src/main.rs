@@ -4,9 +4,6 @@ extern crate mime;
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(not(target_os = "windows"))]
-extern crate langserver;
-
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
 extern crate openssl_probe;
 
@@ -14,7 +11,6 @@ extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
 extern crate env_logger;
-extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
@@ -208,12 +204,10 @@ fn run(args: Vec<String>, profile_name: &str) {
     let args_iter = args.into_iter();
     match &*cmd {
         "auth" => auth::Auth::new(profile_name).cmd_main(args_iter),
-        "runlocal" => algo::RunLocal::new(profile_name).cmd_main(args_iter),
         _ => {
             let profile = Profile::lookup(profile_name);
             match &*cmd {
                 "clone" => algo::GitClone::new(profile).cmd_main(args_iter),
-                "serve" => algo::Serve::new(profile).cmd_main(args_iter),
                 "ls" | "dir" => data::Ls::new(profile).cmd_main(args_iter),
                 "mkdir" => data::MkDir::new(profile).cmd_main(args_iter),
                 "rmdir" => data::RmDir::new(profile).cmd_main(args_iter),
@@ -237,8 +231,6 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
         "clone" => algo::GitClone::print_usage(),
-        "serve" => algo::Serve::print_usage(),
-        "runlocal" => algo::RunLocal::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };
