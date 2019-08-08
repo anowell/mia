@@ -38,7 +38,7 @@ impl Profile {
 
     pub fn client(&self) -> Algorithmia {
         match self.api_server {
-            Some(ref api) => Algorithmia::client_with_url(api, &*self.api_key).unwrap(),
+            Some(ref api) => Algorithmia::client_with_url(&*self.api_key, api ).unwrap(),
             None => Algorithmia::client(&*self.api_key).unwrap(),
         }
     }
