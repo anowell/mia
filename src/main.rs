@@ -22,7 +22,7 @@ use std::env;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
 use isatty::stderr_isatty;
-use config::Profile;
+use crate::config::Profile;
 
 macro_rules! eprintln_red {
     ($fmt:expr) => ({
@@ -67,12 +67,12 @@ macro_rules! quit_err {
     });
     ($fmt:expr, $err:tt) => ({
         eprintln_red!($fmt, $err);
-        ::print_cause_chain(&$err);
+        crate::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $arg:expr, $err:tt) => ({
         eprintln_red!($fmt, $arg, $err);
-        ::print_cause_chain(&$err);
+        crate::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
 }

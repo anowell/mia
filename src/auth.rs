@@ -1,5 +1,5 @@
-use CmdRunner;
-use config::{self, Config, Profile};
+use crate::CmdRunner;
+use crate::config::{self, Config, Profile};
 use docopt::Docopt;
 use std::io::{self, Write, BufRead};
 use std::vec::IntoIter;
