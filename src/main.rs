@@ -1,7 +1,4 @@
 #[macro_use]
-extern crate mime;
-
-#[macro_use]
 extern crate serde_derive;
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
@@ -56,7 +53,7 @@ macro_rules! quit_msg {
 
 fn print_cause_chain(e: &StdError) {
     let mut err = e;
-    while let Some(cause) = err.cause() {
+    while let Some(cause) = err.source() {
         eprintln!("  caused by: {}", cause);
         err = cause as &StdError;
     }

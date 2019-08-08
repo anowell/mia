@@ -124,10 +124,10 @@ impl Run {
         let algorithm = algorithm.set_options(opts);
 
         let result = match input_data {
-            InputData::Text(text) => algorithm.pipe_as(&*text, mime!(Text / Plain)),
-            InputData::Json(json) => algorithm.pipe_as(&*json, mime!(Application / Json)),
+            InputData::Text(text) => algorithm.pipe_as(text, mime::TEXT_PLAIN),
+            InputData::Json(json) => algorithm.pipe_as(json, mime::APPLICATION_JSON),
             InputData::Binary(bytes) => {
-                algorithm.pipe_as(&*bytes, mime!(Application / OctetStream))
+                algorithm.pipe_as(bytes, mime::APPLICATION_OCTET_STREAM)
             }
         };
 
