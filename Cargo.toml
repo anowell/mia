@@ -4,6 +4,7 @@ name = "algo"
 version = "1.0.1"
 authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 build = "build.rs"
+edition = "2018"
 
 [dependencies]
 algorithmia = "3.0.0-beta.2"
@@ -21,10 +22,11 @@ url = "1.4.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
 wait-timeout = "0.1.5"
-
-[target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
-openssl-probe = "0.1"
+idna = "0.1.5"
 
 [build-dependencies]
 chrono = "0.2.21"
+
+[patch.crates-io]
+algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', branch = 'rusttls' }
 

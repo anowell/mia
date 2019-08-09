@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-extern crate openssl_probe;
-
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
@@ -178,25 +175,11 @@ fn main() {
     }
 }
 
-// Tell our statically-linked OpenSSL where to find root certs
-// cc https://github.com/rust-lang-nursery/rustup.rs/blob/d5e96c4ae934075027096353849afba2d27da326/src/download/src/lib.rs#L343
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-fn maybe_init_certs() {
-    use std::sync::{Once, ONCE_INIT};
-    static INIT: Once = ONCE_INIT;
-    INIT.call_once(|| { openssl_probe::init_ssl_cert_env_vars(); });
-}
-
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-fn maybe_init_certs() {}
-
 fn run(args: Vec<String>, profile_name: &str) {
     let cmd = match args.get(1) {
         Some(c) => c.clone(),
         _ => print_usage(),
     };
-
-    maybe_init_certs();
 
     let args_iter = args.into_iter();
     match &*cmd {
