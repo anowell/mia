@@ -7,7 +7,7 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-algorithmia = "3.0.0-beta.2"
+algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', features = ["rust-tls"]}
 docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
@@ -26,7 +26,3 @@ idna = "0.1.5"
 
 [build-dependencies]
 chrono = "0.2.21"
-
-[patch.crates-io]
-algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', branch = 'rusttls' }
-
