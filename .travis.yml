@@ -15,7 +15,6 @@ matrix:
     - os: linux
       env: RUST_VERSION=stable
            TARGET=x86_64-unknown-linux-gnu
-           DOCKER=alexcrichton/rust-slave-dist:2016-11-15
            MAKE_DEB=yes
       sudo: required
       services:
