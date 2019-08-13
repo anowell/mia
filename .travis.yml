@@ -28,19 +28,7 @@ install:
 
 script:
   - mkdir -p target
-  - if [ ! -z "$DOCKER" ]; then
-      docker run
-        --entrypoint bash
-        -u `id -u`:`id -g`
-        -v $HOME/rust:/travis-rust:ro
-        -v `pwd`:/buildslave
-        -e TARGET=$TARGET
-        -e SKIP_TESTS=$SKIP_TESTS
-        -it $DOCKER
-        ci/run-docker.sh;
-    else
-      PATH=$HOME/rust/bin:$PATH sh ci/run.sh;
-    fi
+  - PATH=$HOME/rust/bin:$PATH sh ci/run.sh;
 
 before_deploy:
   - bash ci/prepare_deploy.sh
