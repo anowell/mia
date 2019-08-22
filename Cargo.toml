@@ -7,7 +7,7 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', features = ["rust-tls"]}
+algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', optional = true }
 docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
@@ -26,3 +26,7 @@ idna = "0.1.5"
 
 [build-dependencies]
 chrono = "0.2.21"
+
+[features]
+default = ["algorithmia", "algorithmia"]
+rust-tls = ["algorithmia", "algorithmia/rust-tls"]

@@ -1,11 +1,15 @@
-FROM appcontainers/centos:6
+FROM centos:centos6
 MAINTAINER Rowell Belen "rowell.belen@bytekast.com"
 
 RUN yum -y update && yum clean all
-RUN yum -y install git gcc curl openssl openssl-devel ca-certificates tar && yum clean all
+RUN yum -y install git gcc gcc-c++ make curl openssl openssl-devel ca-certificates tar && yum clean all
+
+ARG FEATURES=default
+ENV FEATURES=${FEATURES}
 
 ARG TARGET=x86_64-unknown-linux-gnu
 ENV TARGET=${TARGET}
+
 ENV RUST_ARCHIVE=rust-1.37.0-x86_64-unknown-linux-gnu.tar.gz
 ENV RUST_DOWNLOAD_URL=https://static.rust-lang.org/dist/$RUST_ARCHIVE
 

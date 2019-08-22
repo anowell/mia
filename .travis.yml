@@ -20,7 +20,10 @@ matrix:
       sudo: required
       services:
         - docker
-
+    - os: linux
+      env: RUST_VERSION=stable
+           TARGET=x86_64-unknown-linux-gnu
+           FEATURES=rust-tls
 
 install:
   - curl https://static.rust-lang.org/rustup.sh |
