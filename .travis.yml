@@ -12,11 +12,13 @@ matrix:
       env: RUST_VERSION=stable
            TARGET=x86_64-apple-darwin
            MACOSX_DEPLOYMENT_TARGET=10.7
+           FEATURES=rust-tls
     - os: linux
       env: RUST_VERSION=stable
            TARGET=x86_64-unknown-linux-gnu
            DOCKER_BUILD=yes
            MAKE_DEB=yes
+           FEATURES=default
       sudo: required
       services:
         - docker
@@ -32,7 +34,7 @@ install:
 script:
   - mkdir -p target
   - if [ ! -z "$DOCKER_BUILD" ]; then
-      docker build --build-arg TARGET=$TARGET -t "algo-cli" .;
+      docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES -t "algo-cli" .;
     else
       PATH=$HOME/rust/bin:$PATH sh ci/run.sh;
     fi
