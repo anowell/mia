@@ -6,13 +6,16 @@ environment:
     - platform: x86_64
       target: x86_64-pc-windows-msvc
       channel: stable
-    - platform: arm64
-      target: aarch64-pc-windows-msvc
+    - platform: x86_64
+      target: x86_64-pc-windows-msvc
       channel: stable
+    - platform: i686
+      target: i686-pc-windows-msvc
+      channel: nightly
+
 matrix:
   allow_failures:
-    - channel: stable
-    - platform: arm64
+    - channel: nightly
 
 install:
     - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
@@ -31,9 +34,15 @@ test_script:
     - cargo test --target=%target% --verbose
 
 artifacts:
-    - path: target\$(target)\release\*.exe
+    - path: target\$(target)\release\algo.exe
       name: algorithmia-$(platform)
       type: zip
+
+before_deploy:
+    - mkdir staging
+    - copy target\release\algo.exe staging
+    - cd staging
+    - 7z a ../algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip *
 
 deploy:
   description: 'Windows release'
@@ -52,5 +61,5 @@ deploy:
   on:
     # channel to use to produce the release artifacts
     # NOTE make sure you only release *once* per target
-    CHANNEL: stable
+    channel: stable
     APPVEYOR_REPO_TAG: true
