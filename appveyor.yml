@@ -7,10 +7,10 @@ environment:
       target: x86_64-pc-windows-msvc
       channel: stable
     - platform: x86_64
-      target: x86_64-pc-windows-msvc
+      target: i686-pc-windows-msvc
       channel: stable
     - platform: i686
-      target: i686-pc-windows-msvc
+      target: x86_64-pc-windows-msvc
       channel: nightly
 
 matrix:
