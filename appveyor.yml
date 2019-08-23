@@ -1,42 +1,39 @@
-environment:
-  global:
-    # This will be used as part of the zipfile name
-    PROJECT_NAME: algorithmia
-  matrix:
-    # Stable channel
-    - TARGET: i686-pc-windows-gnu
-      CHANNEL: stable
-    - TARGET: i686-pc-windows-msvc
-      CHANNEL: stable
-    - TARGET: x86_64-pc-windows-gnu
-      CHANNEL: stable
-    - TARGET: x86_64-pc-windows-msvc
-      CHANNEL: stable
+image: Visual Studio 2017
 
-# Install Rust and Cargo
-# (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
+environment:
+  host: x86_64-pc-windows-msvc
+  matrix:
+    - platform: x86_64
+      target: x86_64-pc-windows-msvc
+      channel: stable
+    - platform: arm64
+      target: aarch64-pc-windows-msvc
+      channel: stable
+matrix:
+  allow_failures:
+    - channel: stable
+    - platform: arm64
+
 install:
-  - curl -sSf -o rustup-init.exe https://win.rustup.rs
-  - rustup-init.exe --default-host %TARGET% --default-toolchain %CHANNEL% -y
-  - set PATH=%PATH%;C:\Users\appveyor\.cargo\bin
-  - rustc -Vv
-  - cargo -V
+    - appveyor DownloadFile https://win.rustup.rs/ -FileName rustup-init.exe
+    - rustup-init -yv --default-toolchain %channel% --default-host %host%
+    - set PATH=%PATH%;%USERPROFILE%\.cargo\bin;%APPVEYOR_BUILD_FOLDER%
+    - ps: $Env:PKG_CONFIG_ALLOW_CROSS=1
+    - rustc -vV
+    - cargo -vV
+    - rustup target add %target%
+    - git submodule update --init
 
 build_script:
-  - cargo build --verbose
+    - cargo build --release --target=%target%
 
 test_script:
-  - cargo test
+    - cargo test --target=%target% --verbose
 
-before_deploy:
-  # Generate artifacts for release
-  - cargo build --release
-  - mkdir staging
-  - copy target\release\algo.exe staging
-  - cd staging
-    # release zipfile will look like 'rust-everywhere-v1.2.3-x86_64-pc-windows-msvc'
-  - 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
-  - appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
+artifacts:
+    - path: target\$(target)\release\*.exe
+      name: algorithmia-$(platform)
+      type: zip
 
 deploy:
   description: 'Windows release'
