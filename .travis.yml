@@ -12,6 +12,7 @@ matrix:
       env: RUST_VERSION=stable
            TARGET=x86_64-apple-darwin
            MACOSX_DEPLOYMENT_TARGET=10.7
+           FEATURES=default
     - os: linux
       env: RUST_VERSION=stable
            TARGET=x86_64-unknown-linux-gnu
