@@ -1,4 +1,4 @@
-FROM centos:centos6
+FROM centos:centos7
 MAINTAINER Rowell Belen "rowell.belen@bytekast.com"
 
 RUN yum -y update && yum clean all
