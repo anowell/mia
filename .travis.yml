@@ -24,6 +24,16 @@ matrix:
         - docker
     - os: linux
       env: RUST_VERSION=stable
+        TARGET=x86_64-unknown-linux-gnu
+        DOCKER_BUILD=yes
+        MAKE_DEB=yes
+        FEATURES=default
+        DOCKERFILE=Dockerfile.centos6
+      sudo: required
+      services:
+        - docker
+    - os: linux
+      env: RUST_VERSION=stable
            TARGET=x86_64-unknown-linux-gnu
            FEATURES=rust-tls
 
