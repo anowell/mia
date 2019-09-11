@@ -1,20 +1,10 @@
 #[macro_use]
-extern crate mime;
-
-#[macro_use]
 extern crate serde_derive;
-
-#[cfg(not(target_os = "windows"))]
-extern crate langserver;
-
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-extern crate openssl_probe;
 
 extern crate algorithmia;
 extern crate chan;
 extern crate docopt;
 extern crate env_logger;
-extern crate hyper;
 extern crate rustc_serialize;
 extern crate toml;
 extern crate term;
@@ -29,7 +19,7 @@ use std::env;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
 use isatty::stderr_isatty;
-use config::Profile;
+use crate::config::Profile;
 
 macro_rules! eprintln_red {
     ($fmt:expr) => ({
@@ -60,7 +50,7 @@ macro_rules! quit_msg {
 
 fn print_cause_chain(e: &StdError) {
     let mut err = e;
-    while let Some(cause) = err.cause() {
+    while let Some(cause) = err.source() {
         eprintln!("  caused by: {}", cause);
         err = cause as &StdError;
     }
@@ -74,12 +64,12 @@ macro_rules! quit_err {
     });
     ($fmt:expr, $err:tt) => ({
         eprintln_red!($fmt, $err);
-        ::print_cause_chain(&$err);
+        crate::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
     ($fmt:expr, $arg:expr, $err:tt) => ({
         eprintln_red!($fmt, $arg, $err);
-        ::print_cause_chain(&$err);
+        crate::print_cause_chain(&$err);
         ::std::process::exit(1)
     });
 }
@@ -185,35 +175,19 @@ fn main() {
     }
 }
 
-// Tell our statically-linked OpenSSL where to find root certs
-// cc https://github.com/rust-lang-nursery/rustup.rs/blob/d5e96c4ae934075027096353849afba2d27da326/src/download/src/lib.rs#L343
-#[cfg(not(any(target_os = "windows", target_os = "macos")))]
-fn maybe_init_certs() {
-    use std::sync::{Once, ONCE_INIT};
-    static INIT: Once = ONCE_INIT;
-    INIT.call_once(|| { openssl_probe::init_ssl_cert_env_vars(); });
-}
-
-#[cfg(any(target_os = "windows", target_os = "macos"))]
-fn maybe_init_certs() {}
-
 fn run(args: Vec<String>, profile_name: &str) {
     let cmd = match args.get(1) {
         Some(c) => c.clone(),
         _ => print_usage(),
     };
 
-    maybe_init_certs();
-
     let args_iter = args.into_iter();
     match &*cmd {
         "auth" => auth::Auth::new(profile_name).cmd_main(args_iter),
-        "runlocal" => algo::RunLocal::new(profile_name).cmd_main(args_iter),
         _ => {
             let profile = Profile::lookup(profile_name);
             match &*cmd {
                 "clone" => algo::GitClone::new(profile).cmd_main(args_iter),
-                "serve" => algo::Serve::new(profile).cmd_main(args_iter),
                 "ls" | "dir" => data::Ls::new(profile).cmd_main(args_iter),
                 "mkdir" => data::MkDir::new(profile).cmd_main(args_iter),
                 "rmdir" => data::RmDir::new(profile).cmd_main(args_iter),
@@ -237,8 +211,6 @@ fn print_cmd_usage(cmd: Option<&str>) -> ! {
         "cp" | "copy" => data::Cp::print_usage(),
         "cat" => data::Cat::print_usage(),
         "clone" => algo::GitClone::print_usage(),
-        "serve" => algo::Serve::print_usage(),
-        "runlocal" => algo::RunLocal::print_usage(),
         "run" => algo::Run::print_usage(),
         _ => print_usage(),
     };

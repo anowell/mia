@@ -1,20 +1,15 @@
 pub use self::run::Run;
-pub use self::runlocal::RunLocal;
 pub use self::clone::GitClone;
-pub use self::serve::Serve;
 
 mod run;
-mod runlocal;
 mod clone;
-mod serve;
 
 use std::vec::IntoIter;
 use std::io::{self, Read, Write};
 use std::fs::File;
 use std::path::Path;
 use rustc_serialize::json::Json;
-use algorithmia::error::{Error, ErrorKind};
-use algorithmia::algo::{AlgoResponse, Response, AlgoOutput};
+use algorithmia::algo::{AlgoResponse, Response};
 use term::{self, color};
 use isatty::stderr_isatty;
 
@@ -151,7 +146,7 @@ fn display_response(mut response: Response, config: ResponseConfig) {
     if config.flag_response || config.flag_response_body {
         if config.flag_response {
             let preamble = format!(
-                "{} {}\n{}",
+                "{:?} {}\n{:?}",
                 response.version(),
                 response.status(),
                 response.headers()
@@ -206,13 +201,13 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 }
 
                 // Smart output of result
-                match response.result {
-                    AlgoOutput::Json(json) => output.writeln(json.to_string().as_bytes()),
-                    AlgoOutput::Text(text) => output.writeln(text.as_bytes()),
-                    AlgoOutput::Binary(bytes) => output.write(&bytes),
+                match response.result.as_string() {
+                    Some(s) => output.writeln(s.as_bytes()),
+                    None => output.write(response.result.as_bytes().unwrap())
                 };
             }
-            Err(Error(ErrorKind::Api(err), _)) => {
+            Err(ref error) if error.api_error().is_some() => {
+                let err = error.api_error().unwrap();
                 let mut t_err = term::stderr().unwrap();
                 if stderr_isatty() {
                     let _ = t_err.fg(color::BRIGHT_RED);

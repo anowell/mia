@@ -7,8 +7,8 @@ echo "toolchain versions\n------------------"
 rustc -vV
 cargo -vV
 
-cargo build --release --target $TARGET
+cargo build --release --target $TARGET --features $FEATURES
 
 if [ -z "$SKIP_TESTS" ]; then
-  cargo test --release --target $TARGET
+  cargo test --release --target $TARGET --features $FEATURES
 fi

@@ -30,16 +30,16 @@ pub struct Profile {
 impl Profile {
     pub fn new(api_key: String, api_server: Option<Url>, git_server: Option<Url>) -> Profile {
         Profile {
-            api_server: api_server.map(|s| s.as_str().trim_right_matches('/').to_owned()),
-            git_server: git_server.map(|s| s.as_str().trim_right_matches('/').to_owned()),
+            api_server: api_server.map(|s| s.as_str().trim_end_matches('/').to_owned()),
+            git_server: git_server.map(|s| s.as_str().trim_end_matches('/').to_owned()),
             api_key: api_key,
         }
     }
 
     pub fn client(&self) -> Algorithmia {
         match self.api_server {
-            Some(ref api) => Algorithmia::client_with_url(api, &*self.api_key),
-            None => Algorithmia::client(&*self.api_key),
+            Some(ref api) => Algorithmia::client_with_url(&*self.api_key, api ).unwrap(),
+            None => Algorithmia::client(&*self.api_key).unwrap(),
         }
     }
 

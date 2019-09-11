@@ -4,32 +4,29 @@ name = "algo"
 version = "1.0.1"
 authors = ["Anthony Nowell <anthony@algorithmia.com>"]
 build = "build.rs"
+edition = "2018"
 
 [dependencies]
-algorithmia = "2.0.0"
+algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', optional = true }
 docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
 env_logger = "0.4.2"
 toml = "0.4.0"
-rpassword = "0.4.0"
-mime = "0.2.2"
-term = "0.4"
+rpassword = "4.0"
+mime = "0.3.13"
+term = "0.6.1"
 terminal_size = "0.1"
 isatty = "0.1"
-hyper = "0.10"
 url = "1.4.0"
 serde = "1.0.0"
 serde_derive = "1.0.0"
 wait-timeout = "0.1.5"
-
-[target.'cfg(not(any(target_os = "windows", target_os = "macos")))'.dependencies]
-openssl-probe = "0.1"
-
-[target.'cfg(not(target_os = "windows"))'.dependencies.langserver]
-git = "https://github.com/algorithmiaio/langpacks"
-default-features = false
+idna = "0.1.5"
 
 [build-dependencies]
 chrono = "0.2.21"
 
+[features]
+default = ["algorithmia", "algorithmia"]
+rust-tls = ["algorithmia", "algorithmia/rust-tls"]

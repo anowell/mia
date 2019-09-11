@@ -1,5 +1,5 @@
-use CmdRunner;
-use config::Profile;
+use crate::CmdRunner;
+use crate::config::Profile;
 use docopt::Docopt;
 use algorithmia::Algorithmia;
 use algorithmia::data::{HasDataPath, DataAcl};

@@ -1,5 +1,5 @@
-use {data, CmdRunner};
-use config::Profile;
+use crate::{data, CmdRunner};
+use crate::config::Profile;
 use docopt::Docopt;
 use std::cmp;
 use algorithmia::Algorithmia;
