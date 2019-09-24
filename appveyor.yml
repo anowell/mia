@@ -43,7 +43,7 @@ artifacts:
 
 before_deploy:
     - mkdir staging
-    - copy target\release\algo.exe staging
+    - copy target\$(target)\algo.exe staging
     - cd staging
     - 7z a ../algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip *
 
