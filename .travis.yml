@@ -21,6 +21,7 @@ matrix:
     - os: linux
       env: RUST_VERSION=stable
            TARGET=x86_64-unknown-linux-gnu
+           DOCKER_BUILD=yes
            DOCKER_FILE=Dockerfile
            MAKE_DEB=yes
            FEATURES=rust-tls
@@ -29,6 +30,7 @@ matrix:
         - docker
     - os: linux
       env: TARGET=x86_64-unknown-linux-gnu
+           DOCKER_BUILD=yes
            DOCKER_FILE=Dockerfile.u1604
            MAKE_DEB=yes
            FEATURES=rust-tls
@@ -45,7 +47,7 @@ install:
 
 script:
   - mkdir -p target
-  - if [ ! -z "DOCKER_FILE" ]; then
+  - if [ ! -z "DOCKER_BUILD" ]; then
       docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES -f $DOCKER_FILE -t "algo-cli" .;
       docker run
         --entrypoint bash
