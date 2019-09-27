@@ -81,7 +81,7 @@ install:
 script:
   - mkdir -p target
   - if [ ! -z "$DOCKER_BUILD" ]; then
-      docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES --no-default-features -f $DOCKERFILE -t "algo-cli" .;
+      docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES -f $DOCKERFILE -t "algo-cli" .;
       docker run
         --entrypoint bash
         -u `id -u`:`id -g`
