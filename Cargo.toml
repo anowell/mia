@@ -7,7 +7,7 @@ build = "build.rs"
 edition = "2018"
 
 [dependencies]
-algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', optional = true }
+algorithmia = { git = 'https://github.com/algorithmiaio/algorithmia-rust', optional = true, default_features = false }
 docopt = "0.7.0"
 rustc-serialize = "0.3.19"
 chan = "0.1.18"
