@@ -2,7 +2,7 @@ FROM ubuntu:18.10
 MAINTAINER Rowell Belen "rowell.belen@bytekast.com"
 
 RUN apt-get update
-RUN apt-get install -y curl build-essential pkg-config libssl-dev
+RUN apt-get install -y curl build-essential pkg-config
 ARG FEATURES=default
 ENV FEATURES=${FEATURES}
 

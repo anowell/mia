@@ -2,7 +2,7 @@ FROM centos:centos7
 MAINTAINER Rowell Belen "rowell.belen@bytekast.com"
 
 RUN yum -y update && yum clean all
-RUN yum -y install git gcc gcc-c++ make curl openssl openssl-devel ca-certificates tar && yum clean all
+RUN yum -y install git gcc gcc-c++ make curl ca-certificates tar && yum clean all
 
 ARG FEATURES=default
 ENV FEATURES=${FEATURES}
