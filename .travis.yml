@@ -36,6 +36,42 @@ matrix:
         - docker
     - os: linux
       env: TARGET=x86_64-unknown-linux-gnu
+        DOCKER_BUILD=yes
+        DOCKERFILE=Dockerfile.u1804
+        MAKE_DEB=yes
+        FEATURES=rust-tls
+      sudo: required
+      services:
+        - docker
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu
+        DOCKER_BUILD=yes
+        DOCKERFILE=Dockerfile.u1810
+        MAKE_DEB=yes
+        FEATURES=rust-tls
+      sudo: required
+      services:
+        - docker
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu
+        DOCKER_BUILD=yes
+        DOCKERFILE=Dockerfile.u1904
+        MAKE_DEB=yes
+        FEATURES=rust-tls
+      sudo: required
+      services:
+        - docker
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu
+        DOCKER_BUILD=yes
+        DOCKERFILE=Dockerfile.u1910
+        MAKE_DEB=yes
+        FEATURES=rust-tls
+      sudo: required
+      services:
+        - docker
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu
            FEATURES=rust-tls
 
 install:
