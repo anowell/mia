@@ -28,5 +28,5 @@ idna = "0.1.5"
 chrono = "0.2.21"
 
 [features]
-default = ["algorithmia", "algorithmia"]
+default = ["algorithmia", "algorithmia/default-tls"]
 rust-tls = ["algorithmia", "algorithmia/rust-tls"]
