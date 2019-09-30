@@ -32,25 +32,23 @@ install:
 
 build_script:
     - cargo build --release --target=%target%
+    - cd target\%target%\release
+    - 7z a algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip algo.exe
 
 test_script:
     - cargo test --target=%target% --verbose
 
 artifacts:
     - path: target\$(target)\release\algo.exe
+      name: algo-$(platform)
+    - path: target\$(target)\release\algorithmia-$(APPVEYOR_REPO_TAG_NAME)-$(target).zip
       name: algorithmia-$(platform)
       type: zip
 
-before_deploy:
-    - mkdir staging
-    - copy target\%target%\release\algo.exe staging
-    - cd staging
-    - 7z a ../algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip *
-
 deploy:
   description: 'Windows release'
-  # All the zipped artifacts will be deployed
-  artifact: /.*\.zip/
+  # The zip artifact will be deployed
+  artifact: algorithmia-$(platform)
   # Regenerate this auth_token for your project, this one won't work for you. Here's how:
   # - Go to 'https://github.com/settings/tokens/new' and generate a Token with only the
   # `public_repo` scope enabled
