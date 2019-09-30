@@ -26,7 +26,7 @@ impl InputData {
     // 1. Json if it parses as JSON
     // 2. Text if it parses as UTF-8
     // 3. Fallback to binary
-    fn auto(reader: &mut Read) -> InputData {
+    fn auto(reader: &mut dyn Read) -> InputData {
         let mut bytes: Vec<u8> = Vec::new();
         if let Err(err) = reader.read_to_end(&mut bytes) {
             quit_err!("Read error: {}", err);
@@ -43,7 +43,7 @@ impl InputData {
         }
     }
 
-    fn text(reader: &mut Read) -> InputData {
+    fn text(reader: &mut dyn Read) -> InputData {
         let mut data = String::new();
         match reader.read_to_string(&mut data) {
             Ok(_) => InputData::Text(data),
@@ -51,7 +51,7 @@ impl InputData {
         }
     }
 
-    fn json(reader: &mut Read) -> InputData {
+    fn json(reader: &mut dyn Read) -> InputData {
         let mut data = String::new();
         match reader.read_to_string(&mut data) {
             Ok(_) => InputData::Json(data),
@@ -59,7 +59,7 @@ impl InputData {
         }
     }
 
-    fn binary(reader: &mut Read) -> InputData {
+    fn binary(reader: &mut dyn Read) -> InputData {
         let mut bytes: Vec<u8> = Vec::new();
         match reader.read_to_end(&mut bytes) {
             Ok(_) => InputData::Binary(bytes),
@@ -72,7 +72,7 @@ impl InputData {
 // The device specified by --output flag
 // Only the result or response is written to this device
 struct OutputDevice {
-    writer: Box<Write>,
+    writer: Box<dyn Write>,
 }
 
 impl OutputDevice {
@@ -105,14 +105,14 @@ impl OutputDevice {
     }
 }
 
-fn get_src(src: &str) -> Box<Read> {
+fn get_src(src: &str) -> Box<dyn Read> {
     match src {
-        "-" => Box::new(io::stdin()) as Box<Read>,
+        "-" => Box::new(io::stdin()) as Box<dyn Read>,
         s => open_file(Path::new(&s)),
     }
 }
 
-fn open_file(path: &Path) -> Box<Read> {
+fn open_file(path: &Path) -> Box<dyn Read> {
     let display = path.display();
     let file = match File::open(&path) {
         Err(err) => quit_err!("Error opening {}: {}", display, err),
