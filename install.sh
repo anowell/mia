@@ -249,6 +249,7 @@ install_cli() {
 
     # copy to $_prefix/bin
     echo_verbose "installing 'algo'..."
+    maybe_sudo mkdir -p $_prefix/bin/
     maybe_sudo cp $tmpdir/algo $_prefix/bin/
     migrate_config
 
