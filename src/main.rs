@@ -8,6 +8,8 @@ use std::error::Error as StdError;
 use isatty::stderr_isatty;
 use crate::config::Profile;
 
+pub(crate) type DynError = Box<dyn std::error::Error + 'static + Send + Sync>;
+
 macro_rules! eprintln_red {
     ($fmt:expr) => ({
         let mut t_err = ::term::stderr().unwrap();
