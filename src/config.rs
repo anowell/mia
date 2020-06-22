@@ -4,14 +4,15 @@ use std::env;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
-use url::Url;
 use toml;
+use url::Url;
 
 #[cfg(unix)]
 use std::fs::OpenOptions;
 #[cfg(unix)]
 use std::os::unix::fs::OpenOptionsExt;
 
+pub static DEFAULT_ENDPOINT: &str = "https://algorithmia.com";
 pub static DEFAULT_API_SERVER: &str = "https://api.algorithmia.com";
 pub static DEFAULT_GIT_SERVER: &str = "https://git.algorithmia.com";
 
@@ -38,7 +39,7 @@ impl Profile {
 
     pub fn client(&self) -> Algorithmia {
         match self.api_server {
-            Some(ref api) => Algorithmia::client_with_url(&*self.api_key, api ).unwrap(),
+            Some(ref api) => Algorithmia::client_with_url(&*self.api_key, api).unwrap(),
             None => Algorithmia::client(&*self.api_key).unwrap(),
         }
     }
@@ -50,11 +51,16 @@ impl Profile {
             .unwrap_or(DEFAULT_API_SERVER)
     }
 
-    pub fn git_server(&self) -> &str {
-        self.git_server
-            .as_ref()
-            .map(String::as_ref)
-            .unwrap_or(DEFAULT_GIT_SERVER)
+    pub fn git_server(&self) -> String {
+        self.git_server.clone().unwrap_or_else(|| {
+            let needle = "//api";
+            match &self.api_server {
+                Some(api_server) if api_server.contains(needle) => {
+                    api_server.replace("//api.", "//git.")
+                }
+                _ => DEFAULT_GIT_SERVER.to_string(),
+            }
+        })
     }
 
     pub fn api_key(&self) -> &str {
@@ -105,9 +111,7 @@ impl Profile {
     pub fn lookup(profile: &str) -> Profile {
         Config::read_config()
             .and_then(|c| c.get_profile(profile).cloned())
-            .unwrap_or_else(|| {
-                quit_msg!("{} profile not found. Run 'algo auth {0}'", profile)
-            })
+            .unwrap_or_else(|| quit_msg!("{} profile not found. Run 'algo auth {0}'", profile))
     }
 }
 

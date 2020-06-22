@@ -1,25 +1,14 @@
 #[macro_use]
 extern crate serde_derive;
 
-extern crate algorithmia;
-extern crate chan;
-extern crate docopt;
-extern crate env_logger;
-extern crate rustc_serialize;
-extern crate toml;
-extern crate term;
-extern crate terminal_size;
-extern crate isatty;
-extern crate rpassword;
-extern crate serde;
-extern crate url;
-extern crate wait_timeout;
-
+use term;
 use std::env;
 use std::vec::IntoIter;
 use std::error::Error as StdError;
 use isatty::stderr_isatty;
 use crate::config::Profile;
+
+pub(crate) type DynError = Box<dyn std::error::Error + 'static + Send + Sync>;
 
 macro_rules! eprintln_red {
     ($fmt:expr) => ({
@@ -48,11 +37,11 @@ macro_rules! quit_msg {
     });
 }
 
-fn print_cause_chain(e: &StdError) {
+fn print_cause_chain(e: &dyn StdError) {
     let mut err = e;
     while let Some(cause) = err.source() {
         eprintln!("  caused by: {}", cause);
-        err = cause as &StdError;
+        err = cause as &dyn StdError;
     }
 }
 
