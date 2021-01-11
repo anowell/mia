@@ -1,5 +1,5 @@
-use crate::CmdRunner;
 use crate::config::Profile;
+use crate::CmdRunner;
 use docopt::Docopt;
 
 use std::process::Command;
@@ -23,7 +23,6 @@ static USAGE: &'static str = r##"Usage:
     algo clone anowell/Pinky \
      pinky-quotes             Clones an algorithm repo into a specific directory
 "##;
-
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
@@ -67,9 +66,9 @@ impl GitClone {
             cmd.arg(dir);
         }
 
-        let mut child = cmd.spawn()
+        let mut child = cmd
+            .spawn()
             .unwrap_or_else(|_| quit_msg!("Failed to `git clone`. Is git installed?"));
         let _ = child.wait();
-
     }
 }

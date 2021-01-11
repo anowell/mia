@@ -1,15 +1,14 @@
-use crate::{data, CmdRunner};
 use crate::config::Profile;
+use crate::{color_choice, data, CmdRunner};
+use algorithmia::data::{DataItem, HasDataPath};
+use algorithmia::Algorithmia;
 use docopt::Docopt;
 use std::cmp;
-use algorithmia::Algorithmia;
-use algorithmia::data::{DataItem, HasDataPath};
-use std::vec::IntoIter;
+use std::io::Write;
 use std::ops::Deref;
-use term::{self, color};
-use term::color::Color;
-use terminal_size::{Width, terminal_size};
-use isatty::stdout_isatty;
+use std::vec::IntoIter;
+use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
+use terminal_size::{terminal_size, Width};
 
 static USAGE: &'static str = r##"Usage:
   algo ls [options] [<data-dir>]
@@ -24,7 +23,6 @@ static USAGE: &'static str = r##"Usage:
   Options:
     -l          Use long listing format
 "##;
-
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
@@ -46,7 +44,8 @@ impl CmdRunner for Ls {
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
 
-        let data_uri = args.arg_data_dir
+        let data_uri = args
+            .arg_data_dir
             .as_ref()
             .map(Deref::deref)
             .unwrap_or("data://");
@@ -64,20 +63,15 @@ impl Ls {
     fn list_dir(&self, path: &str, long: bool) {
         let my_dir = self.client.dir(path);
 
-        let mut t_out = term::stdout().unwrap();
-
+        let mut t_out = StandardStream::stdout(color_choice());
         if long {
             for entry_result in my_dir.list() {
                 match entry_result {
                     Ok(DataItem::Dir(d)) => {
                         let _ = write!(t_out, "{:19} {:>5} ", "--         --", "[dir]");
-                        if stdout_isatty() {
-                            let _ = t_out.fg(color::BRIGHT_BLUE);
-                        }
+                        let _ = t_out.set_color(ColorSpec::new().set_fg(Some(Color::Blue)));
                         let _ = writeln!(t_out, "{}", d.basename().unwrap());
-                        if stdout_isatty() {
-                            let _ = t_out.reset();
-                        }
+                        let _ = t_out.reset();
                     }
                     Ok(DataItem::File(f)) => {
                         let name = f.basename().unwrap();
@@ -87,15 +81,10 @@ impl Ls {
                             f.last_modified.format("%Y-%m-%d %H:%M:%S"),
                             data::size_with_suffix(f.size)
                         );
-                        if stdout_isatty() {
-                            if let Some(c) = FileType::from_filename(&name).to_color() {
-                                let _ = t_out.fg(c);
-                            }
-                        }
+                        let c = FileType::from_filename(&name).to_color();
+                        let _ = t_out.set_color(ColorSpec::new().set_fg(c));
                         let _ = writeln!(t_out, "{}", name);
-                        if stdout_isatty() {
-                            let _ = t_out.reset();
-                        }
+                        let _ = t_out.reset();
                     }
                     Err(err) => quit_err!("Error listing directory: {}", err),
                 }
@@ -129,26 +118,17 @@ impl Ls {
                 let char_count = match item {
                     DataItem::Dir(d) => {
                         let name = d.basename().unwrap();
-                        if stdout_isatty() {
-                            let _ = t_out.fg(color::BRIGHT_BLUE);
-                        }
+                        let _ = t_out.set_color(ColorSpec::new().set_fg(Some(Color::Blue)));
                         let _ = write!(t_out, "{}", name);
-                        if stdout_isatty() {
-                            let _ = t_out.reset();
-                        }
+                        let _ = t_out.reset();
                         name.chars().count()
                     }
                     DataItem::File(f) => {
                         let name = f.basename().unwrap();
-                        if stdout_isatty() {
-                            if let Some(c) = FileType::from_filename(&name).to_color() {
-                                let _ = t_out.fg(c);
-                            }
-                        }
+                        let c = FileType::from_filename(&name).to_color();
+                        let _ = t_out.set_color(ColorSpec::new().set_fg(c));
                         let _ = write!(t_out, "{}", name);
-                        if stdout_isatty() {
-                            let _ = t_out.reset();
-                        }
+                        let _ = t_out.reset();
                         name.chars().count()
                     }
                 };
@@ -184,17 +164,17 @@ impl FileType {
     // A basic mime guessing function
     fn from_ext(ext: &str) -> FileType {
         match &*ext.to_lowercase() {
-            "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff" |
-            "webp" | "xcf" | "psd" | "ai" => FileType::Image,
+            "bmp" | "gif" | "ico" | "jpe" | "jpeg" | "jpg" | "png" | "svg" | "tif" | "tiff"
+            | "webp" | "xcf" | "psd" | "ai" => FileType::Image,
 
-            "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe" |
-            "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
+            "3g2" | "3gp" | "avi" | "divx" | "flv" | "mov" | "mp4" | "mp4v" | "mpa" | "mpe"
+            | "mpeg" | "ogv" | "qt" | "webm" | "wmv" => FileType::Video,
 
-            "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" |
-            "tlz" | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
+            "7z" | "rar" | "tgz" | "gz" | "zip" | "tar" | "xz" | "dmg" | "iso" | "lzma" | "tlz"
+            | "bz2" | "tbz2" | "z" | "deb" | "rpm" | "jar" => FileType::Archive,
 
-            "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav" |
-            "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
+            "aac" | "flac" | "ogg" | "au" | "mid" | "midi" | "mp3" | "mpc" | "ra" | "wav"
+            | "axa" | "oga" | "spz" | "xspf" | "wma" | "m4a" => FileType::Audio,
 
             _ => FileType::Unknown,
         }
@@ -202,9 +182,9 @@ impl FileType {
 
     fn to_color(&self) -> Option<Color> {
         match *self {
-            FileType::Image | FileType::Video => Some(color::BRIGHT_MAGENTA),
-            FileType::Archive => Some(color::BRIGHT_RED),
-            FileType::Audio => Some(color::BRIGHT_CYAN),
+            FileType::Image | FileType::Video => Some(Color::Magenta),
+            FileType::Archive => Some(Color::Red),
+            FileType::Audio => Some(Color::Cyan),
             _ => None,
         }
     }

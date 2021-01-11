@@ -2,11 +2,11 @@ extern crate chrono;
 
 use chrono::UTC;
 
-use std::process::Command;
 use std::env;
 use std::ffi::OsString;
 use std::fs::File;
 use std::io::Write;
+use std::process::Command;
 
 fn main() {
     // Rustc version
@@ -29,7 +29,6 @@ fn main() {
         .next()
         .unwrap_or("no-SHA".into());
 
-
     // Write it all to version.rs
     let mut f = File::create("src/version.rs").unwrap();
     write!(
@@ -42,5 +41,6 @@ pub static VERSION: &'static str =
         git_sha = git_sha.trim(),
         build_date = UTC::today().format("%Y-%m-%d"),
         rustc_version = rustc_version.trim(),
-    ).unwrap();
+    )
+    .unwrap();
 }

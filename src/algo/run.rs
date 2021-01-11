@@ -1,10 +1,10 @@
-use crate::CmdRunner;
+use super::{display_response, split_args, InputData, ResponseConfig};
 use crate::config::Profile;
+use crate::CmdRunner;
+use algorithmia::algo::{AlgoOptions, Response};
+use algorithmia::Algorithmia;
 use docopt::Docopt;
 use std::vec::IntoIter;
-use algorithmia::Algorithmia;
-use algorithmia::algo::{AlgoOptions, Response};
-use super::{InputData, ResponseConfig, display_response, split_args};
 
 static USAGE: &'static str = r##"Usage:
   algo run [options] <algorithm>
@@ -54,7 +54,6 @@ static USAGE: &'static str = r##"Usage:
     algo run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
     algo run opencv/SmartThumbnail -D in.png -o out.png   Run algorithm saving output to a file
 "##;
-
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
@@ -126,9 +125,7 @@ impl Run {
         let result = match input_data {
             InputData::Text(text) => algorithm.pipe_as(text, mime::TEXT_PLAIN),
             InputData::Json(json) => algorithm.pipe_as(json, mime::APPLICATION_JSON),
-            InputData::Binary(bytes) => {
-                algorithm.pipe_as(bytes, mime::APPLICATION_OCTET_STREAM)
-            }
+            InputData::Binary(bytes) => algorithm.pipe_as(bytes, mime::APPLICATION_OCTET_STREAM),
         };
 
         match result {

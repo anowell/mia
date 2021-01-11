@@ -1,18 +1,17 @@
-pub use self::run::Run;
 pub use self::clone::GitClone;
+pub use self::run::Run;
 
-mod run;
 mod clone;
+mod run;
 
-use std::vec::IntoIter;
-use std::io::{self, Read, Write};
-use std::fs::File;
-use std::path::Path;
-use rustc_serialize::json::Json;
+use crate::{color_choice, BRIGHT_RED, GRAY};
 use algorithmia::algo::{AlgoResponse, Response};
-use term::{self, color};
-use isatty::stderr_isatty;
-
+use rustc_serialize::json::Json;
+use std::fs::File;
+use std::io::{self, Read, Write};
+use std::path::Path;
+use std::vec::IntoIter;
+use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 
 #[derive(Debug)]
 enum InputData {
@@ -33,12 +32,10 @@ impl InputData {
         }
 
         match String::from_utf8(bytes) {
-            Ok(data) => {
-                match Json::from_str(&data) {
-                    Ok(_) => InputData::Json(data),
-                    Err(_) => InputData::Text(data),
-                }
-            }
+            Ok(data) => match Json::from_str(&data) {
+                Ok(_) => InputData::Json(data),
+                Err(_) => InputData::Text(data),
+            },
             Err(not_utf8) => InputData::Binary(not_utf8.into_bytes()),
         }
     }
@@ -68,7 +65,6 @@ impl InputData {
     }
 }
 
-
 // The device specified by --output flag
 // Only the result or response is written to this device
 struct OutputDevice {
@@ -78,14 +74,12 @@ struct OutputDevice {
 impl OutputDevice {
     fn new(output_dest: &Option<String>) -> OutputDevice {
         match *output_dest {
-            Some(ref file_path) => {
-                match File::create(file_path) {
-                    Ok(buf) => OutputDevice {
-                        writer: Box::new(buf),
-                    },
-                    Err(err) => quit_err!("Unable to create file: {}", err),
-                }
-            }
+            Some(ref file_path) => match File::create(file_path) {
+                Ok(buf) => OutputDevice {
+                    writer: Box::new(buf),
+                },
+                Err(err) => quit_err!("Unable to create file: {}", err),
+            },
             None => OutputDevice {
                 writer: Box::new(io::stdout()),
             },
@@ -132,7 +126,7 @@ struct ResponseConfig {
 fn display_response(mut response: Response, config: ResponseConfig) {
     // Open up an output device for the result/response
     let mut output = OutputDevice::new(&config.flag_output);
-    let mut t_err = term::stderr().unwrap();
+    let mut t_err = StandardStream::stderr(color_choice());
 
     // Read JSON response - scoped so that we can re-borrow response
     let mut json_response = String::new();
@@ -160,62 +154,46 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 // Printing any API alerts
                 if let Some(ref alerts) = response.metadata.alerts {
                     if !config.flag_silence {
-                        if stderr_isatty() {
-                            let _ = t_err.fg(color::YELLOW);
-                        }
+                        let _ = t_err.set_color(ColorSpec::new().set_fg(Some(Color::Blue)));
                         for alert in alerts {
                             let _ = writeln!(t_err, "{}", alert);
                         }
-                        if stderr_isatty() {
-                            let _ = t_err.reset();
-                        }
+                        let _ = t_err.reset();
                     }
                 }
 
                 // Printing algorithm stdout
                 if let Some(ref stdout) = response.metadata.stdout {
                     if config.flag_debug {
-                        if stderr_isatty() {
-                            let _ = t_err.fg(color::BRIGHT_BLACK);
-                        }
+                        let _ = t_err.set_color(ColorSpec::new().set_fg(Some(GRAY)));
                         let _ = writeln!(t_err, "{}", stdout);
-                        if stderr_isatty() {
-                            let _ = t_err.reset();
-                        }
+                        let _ = t_err.reset();
                     }
                 }
 
                 // Printing metadata
                 if !config.flag_silence {
-                    if stderr_isatty() {
-                        let _ = t_err.fg(color::BRIGHT_BLACK);
-                    }
+                    let _ = t_err.set_color(ColorSpec::new().set_fg(Some(GRAY)));
                     let _ = writeln!(
                         t_err,
                         "Completed in {:.1} seconds",
                         response.metadata.duration
                     );
-                    if stderr_isatty() {
-                        let _ = t_err.reset();
-                    }
+                    let _ = t_err.reset();
                 }
 
                 // Smart output of result
                 match response.result.as_string() {
                     Some(s) => output.writeln(s.as_bytes()),
-                    None => output.write(response.result.as_bytes().unwrap())
+                    None => output.write(response.result.as_bytes().unwrap()),
                 };
             }
             Err(ref error) if error.api_error().is_some() => {
                 let err = error.api_error().unwrap();
-                let mut t_err = term::stderr().unwrap();
-                if stderr_isatty() {
-                    let _ = t_err.fg(color::BRIGHT_RED);
-                }
+                let mut t_err = StandardStream::stderr(color_choice());
+                let _ = t_err.set_color(ColorSpec::new().set_fg(Some(BRIGHT_RED)));
                 let _ = writeln!(t_err, "API error: {}", err.message);
-                if stderr_isatty() {
-                    let _ = t_err.reset();
-                }
+                let _ = t_err.reset();
 
                 if let Some(ref trace) = err.stacktrace {
                     eprintln!("{}", trace)
@@ -239,9 +217,9 @@ fn split_args(argv: IntoIter<String>, usage: &'static str) -> (Vec<InputData>, V
 
     let mut argv_mut = argv.collect::<Vec<String>>().into_iter();
     let next_arg = |argv_iter: &mut IntoIter<String>| {
-        argv_iter.next().unwrap_or_else(|| {
-            quit_msg!("Missing arg for input data option\n\n{}", usage)
-        })
+        argv_iter
+            .next()
+            .unwrap_or_else(|| quit_msg!("Missing arg for input data option\n\n{}", usage))
     };
     while let Some(flag) = argv_mut.next() {
         match &*flag {

@@ -1,8 +1,8 @@
-use crate::CmdRunner;
 use crate::config::Profile;
-use docopt::Docopt;
-use algorithmia::Algorithmia;
+use crate::CmdRunner;
 use algorithmia::data::HasDataPath;
+use algorithmia::Algorithmia;
+use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:

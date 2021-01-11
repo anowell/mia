@@ -1,15 +1,15 @@
-use crate::CmdRunner;
+use super::size_with_suffix;
 use crate::config::Profile;
-use algorithmia::Algorithmia;
+use crate::CmdRunner;
 use algorithmia::data::{DataFile, DataItem, HasDataPath};
-use docopt::Docopt;
+use algorithmia::Algorithmia;
 use chan;
-use std::sync::{Arc, Mutex};
-use std::{clone, cmp, io, fs, thread};
+use docopt::Docopt;
 use std::fs::File;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 use std::vec::IntoIter;
-use super::size_with_suffix;
+use std::{clone, cmp, fs, io, thread};
 
 static USAGE: &'static str = r##"Usage:
   algo cp [options] <source>... <dest>
@@ -114,7 +114,6 @@ impl CpClient {
             drop(tx);
         });
 
-
         // Spin up threads to concurrently upload files per that paths received on rx channel
         for _ in 0..concurrency {
             wg.add(1);
@@ -134,10 +133,9 @@ impl CpClient {
                             f.put(file).map(|_| f.to_data_uri())
                         }
                         // If dest exists as DataDir, add file to dir
-                        Ok(DataItem::Dir(d)) => {
-                            d.put_file(&rx_path)
-                                .map(|_| d.child::<DataFile>(&rx_path).to_data_uri())
-                        }
+                        Ok(DataItem::Dir(d)) => d
+                            .put_file(&rx_path)
+                            .map(|_| d.child::<DataFile>(&rx_path).to_data_uri()),
                         // Otherwise, try adding new file with exact path as dest
                         Err(_) => {
                             let file = File::open(&*rx_path).unwrap();
@@ -163,8 +161,6 @@ impl CpClient {
         println!("Finished uploading {} file(s)", *completed.lock().unwrap());
     }
 
-
-
     fn download(&self, sources: Vec<String>) {
         // As long as we aren't recursing, we can be more aggressive in limiting threads we spin up
         // TODO: when supporting datadir recursion, fall-back to max_concurrency
@@ -182,7 +178,6 @@ impl CpClient {
             }
             drop(tx);
         });
-
 
         // Spin up threads to concurrently download files per that paths received on rx channel
         for _ in 0..concurrency {
@@ -216,7 +211,6 @@ impl CpClient {
         );
     }
 }
-
 
 fn download_file(data_file: &DataFile, local_path: &str) -> Result<u64, String> {
     match data_file.get() {

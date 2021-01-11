@@ -1,8 +1,8 @@
-use crate::CmdRunner;
 use crate::config::Profile;
-use docopt::Docopt;
-use algorithmia::Algorithmia;
+use crate::CmdRunner;
 use algorithmia::data::HasDataPath;
+use algorithmia::Algorithmia;
+use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
@@ -31,7 +31,6 @@ impl CmdRunner for Rm {
         let args: Args = Docopt::new(USAGE)
             .and_then(|d| d.argv(argv).decode())
             .unwrap_or_else(|e| e.exit());
-
 
         self.delete_file(&*args.arg_data_file);
     }

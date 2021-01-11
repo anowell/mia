@@ -1,7 +1,7 @@
-use crate::CmdRunner;
 use crate::config::Profile;
-use algorithmia::Algorithmia;
+use crate::CmdRunner;
 use algorithmia::data::{DataFile, HasDataPath};
+use algorithmia::Algorithmia;
 use docopt::Docopt;
 
 use std::io;
@@ -11,7 +11,6 @@ static USAGE: &'static str = r##"Usage: algo cat <data-file>...
 
   Concatenate file(s) from the Algorithmia Data API and print on standard output
 "##;
-
 
 #[derive(RustcDecodable, Debug)]
 struct Args {
