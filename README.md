@@ -1,41 +1,31 @@
 **THE OFFICIAL ALGORITHMIA CLI HAS MOVED TO https://github.com/algorithmiaio/algorithmia-python**
 
+This repo is now for experimenting with CLI-based interactions with Algorithmia and the Algorithmia rust client. To clearly disambiguate from `algo`, the official Algorithmia CLI, this project is changing its name to `mia`. 
 
-Algorithmia CLI Tools
+mia
 ---------------------
 
-[![Build Status](https://travis-ci.org/algorithmiaio/algorithmia-cli.svg)](https://travis-ci.org/algorithmiaio/algorithmia-cli)
+[![Build Status](https://travis-ci.org/anowell/mia.svg)](https://travis-ci.org/anowell/mia)
 
-Algorithmia CLI is a cross-platform tool for interfacing with algorithms and the Algorithmia Data API.
+mia is a cross-platform tool for interfacing with algorithms and the Algorithmia Data API.
 
-This guide will cover:
-* [Installation](#installing-the-algorithmia-cli)
-* [Authentication](#configure-authentication)
-* [Usage](#usage)
-* [Command Options](#options)
-* [The Data API](#the-algorithmia-data-api)
-* [Using Multiple Profiles](#using-multiple-profiles)
+## Installing mia
 
-Check out the tool in use in this short demo video (click to watch on YouTube):
-[![Example CLI Usage](https://j.gifs.com/v1egak.gif)](https://www.youtube.com/watch?v=mAJagjRl_qk)
-
-## Installing the Algorithmia CLI
-
-The latest releases & changelog can be found [here](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
+The latest releases & changelog can be found [here](https://github.com/anowell/mia/releases/latest).
 
 **Linux and OSX**
 
 Install is by running:
 
 ```bash
-curl -sSLf https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/install.sh | sh
+curl -sSLf https://raw.githubusercontent.com/anowell/mia/master/install.sh | sh
 ```
 
 **Windows**
 
-Download and extract the [latest Windows x86_64 zip file](https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.1/algorithmia-v1.0.1-x86_64-pc-windows-msvc.zip). We recommend putting it within your `PATH`.
+Download and extract the [latest Windows x86_64 zip file](https://github.com/anowell/mia/releases/download/v1.0.1/algorithmia-v1.0.1-x86_64-pc-windows-msvc.zip). We recommend putting it within your `PATH`.
 
-If needed, you can also find both MSVC and GNU builds for x86 and x86_64 on the [release page](https://github.com/algorithmiaio/algorithmia-cli/releases/latest).
+If needed, you can also find both MSVC and GNU builds for x86 and x86_64 on the [release page](https://github.com/anowell/mia/releases/latest).
 
 ## Alternate Installation Methods
 
@@ -44,7 +34,7 @@ If needed, you can also find both MSVC and GNU builds for x86 and x86_64 on the 
 For our Debian/Ubuntu users, a `.deb` package is also available for installation with `dpkg`. Simply run the following:
 
 ```bash
-curl -OL https://github.com/algorithmiaio/algorithmia-cli/releases/download/v1.0.1/algorithmia-v1.0.1-x86_64-unknown-linux-gnu.deb
+curl -OL https://github.com/anowell/mia/releases/download/v1.0.1/algorithmia-v1.0.1-x86_64-unknown-linux-gnu.deb
 sudo dpkg -i algorithmia-v1.0.1-x86_64-unknown-linux-gnu.deb
 ```
 
