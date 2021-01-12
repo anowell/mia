@@ -185,7 +185,10 @@ fn display_response(mut response: Response, config: ResponseConfig) {
                 // Smart output of result
                 match response.result.as_string() {
                     Some(s) => output.writeln(s.as_bytes()),
-                    None => output.write(response.result.as_bytes().unwrap()),
+                    None => match response.result.to_json() {
+                        Some(j) => output.writeln(j.as_bytes()),
+                        None => output.write(response.result.as_bytes().unwrap()),
+                    }
                 };
             }
             Err(ref error) if error.api_error().is_some() => {
