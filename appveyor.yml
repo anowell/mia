@@ -33,14 +33,14 @@ install:
 build_script:
     - cargo build --release --target=%target%
     - cd target\%target%\release
-    - 7z a algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip algo.exe
+    - 7z a algorithmia-%APPVEYOR_REPO_TAG_NAME%-%target%.zip mia.exe
 
 test_script:
     - cargo test --target=%target% --verbose
 
 artifacts:
-    - path: target\$(target)\release\algo.exe
-      name: algo-$(platform)
+    - path: target\$(target)\release\mia.exe
+      name: mia-$(platform)
     - path: target\$(target)\release\algorithmia-$(APPVEYOR_REPO_TAG_NAME)-$(target).zip
       name: algorithmia-$(platform)
       type: zip

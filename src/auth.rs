@@ -8,11 +8,11 @@ use url::Url;
 
 static USAGE: &'static str = r##"
 Usage:
-  algo auth [--profile <name>]
+  mia auth [--profile <name>]
 
   Interactively prompts for authentication credentials. If no profile is specified,
   the changes will apply to the 'default' profile. To use a non-default profile for
-  other algo commands, use the --profile <profile> option.
+  other mia commands, use the --profile <profile> option.
 
   Profile configuration is stored in $HOME/.algorithmia (Unix/Linux) or
   %LOCALAPPDATA%/Algorithmia (Windows) in the following TOML format:
@@ -92,10 +92,10 @@ impl Auth {
             config.write_config();
 
             if profile_name == "default" {
-                println!("Profile is ready to use. Try 'algo ls'");
+                println!("Profile is ready to use. Try 'mia ls'");
             } else {
                 println!(
-                    "Profile is ready to use. Try 'algo ls --profile {}'",
+                    "Profile is ready to use. Try 'mia ls --profile {}'",
                     profile_name
                 );
             }

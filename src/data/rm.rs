@@ -6,7 +6,7 @@ use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
-  algo rm <data-file>
+  mia rm <data-file>
 
   Removes a file from the Agorithmia Data API
 

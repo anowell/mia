@@ -11,7 +11,7 @@ mk_tarball() {
 
     # Update this part to copy the artifacts that make sense for your project
     # NOTE All Cargo build artifacts will be under the 'target/$TARGET/{debug,release}'
-    cp target/$TARGET/release/algo $td
+    cp target/$TARGET/release/mia $td
     cp -r completions $td
 
     pushd $td
@@ -31,9 +31,9 @@ mk_tarball() {
 # fully conform to Debian packaging guideliens (`lintian` raises a few warnings/errors)
 mk_deb() {
     # Update this part to package the artifacts that make sense for your project
-    dobin target/$TARGET/release/algo
-    dofile /etc/bash_completion.d/ completions/bash/algo
-    dofile /usr/local/share/zsh/site-functions/ completions/zsh/_algo
+    dobin target/$TARGET/release/mia
+    dofile /etc/bash_completion.d/ completions/bash/mia
+    dofile /usr/local/share/zsh/site-functions/ completions/zsh/_mia
 }
 
 main() {
@@ -52,7 +52,7 @@ Package: $PROJECT_NAME
 Version: ${TRAVIS_TAG#v}
 Architecture: $(architecture $TARGET)
 Maintainer: Anthony Nowell <anthony@algorithmia.com>
-Description: Algorithmia Command Line Tools
+Description: Mia - an alternative Algorithmia CLI
 EOF
 
             fakeroot dpkg-deb --build $dtd/debian

@@ -38,12 +38,12 @@ install:
 script:
   - mkdir -p target
   - if [ ! -z "$DOCKER_BUILD" ]; then
-      docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES -t "algo-cli" .;
+      docker build --build-arg TARGET=$TARGET --build-arg FEATURES=$FEATURES -t "mia-cli" .;
       docker run
         --entrypoint bash
         -u `id -u`:`id -g`
         -v `pwd`:/buildslave
-        -it algo-cli
+        -it mia-cli
         -c "cp -r /cli/target /buildslave/.";
     else
       PATH=$HOME/rust/bin:$PATH sh ci/run.sh;

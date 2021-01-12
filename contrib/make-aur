@@ -8,7 +8,7 @@ PACKAGE_VERSION=`grep version ${DIR}/../Cargo.toml | head -1 | cut -d'"' -f2`
 
 ARCH=amd64
 TARBALL=algorithmia-v${PACKAGE_VERSION}-x86_64-unknown-linux-gnu.tar.gz
-DOWNLOAD=https://github.com/algorithmiaio/algorithmia-cli/releases/download/v${PACKAGE_VERSION}/${TARBALL}
+DOWNLOAD=https://github.com/anowell/mia/releases/download/v${PACKAGE_VERSION}/${TARBALL}
 TMPDIR=tmp
 OUTDIR=${DIR}/out
 PREFIX=/usr/bin

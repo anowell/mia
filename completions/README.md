@@ -1,6 +1,6 @@
 ## Zsh
 
-For zsh completions to work, `zsh/_algo` must be in your `fpath`.
+For zsh completions to work, `zsh/_mia` must be in your `fpath`.
 
 For testing, add this to `~/.zshrc`:
 
@@ -14,7 +14,7 @@ and run `exec zsh` anytime you change the completions file.
 
 ## Bash
 
-Source `bash/algo` or
+Source `bash/mia` or
 copy it to `/etc/bash_completions.d/` and `exec bash`
 (assuming `bash-completion` is installed).
 

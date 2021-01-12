@@ -3,20 +3,20 @@
 pkgname=algorithmia-bin
 pkgver={{VERSION}}
 pkgrel=1
-pkgdesc="Algorithmia command line interface tools"
+pkgdesc="Alternative Algorithmia CLI"
 arch=('x86_64')
 url="https://algorithmia.com/"
 license=('MIT')
 depends=('')
 conflicts=('algorithmia-bin')
-source=("https://github.com/algorithmiaio/algorithmia-cli/releases/download/v${pkgver//_/-}/algorithmia-v${pkgver//_/-}-x86_64-unknown-linux-gnu.tar.gz")
+source=("https://github.com/anowell/mia/releases/download/v${pkgver//_/-}/algorithmia-v${pkgver//_/-}-x86_64-unknown-linux-gnu.tar.gz")
 md5sums=('{{MD5SUM}}')
 
 package() {
   mkdir -p "$pkgdir/usr/bin/"
-  install -m 755 algo "$pkgdir/usr/bin/"
+  install -m 755 mia "$pkgdir/usr/bin/"
   mkdir -p "$pkgdir/usr/share/bash-completion/completions/"
-  install -m 644 completions/bash/algo "$pkgdir/usr/share/bash-completion/completions/"
+  install -m 644 completions/bash/mia "$pkgdir/usr/share/bash-completion/completions/"
   mkdir -p "$pkgdir/usr/local/share/share/zsh/site-functions/"
-  install -m 644 completions/zsh/_algo "$pkgdir/usr/local/share/share/zsh/site-functions/"
+  install -m 644 completions/zsh/_mia "$pkgdir/usr/local/share/share/zsh/site-functions/"
 }

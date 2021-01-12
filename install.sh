@@ -12,10 +12,10 @@ main() {
 }
 
 set_globals() {
-    algo_version="1.0.1"
-    default_prefix="${ALGO_PREFIX-/usr/local}"
-    base_url="https://github.com/algorithmiaio/algorithmia-cli/releases/download"
-    completions_url="https://raw.githubusercontent.com/algorithmiaio/algorithmia-cli/master/completions"
+    pkg_version="1.0.1"
+    default_prefix="${MIA_PREFIX-/usr/local}"
+    base_url="https://github.com/anowell/mia/releases/download"
+    completions_url="https://raw.githubusercontent.com/anowell/mia/master/completions"
 }
 
 set_architecture() {
@@ -87,8 +87,8 @@ set_architecture() {
         fi
     fi
 
-    _algo_arch="$_cputype-$_ostype"
-    echo_verbose "architecture is $_algo_arch"
+    _pkg_arch="$_cputype-$_ostype"
+    echo_verbose "architecture is $_pkg_arch"
 }
 
 set_shell() {
@@ -132,13 +132,13 @@ EOF
 
     if [ "$_uninstall" = false ]; then
         cat <<EOF
-This script will download algo and install it to $_prefix.
+This script will download mia and install it to $_prefix.
 
 EOF
 # You may install elsewhere by running this script with the --prefix=<path> option.
     else
         cat <<EOF
-This script will uninstall the existing algo installation at $_prefix.
+This script will uninstall the existing mia installation at $_prefix.
 
 EOF
     fi
@@ -229,36 +229,36 @@ handle_command_line_args() {
 }
 
 install_cli() {
-    # download algo for platform
+    # download mia for platform
     local tmpdir=$(mktemp -d)
     cd $tmpdir
     echo_verbose "working directory: '$tmpdir'"
 
-    local release_url="${base_url}/v${algo_version}/algorithmia-v${algo_version}-${_algo_arch}.tar.gz"
+    local release_url="${base_url}/v${pkg_version}/algorithmia-v${pkg_version}-${_pkg_arch}.tar.gz"
     echo_verbose "downloading release tarball..."
-    curl -sSfL "$release_url" -o "algo.tar.gz"
+    curl -sSfL "$release_url" -o "mia.tar.gz"
 
     # Remove old versions - this should be removed from future releases
-    if which algo > /dev/null 2>&1; then
-        echo_verbose "removing old version: $(which algo)"
-        maybe_sudo rm -f $(which algo)
+    if which mia > /dev/null 2>&1; then
+        echo_verbose "removing old version: $(which mia)"
+        maybe_sudo rm -f $(which mia)
     fi
 
     echo_verbose "extracting release tarball..."
-    tar -xzf algo.tar.gz
+    tar -xzf mia.tar.gz
 
     # copy to $_prefix/bin
-    echo_verbose "installing 'algo'..."
+    echo_verbose "installing 'mia'..."
     maybe_sudo mkdir -p $_prefix/bin/
-    maybe_sudo cp $tmpdir/algo $_prefix/bin/
+    maybe_sudo cp $tmpdir/mia $_prefix/bin/
     migrate_config
 
     # install completions
     echo_verbose "installing shell completions..."
     maybe_sudo mkdir -p /usr/local/share/zsh/site-functions/ || true
-    maybe_sudo cp $tmpdir/completions/zsh/_algo /usr/local/share/zsh/site-functions/
+    maybe_sudo cp $tmpdir/completions/zsh/_mia /usr/local/share/zsh/site-functions/
     maybe_sudo mkdir -p /etc/bash_completion.d/
-    maybe_sudo cp $tmpdir/completions/bash/algo /etc/bash_completion.d/
+    maybe_sudo cp $tmpdir/completions/bash/mia /etc/bash_completion.d/
 
     if [ "$_shell" = "/bin/zsh" ]; then
         echo "Zsh completions should load in subsequent shells if your \$fpath contains '/usr/local/share/zsh/site-functions'. Reload completions in your current shell by running:"
@@ -268,29 +268,29 @@ install_cli() {
     elif [ "$_shell" = "/bin/bash" ]; then
         echo "Bash completions should be automatically sourced in subsequent shells if 'bash-completion' is installed. You may manually source them by running:"
         echo
-        echo "    source /etc/bash_completion.d/algo"
+        echo "    source /etc/bash_completion.d/mia"
         echo
     fi
 
-    echo "Installation complete! Run 'algo --help' to get started."
+    echo "Installation complete! Run 'mia --help' to get started."
 }
 
 uninstall_cli() {
-    maybe_sudo rm -f $_prefix/bin/algo || true
-    maybe_sudo rm -f /usr/local/share/zsh/site-functions/_algo || true
-    maybe_sudo rm -f /etc/bash_completion.d/algo || true
+    maybe_sudo rm -f $_prefix/bin/mia || true
+    maybe_sudo rm -f /usr/local/share/zsh/site-functions/_mia || true
+    maybe_sudo rm -f /etc/bash_completion.d/mia || true
 
     # Remove old versions - this should be removed from future releases
-    if which algo > /dev/null 2>&1; then
-        maybe_sudo rm -f $(which algo)
+    if which mia > /dev/null 2>&1; then
+        maybe_sudo rm -f $(which mia)
     fi
 
-    echo "Algorithmia Command Line Tools uninstalled!"
+    echo "mia uninstalled!"
 }
 
 print_help() {
 echo '
-Usage: install-algo.sh [--verbose]
+Usage: install-mia.sh [--verbose]
 Options:
      --uninstall                       Uninstall instead of install
      --help, -h                        Display usage information

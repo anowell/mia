@@ -78,7 +78,7 @@ impl Config {
                 let _ = f.read_to_string(&mut conf_toml);
                 let config = toml::from_str(&conf_toml).unwrap_or_else(|err| {
                     quit_msg!(
-                        "Unable to parse {}: {}\nConsider deleting and re-running 'algo auth'",
+                        "Unable to parse {}: {}\nConsider deleting and re-running 'mia auth'",
                         conf_path.display(),
                         err
                     );
@@ -111,7 +111,7 @@ impl Profile {
     pub fn lookup(profile: &str) -> Profile {
         Config::read_config()
             .and_then(|c| c.get_profile(profile).cloned())
-            .unwrap_or_else(|| quit_msg!("{} profile not found. Run 'algo auth {0}'", profile))
+            .unwrap_or_else(|| quit_msg!("{} profile not found. Run 'mia auth {0}'", profile))
     }
 }
 

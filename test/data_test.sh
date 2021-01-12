@@ -3,7 +3,7 @@
 set -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-ALGO=$( cd "$DIR/../target/debug" && pwd)/algo
+MIA=$( cd "$DIR/../target/debug" && pwd)/mia
 ALGOUSER=${ALGOUSER:-.my}
 DATADIR=data://$ALGOUSER/test
 
@@ -11,17 +11,17 @@ function die {
     echo $1; exit 1
 }
 
-function test_algo {
+function test_mia {
     set -e
     echo
-    echo ----- algo $@
-    $ALGO $@
+    echo ----- mia $@
+    $MIA $@
 }
 
-test_algo mkdir $DATADIR
+test_mia mkdir $DATADIR
 touch $DIR/sample
-test_algo cp $DIR/sample $DATADIR
+test_mia cp $DIR/sample $DATADIR
 rm $DIR/sample
-test_algo ls $DATADIR
-test_algo rmdir -f $DATADIR
+test_mia ls $DATADIR
+test_mia rmdir -f $DATADIR
 

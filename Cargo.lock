@@ -25,29 +25,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "algo"
-version = "1.0.2"
-dependencies = [
- "algorithmia",
- "chan",
- "chrono 0.2.25",
- "docopt",
- "env_logger",
- "idna 0.1.5",
- "isatty",
- "mime",
- "rpassword",
- "rustc-serialize",
- "serde",
- "serde_derive",
- "termcolor",
- "terminal_size",
- "toml",
- "url",
- "wait-timeout",
-]
-
-[[package]]
 name = "algorithmia"
 version = "3.0.0-beta.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -696,6 +673,29 @@ name = "memchr"
 version = "2.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
+
+[[package]]
+name = "mia"
+version = "1.0.2"
+dependencies = [
+ "algorithmia",
+ "chan",
+ "chrono 0.2.25",
+ "docopt",
+ "env_logger",
+ "idna 0.1.5",
+ "isatty",
+ "mime",
+ "rpassword",
+ "rustc-serialize",
+ "serde",
+ "serde_derive",
+ "termcolor",
+ "terminal_size",
+ "toml",
+ "url",
+ "wait-timeout",
+]
 
 [[package]]
 name = "mime"

@@ -12,8 +12,8 @@ use std::vec::IntoIter;
 use std::{clone, cmp, fs, io, thread};
 
 static USAGE: &'static str = r##"Usage:
-  algo cp [options] <source>... <dest>
-  algo copy [options] <source>... <dest>
+  mia cp [options] <source>... <dest>
+  mia copy [options] <source>... <dest>
 
   Copy files to or from the Algorithmia Data API
 
@@ -23,8 +23,8 @@ static USAGE: &'static str = r##"Usage:
     -c <CONCURRENCY>    Number of threads for uploading in parallel [Default: 8]
 
   Examples:
-    algo cp file1.jpg file2.jpg data://.my/foo          Upload 2 files to your 'foo' data directory
-    algo cp data://.my/foo/file1.jpg .                  Download file1.jpg to the workig directory
+    mia cp file1.jpg file2.jpg data://.my/foo          Upload 2 files to your 'foo' data directory
+    mia cp data://.my/foo/file1.jpg .                  Download file1.jpg to the workig directory
 "##;
 
 // TODO:

@@ -6,22 +6,17 @@ use std::process::Command;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
-  algo clone <algorithm> [<directory>]
+  mia clone <algorithm> [<directory>]
 
   <algorithm> syntax: USERNAME/ALGONAME
-  \
      Recommend specifying a version since algorithm costs can change between minor versions.
 
-  \
      This command is basically a wrapper for:
-    git clone \
-     https://git.algorithmia.com/git/USERNAME/ALGONAME.git
+     git clone https://git.algorithmia.com/git/USERNAME/ALGONAME.git
 
   Examples:
-    algo clone \
-     anowell/bcrypt                         Clones an algorithm repo
-    algo clone anowell/Pinky \
-     pinky-quotes             Clones an algorithm repo into a specific directory
+    mia clone anowell/bcrypt                         Clones an algorithm repo
+    mia clone anowell/Pinky pinky-quotes             Clones an algorithm repo into a specific directory
 "##;
 
 #[derive(RustcDecodable, Debug)]

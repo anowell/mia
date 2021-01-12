@@ -3,22 +3,22 @@
 set -e
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-ALGO=$( cd "$DIR/../target/debug" && pwd)/algo
+MIA=$( cd "$DIR/../target/debug" && pwd)/mia
 
 function die {
     echo $1; exit 1
 }
 
-function test_algo {
+function test_mia {
     set -e
     echo
-    echo ----- algo $@
-    $ALGO $@
+    echo ----- mia $@
+    $MIA $@
 }
 
 
-test_algo run "kenny/Factor" -d 72
+test_mia run "kenny/Factor" -d 72
 
 echo '[{"a": {"b":1}}, "a", "b"]' > $DIR/graph.json
-test_algo run "anowell/dijkstra" -J $DIR/graph.json
+test_mia run "anowell/dijkstra" -J $DIR/graph.json
 rm $DIR/graph.json

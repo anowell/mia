@@ -11,8 +11,8 @@ use termcolor::{Color, ColorSpec, StandardStream, WriteColor};
 use terminal_size::{terminal_size, Width};
 
 static USAGE: &'static str = r##"Usage:
-  algo ls [options] [<data-dir>]
-  algo dir [options] [<data-dir>]
+  mia ls [options] [<data-dir>]
+  mia dir [options] [<data-dir>]
 
   List contents of a directory via the Agorithmia Data API
 

@@ -6,7 +6,7 @@ use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
-  algo rmdir [options] <data-dir>
+  mia rmdir [options] <data-dir>
 
   Removes a directory from the Agorithmia Data API
 

@@ -35,7 +35,7 @@ fn main() {
         f,
         r#"
 pub static VERSION: &'static str =
-    "algo {pkg_ver} ({git_sha} {build_date})\n{rustc_version}";
+    "mia {pkg_ver} ({git_sha} {build_date})\n{rustc_version}";
 "#,
         pkg_ver = option_env!("CARGO_PKG_VERSION").unwrap_or("unknown-version"),
         git_sha = git_sha.trim(),

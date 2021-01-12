@@ -6,7 +6,7 @@ use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
-  algo mkdir <data-dir>
+  mia mkdir <data-dir>
 
   Create an Agorithmia data directory
 

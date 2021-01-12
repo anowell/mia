@@ -1,3 +1,6 @@
+## 2.0.0-alpha.1
+- Rename to mia (no longer official client)
+
 ## 1.0.1 (Mar 31, 2017)
 - Fix duplicate printing of stacktraces and some error causes
 - Add color for many errors

@@ -1,11 +1,10 @@
-#compdef algo
+#compdef mia
 
-_algo () {
+_mia() {
   local -a _1st_arguments
   _1st_arguments=(
     "auth":"Configure an authentication profile"
     "run":"Run an algorithm"
-    "runlocal":"Run a local clone of an algorithm"
     "clone":"Clones an algorithm repo"
     "ls":"List data in a data collection"
     "mkdir":"Create a data collection"
@@ -18,7 +17,7 @@ _algo () {
   _arguments '*:: :->command'
 
   if (( CURRENT == 1 )); then
-    _describe -t commands "algo command" _1st_arguments
+    _describe -t commands "mia command" _1st_arguments
     return
   fi
 
@@ -33,15 +32,6 @@ _algo () {
 				'(-o|--output)'{-o,--output}'[Output result to file]:Output file:_files' \
 				'(-s|--silence)'{-s,--silence}'[Suppress some output]' \
 				'--timeout=[Sets algorithm timeout]:timeout:' \
-				- set1 '(-d|--data)'{-d,--data}'[Input data]:Input data:' \
-				- set2 '(-D|--data-file)'{-D,--data-file}'[Input data from file]:Input file:_files' \
-			)
-			;;
-
-		runlocal)
-			_command_args=(
-				'(-o|--output)'{-o,--output}'[Output result to file]:Output file:_files' \
-				'(-s|--silence)'{-s,--silence}'[Suppress some output]' \
 				- set1 '(-d|--data)'{-d,--data}'[Input data]:Input data:' \
 				- set2 '(-D|--data-file)'{-D,--data-file}'[Input data from file]:Input file:_files' \
 			)
@@ -70,17 +60,17 @@ _algo () {
 		&&  return 0
 
 
-#  __algo_data () {
+#  __mia_data () {
 #    local expl data profile
 #    profile=${opt_args[--profile]:-default}
 #
 #    # TODO:
 #    # 1: figure out how to pass in $parent
-#    data=($(algo ls --profile $profile $parent))
+#    data=($(mia ls --profile $profile $parent))
 #    _wanted data expl data compadd $* -P 'data://' - $data
 #  }
 
-	__algo_profiles () {
+	__mia_profiles() {
     local expl profiles
 	  profiles=($(cat ~/.algorithmia/config | gawk 'match($0, /\[profiles\.(.*)\]/, m) { printf "%s ", m[1] }'))
 	  _wanted profiles expl profile compadd $* - $profiles
@@ -88,14 +78,14 @@ _algo () {
 
   case $state in
 		(profiles)
-		  __algo_profiles && return 0
+		  __mia_profiles && return 0
 		  ;;
     (data)
-      __algo_data && return 0
+      __mia_data && return 0
       ;;
   esac
 
 }
 
 
-_algo "$@"
+_mia "$@"

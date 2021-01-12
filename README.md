@@ -1,6 +1,6 @@
 **THE OFFICIAL ALGORITHMIA CLI HAS MOVED TO https://github.com/algorithmiaio/algorithmia-python**
 
-This repo is now for experimenting with CLI-based interactions with Algorithmia and the Algorithmia rust client. To clearly disambiguate from `algo`, the official Algorithmia CLI, this project is changing its name to `mia`. 
+This repo is now for experimenting with CLI-based interactions with Algorithmia and the Algorithmia rust client. To clearly disambiguate from `algo`, the official Algorithmia CLI, this project is changing its name to `mia`.
 
 mia
 ---------------------
@@ -51,36 +51,36 @@ aura -A algorithmia-bin
 
 In order to make calls with the CLI, you'll need to configure the authentication with an API key. If you don't already have an API key, get started by signing up for an account at [Algorithmia.com](https://algorithmia.com). Once you've completed the sign up process, copy the API key from your account dashboard.
 
-Begin the configuration process by running the command `algo auth`.
+Begin the configuration process by running the command `mia auth`.
 You will see an interactive prompt to guide you through setting up a default profile:
 
 ```
-$ algo auth
+$ mia auth
 Configuring authentication for 'default' profile
 Enter API Endpoint [https://api.algorithmia.com]:
 Enter API Key (prefixed with 'sim'):
-Profile is ready to use. Test with 'algo ls'
+Profile is ready to use. Test with 'mia ls'
 ```
 
 See [Using multiple profiles](#using-multiple-profiles) for instructions on how to set authenticate and use more than one profile with the Algorithmia CLI tool.
 
 ## Usage
 
-To call an algorithm from the CLI, use the command syntax: `algo run`, followed by the algorithm’s username and algorithm name, the data options, and finally the input. Here is a basic example calling the [Factor algorithm](https://algorithmia.com/algorithms/kenny/Factor):
+To call an algorithm from the CLI, use the command syntax: `mia run`, followed by the algorithm’s username and algorithm name, the data options, and finally the input. Here is a basic example calling the [Factor algorithm](https://algorithmia.com/algorithms/kenny/Factor):
 
 ```text
-$ algo run kenny/factor -d 19635
+$ mia run kenny/factor -d 19635
 [3,5,7,11,17]
 ```
 
 Add the option `--response-body` to see the full JSON response:
 
 ```text
-$ algo run kenny/factor -d 19635 --response-body
+$ mia run kenny/factor -d 19635 --response-body
 {"result":[3,5,7,11,17],"metadata":{"content_type":"json","duration":0.001427314}}
 ```
 
-Run `algo run --help` to see more command options or view the following [Options](#options) section.
+Run `mia run --help` to see more command options or view the following [Options](#options) section.
 
 ### Options
 
@@ -99,7 +99,7 @@ You may also explictly specify the input type as text (`-t`/`-T`), json (`-j`/`-
 The algorithm result is printed to STDOUT by defauft. Additional notices may be printed to STDERR. If you'd like to output the result to a file, use the output option flag followed by a filename:
 
 ```text
-$ algo run kenny/factor -d 17 --output results.txt
+$ mia run kenny/factor -d 17 --output results.txt
 ```
 
 | Option Flag     | Description |
@@ -119,11 +119,11 @@ $ algo run kenny/factor -d 17 --output results.txt
 #### Examples:
 
 ```text
-$ algo run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified version & data input
-$ algo run anowell/Dijkstra -D routes.json              Run algorithm with file input
-$ algo run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
-$ algo run opencv/SmartThumbnail -D in.png -o out.png   Runs algorithm with binary files as input
-$ algo run kenny/factor -d 17 --timeout 2               Runs algorithm with a timeout of 2 seconds
+$ mia run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified version & data input
+$ mia run anowell/Dijkstra -D routes.json              Run algorithm with file input
+$ mia run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
+$ mia run opencv/SmartThumbnail -D in.png -o out.png   Runs algorithm with binary files as input
+$ mia run kenny/factor -d 17 --timeout 2               Runs algorithm with a timeout of 2 seconds
 ```
 
 
@@ -146,7 +146,7 @@ Use the Algorithmia CLI to interact with the Algorithmia Data API. You can use t
 
 Create a data directory:
 ```text
-$ algo mkdir .my/cuteAnimals
+$ mia mkdir .my/cuteAnimals
 
 Created directory data://.my/cuteAnimals
 ```
@@ -154,7 +154,7 @@ Created directory data://.my/cuteAnimals
 Copy a file from your local directory to the new data directory:
 
 ```text
-$ algo cp chubby_kittens.jpg data://.my/cuteAnimals
+$ mia cp chubby_kittens.jpg data://.my/cuteAnimals
 
 Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
 ```
@@ -163,23 +163,23 @@ Uploaded data://.my/cuteAnimals/chubby_kittens.jpg
 
 ### Add additional profiles
 
-With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, simply specify a profile to `algo auth` follow the same interactive prompt.
+With the Algorithmia CLI, you can configure multiple custom profiles to use. To add a new profile, simply specify a profile to `mia auth` follow the same interactive prompt.
 
 ```text
-$ algo auth --profile second_user
+$ mia auth --profile second_user
 Configuring authentication for 'second_user' profile
 Enter API Key (prefixed with 'sim'):
-Profile is ready to use. Test with 'algo ls --profile second_user'
+Profile is ready to use. Test with 'mia ls --profile second_user'
 ```
 
-Now you may use `algo ls --profile second_user` to list files in your `second_user` account. For more information, see the auth command help with `algo auth --help`.
+Now you may use `mia ls --profile second_user` to list files in your `second_user` account. For more information, see the auth command help with `mia auth --help`.
 
 ### Using profiles in commands
 
 When running commands, the Algorithmia CLI will use the default profile unless otherwise specified with the `--profile <profile>` option. See the following example:
 
 ```text
-$ algo run kenny/factor -d 17 --profile second_user
+$ mia run kenny/factor -d 17 --profile second_user
 [17]
 ```
 

@@ -1,4 +1,4 @@
-_algo()
+_mia()
 {
     local cur prev opts base
     COMPREPLY=()
@@ -9,7 +9,7 @@ _algo()
     #
     #  The basic options we'll complete.
     #
-    cmds="auth cat clone cp ls mkdir rm rmdir run runlocal"
+    cmds="auth cat clone cp ls mkdir rm rmdir run"
 
 
     if [ "${prev}" == "--profile" ]; then
@@ -24,11 +24,6 @@ _algo()
     case "${cmd}" in
         run)
             local cmd_opts="--data --data-file --output --profile --silence --timeout"
-            COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
-            return 0
-            ;;
-        runlocal)
-            local cmd_opts="--data --data-file --output --profile --silence"
             COMPREPLY=( $(compgen -W "${cmd_opts}" -- ${cur}) )
             return 0
             ;;
@@ -54,4 +49,4 @@ _algo()
    COMPREPLY=($(compgen -W "${cmds}" -- ${cur}))
    return 0
 }
-complete -F _algo algo
+complete -F _mia mia

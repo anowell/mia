@@ -7,7 +7,7 @@ use docopt::Docopt;
 use std::vec::IntoIter;
 
 static USAGE: &'static str = r##"Usage:
-  algo run [options] <algorithm>
+  mia run [options] <algorithm>
 
   <algorithm> syntax: USERNAME/ALGONAME[/VERSION]
   Recommend specifying a version since algorithm costs can change between minor versions.
@@ -38,8 +38,8 @@ static USAGE: &'static str = r##"Usage:
     By default, only the algorithm result is printed to STDOUT while additional notices may be
     printed to STDERR.
 
-    --debug                         Print algorithm's STDOUT (default for 'algo runlocal')
-    --no-debug                      Don't print algorithm's STDOUT (default for 'algo run')
+    --debug                         Print algorithm's STDOUT
+    --no-debug                      Don't print algorithm's STDOUT (default)
     --response-body                 Print HTTP response body (replaces result)
     --response                      Print full HTTP response including headers (replaces result)
     -s, --silence                   Suppress any output not explicitly requested (except result)
@@ -49,10 +49,10 @@ static USAGE: &'static str = r##"Usage:
     --timeout <seconds>             Sets algorithm timeout
 
   Examples:
-    algo run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified data input
-    algo run anowell/Dijkstra -D routes.json              Run algorithm with file input
-    algo run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
-    algo run opencv/SmartThumbnail -D in.png -o out.png   Run algorithm saving output to a file
+    mia run kenny/factor/0.1.0 -d '79'                   Run algorithm with specified data input
+    mia run anowell/Dijkstra -D routes.json              Run algorithm with file input
+    mia run anowell/Dijkstra -D - < routes.json          Same as above but using STDIN
+    mia run opencv/SmartThumbnail -D in.png -o out.png   Run algorithm saving output to a file
 "##;
 
 #[derive(RustcDecodable, Debug)]
